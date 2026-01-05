@@ -1,25 +1,15 @@
 @v 表 "print"
-@v 開 "open"
-@v 読 "read"
-@v 分 "split"
-@v 置 "replace"
+@v 範 "range"
+
+@v f "for"
+@v i "if"
+@v e "else"
+@v n "in"
+
+@v 零 "0"
+@v 一 "1"
 
 $
 
-文 = 開(argv[1]).読()
-列 = 文.分("\n")
-
-i = 0
-n = len(列)
-
-while i < n:
-    行 = 列[i]
-    if 行 == "$":
-        i = i + 1
-        break
-    i = i + 1
-
-while i < n:
-    行 = 列[i]
-    表(行)
-    i = i + 1
+f k n 範(零, 一):
+ 表(k)
