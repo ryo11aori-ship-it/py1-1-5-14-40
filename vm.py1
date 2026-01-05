@@ -1,5 +1,4 @@
+@m s 'sys'
 @v p 'print'
-@v s 'sys'
-@v j 'argv'
 $
-p(s[j][1])
+p(s.argv[1])
