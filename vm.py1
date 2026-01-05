@@ -1,4 +1,3 @@
-(vm.py1)
 @v s 'sys'
 @v 開 'open'
 @v 読 'read'
