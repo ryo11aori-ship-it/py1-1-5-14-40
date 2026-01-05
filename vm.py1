@@ -1,14 +1,3 @@
-@v a 'sys'
-@v b 'argv'
-@v c 'open'
-@v d 'read'
-@v e 'write'
-@v s 'stderr'
-@v n '\n'
+@v p 'print'
 $
-m a
-d q():
- f = c(a.b[1])
- t = f.d()
- a.s.e(t)
-q()
+p("Z")
