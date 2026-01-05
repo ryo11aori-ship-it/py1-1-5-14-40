@@ -1,2 +1,14 @@
-a$=$0$
-print$a$
+@v o 'open'
+@v w 'write'
+@v s 'splitlines'
+@v j 'join'
+@v k 'sys'
+@v a 'argv'
+$
+f m():
+ f = o(k.a[1])
+ L = f.s()
+ T = L.j("\n")
+ k.stderr.w(T)
+
+m()
