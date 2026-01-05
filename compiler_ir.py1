@@ -18,6 +18,24 @@
 @v 結 'join'
 @v 塗 'str'
 
+# Tokenizer & Macro Support
+@v 研 'tokenize'
+@v 流 'io'
+@v 塊 'BytesIO'
+@v 戻 'untokenize'
+@v 報 'TokenInfo'
+@v 語 'NAME'
+@v 八 '"utf-8"'
+@v 復 'decode'
+@v 化 'encode'
+@v 誌 'readline'
+@v 追 'append'
+@v 型 'type'
+@v 紐 'string'
+@v 幕 'start'
+@v 閉 'end'
+@v 線 'line'
+
 # AST Types (Class Names)
 @v 根 'Module'
 @v 式 'Expr'
@@ -43,7 +61,7 @@
 @v 等 'Eq'
 @v 少 'Lt'
 @v 以 'LtE'
-# 【修正】Attribute Node -> 性
+# Attribute Node
 @v 性 'Attribute'
 @v 字 'Subscript'
 @v 切 'Slice'
@@ -60,7 +78,7 @@
 @v 識 'id'
 @v 類 'args'
 @v 体 'body'
-# 【修正】Attribute.attr -> 属
+# Attribute.attr
 @v 属 'attr'
 @v ス 'slice'
 @v 中 'elts'
@@ -91,9 +109,7 @@
 @v 包 '"CONTAINS"'
 
 # Misc
-@v 改 '"\\n"'
-@v 符 '"utf-8"'
-@v 号 '"encoding"'
+@v 改 'CODE_NL'
 @v モ '"r"'
 @v メ '"Usage: python compiler_ir.py <source_file>\\n"'
 @v ド '"$"'
@@ -131,16 +147,31 @@
 @v 弐 'L2'
 @v 参 'OP'
 @v 計 'i'
+# Tokenizer vars (1 char)
+@v 材 'data'
+@v 機 'reader'
+@v 群 'tokens'
+@v 更 'new_tokens'
+@v 個 'tok'
+@v 種 'kind'
+@v 言 'txt'
+@v 初 'st'
+@v 末 'ed'
+@v 段 'ln'
+@v 玉 'new_tok'
 
 $
 m s
 m 星
+m 研
+m 流
 
 # Global
 辞 = {}
 番 = [0]
 点 = 単(39)
 間 = 単(32)
+改 = 単(10)
 
 # Label Generator
 d 新():
@@ -249,11 +280,8 @@ d 巡(節):
    巡(項)
   
   # Method: obj.method(args)
-  # 【修正】 isinstace(..., 星.性) (Attribute Node)
   i 確(節.関, 星.性):
    巡(節.関.価)
-   # CALL method_name (attr field)
-   # 【修正】 .属 (attr field)
    表(喚.形(節.関.属))
 
   # Function: func(args)
@@ -279,7 +307,7 @@ i 寸(s.引) < 2:
  s.逝(1)
 
 道 = s.引[1]
-オ = {号: 符}
+オ = {号: 八}
 文 = 開(道, モ, **オ).読()
 列 = 文.裂()
 
@@ -304,5 +332,28 @@ f 行 n 列:
     値 = 値.削(点)
     辞[鍵] = 値
 
+# Tokenize & Macro Replacement
+材 = 身.化(八)
+機 = 流.塊(材).誌
+群 = 研.研(機)
+更 = []
+
+f 個 n 群:
+ 種 = 個.型
+ 言 = 個.紐
+ 初 = 個.幕
+ 末 = 個.閉
+ 段 = 個.線
+ 
+ i 種 == 研.語:
+  i 言 n 辞:
+   言 = 辞[言]
+ 
+ 玉 = 研.報(種, 言, 初, 末, 段)
+ 更.追(玉)
+
+身 = 研.戻(更).復(八)
+
+# Parse & Compile
 木 = 星.解(身)
 巡(木)
