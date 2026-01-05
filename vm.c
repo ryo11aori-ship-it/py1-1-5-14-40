@@ -9,7 +9,14 @@
 #define MAX_LINES 8192
 #define LINE_BUF_SIZE 2048
 
-void panic(const char *msg) { fprintf(stderr, "Panic: %s\n", msg); exit(1); }
+// Debug info
+int current_line = 0;
+char current_cmd[LINE_BUF_SIZE];
+
+void panic(const char *msg) { 
+    fprintf(stderr, "Panic at line %d ('%s'): %s\n", current_line, current_cmd, msg); 
+    exit(1); 
+}
 
 typedef enum { OBJ_INT, OBJ_STR, OBJ_LIST, OBJ_DICT, OBJ_NONE } ObjType;
 
@@ -125,10 +132,18 @@ Object dict_get(Dict *d, char *key) {
     return make_str(key);
 }
 
+// 厳密な数値判定（前後の空白トリム済み前提）
 int is_number(char *s) {
-    if(*s=='-'||*s=='+')s++; if(!*s)return 0;
-    while(*s) if(!isdigit(*s++))return 0; return 1;
+    if(!s || !*s) return 0;
+    if(*s=='-'||*s=='+')s++;
+    if(!*s) return 0;
+    while(*s) {
+        if(!isdigit(*s)) return 0;
+        s++;
+    }
+    return 1;
 }
+
 int find_label(char *name) {
     for(int i=0; i<label_count; i++) if(strcmp(labels[i].name,name)==0) return labels[i].line_num;
     return -1;
@@ -136,7 +151,6 @@ int find_label(char *name) {
 
 // --- Methods ---
 void call_method(char *method) {
-    // ... (Existing methods omitted for brevity, keeping same) ...
     if (strcmp(method, "splitlines") == 0) {
         Object o = pop();
         Object lst = make_list();
@@ -148,8 +162,8 @@ void call_method(char *method) {
     else if (strcmp(method, "strip") == 0) {
         Object arg = pop();
         Object o;
-        if (arg.type == OBJ_STR) { o = pop(); /* simplified logic */ push(make_str(o.v.s)); } 
-        else { o = arg; push(make_str(o.v.s)); } // Simplified strip
+        if (arg.type == OBJ_STR) { o = pop(); push(make_str(o.v.s)); } 
+        else { o = arg; push(make_str(o.v.s)); } 
     }
     else if (strcmp(method, "split") == 0) {
         Object top = pop();
@@ -201,7 +215,7 @@ void call_method(char *method) {
     else if (strcmp(method, "len") == 0) {
         Object o = pop();
         if(o.type==OBJ_LIST) push(make_int(o.v.l->count)); 
-        else if(o.type==OBJ_STR) push(make_int(strlen(o.v.s))); // Added Str len
+        else if(o.type==OBJ_STR) push(make_int(strlen(o.v.s)));
         else push(make_int(0));
     }
     else if (strcmp(method, "str") == 0) {
@@ -232,7 +246,6 @@ void call_method(char *method) {
 }
 
 int main(int argc, char *argv[]) {
-    // ... (Init code same as before) ...
     if (argc < 2) return 1;
     
     Object argv_list = make_list();
@@ -250,7 +263,8 @@ int main(int argc, char *argv[]) {
 
     char line[LINE_BUF_SIZE];
     while (fgets(line, sizeof(line), fp)) {
-        line[strcspn(line, "\n")] = 0;
+        // CRLF対応
+        line[strcspn(line, "\r\n")] = 0;
         if (strlen(line) == 0) continue;
         strcpy(program[prog_size], line);
         if (strncmp(line, "LABEL ", 6) == 0) {
@@ -262,37 +276,51 @@ int main(int argc, char *argv[]) {
     }
     fclose(fp);
 
-    // ... (前略)
-
     int ip = 0;
     while (ip < prog_size) {
+        current_line = ip + 1;
+        strcpy(current_cmd, program[ip]);
+        
         char buf[LINE_BUF_SIZE];
         strcpy(buf, program[ip]);
-        char *cmd = strtok(buf, " ");
-        char *arg = strtok(NULL, "");
-        if(arg) { while(*arg==' ') arg++; }
+        
+        // Manual split to be safe
+        char *cmd = buf;
+        char *arg = NULL;
+        char *spc = strchr(buf, ' ');
+        if (spc) {
+            *spc = 0;
+            arg = spc + 1;
+            while(*arg == ' ') arg++; // Skip spaces
+            if (strlen(arg) == 0) arg = NULL;
+        }
+
         ip++;
 
         if (!cmd || strcmp(cmd, "LABEL") == 0) {}
         else if (strcmp(cmd, "PUSH") == 0) {
             if (arg && is_number(arg)) push(make_int(atoi(arg)));
             else if (arg) push(make_str(arg));
-            // 【修正】引数がない(NULL)場合は、空文字列をプッシュする (v="" 対応)
-            else push(make_str(""));
+            else push(make_str("")); // Default empty string
         }
-// ... (中略: ADD, SUBなどはそのまま)
-        else if (strcmp(cmd, "GET") == 0) {
-            Object key = pop(); Object obj = pop();
-            if(obj.type==OBJ_DICT) push(dict_get(obj.v.d, key.v.s));
-            else if(obj.type==OBJ_LIST) push(obj.v.l->items[key.v.i]);
-            // 【維持】文字列のインデックスアクセス
-            else if(obj.type==OBJ_STR) {
-                char buf[2] = { obj.v.s[key.v.i], 0 };
-                push(make_str(buf));
-            }
+        else if (strcmp(cmd, "STORE") == 0) set_var(arg, pop());
+        else if (strcmp(cmd, "LOAD") == 0) push(get_var(arg));
+        else if (strcmp(cmd, "PRINT") == 0) {
+             Object o = pop();
+             if(o.type==OBJ_STR) printf("%s\n", o.v.s);
+             else printf("%d\n", o.v.i);
         }
-// ... (後略)
-
+        else if (strcmp(cmd, "ADD") == 0) {
+             Object b = pop(); Object a = pop();
+             if(a.type==OBJ_INT && b.type==OBJ_INT) push(make_int(a.v.i+b.v.i));
+             else { 
+                 char sa[2048], sb[2048];
+                 if(a.type==OBJ_INT) sprintf(sa, "%d", a.v.i); else strcpy(sa, a.v.s);
+                 if(b.type==OBJ_INT) sprintf(sb, "%d", b.v.i); else strcpy(sb, b.v.s);
+                 char tmp[4096]; sprintf(tmp,"%s%s", sa, sb); 
+                 push(make_str(tmp)); 
+             }
+        }
         else if (strcmp(cmd, "SUB") == 0) { Object b=pop(); Object a=pop(); push(make_int(a.v.i-b.v.i)); }
         else if (strcmp(cmd, "MUL") == 0) { Object b=pop(); Object a=pop(); push(make_int(a.v.i*b.v.i)); }
         else if (strcmp(cmd, "DIV") == 0) { Object b=pop(); Object a=pop(); push(make_int(a.v.i/b.v.i)); }
@@ -306,10 +334,14 @@ int main(int argc, char *argv[]) {
             Object key = pop(); Object obj = pop();
             if(obj.type==OBJ_DICT) push(dict_get(obj.v.d, key.v.s));
             else if(obj.type==OBJ_LIST) push(obj.v.l->items[key.v.i]);
-            // 【重要】以下を追加：文字列のインデックスアクセス (Lexerで必須)
             else if(obj.type==OBJ_STR) {
-                char buf[2] = { obj.v.s[key.v.i], 0 };
-                push(make_str(buf));
+                // String indexing for Lexer
+                if (key.type == OBJ_INT) {
+                    char buf[2] = { obj.v.s[key.v.i], 0 };
+                    push(make_str(buf));
+                } else {
+                    push(make_str("")); // Fail safe
+                }
             }
         }
         else if (strcmp(cmd, "SET") == 0) {
@@ -336,13 +368,10 @@ int main(int argc, char *argv[]) {
             Object item = pop();
             int found = 0;
             if (container.type == OBJ_STR && item.type == OBJ_STR) {
-                // String contains String
                 if (strstr(container.v.s, item.v.s)) found = 1;
             }
             else if (container.type == OBJ_LIST) {
-                // List contains Item
                 for (int i=0; i<container.v.l->count; i++) {
-                    // Simple equality check (Int or Str)
                     Object it = container.v.l->items[i];
                     if (it.type == item.type) {
                         if (it.type == OBJ_INT && it.v.i == item.v.i) { found=1; break; }
@@ -351,7 +380,6 @@ int main(int argc, char *argv[]) {
                 }
             }
             else if (container.type == OBJ_DICT && item.type == OBJ_STR) {
-                // Dict contains Key
                 for (int i=0; i<container.v.d->count; i++) {
                     if (strcmp(container.v.d->pairs[i].key, item.v.s) == 0) { found=1; break; }
                 }
