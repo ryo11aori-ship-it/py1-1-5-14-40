@@ -1,11 +1,189 @@
-@v 表 'print'
-@v 範 'range'
-@v 零 '0'
-@v 一 '1'
-@v 繰 'for'
-@v 中 'in'
-@v 変 'i'
-$
+(vm.py1)
+@v s 'sys'
+@v 開 'open'
+@v 読 'read'
+@v 印 'print'
+@v 数 'int'
+@v 列 'list'
+@v 長 'len'
+@v 逝 'exit'
+@v 誤 'stderr'
+@v 書 'write'
+@v 裂 'splitlines'
+@v 分 'split'
+@v 削 'strip'
+@v 加 'append'
+@v 取 'pop'
+@v 始 'startswith'
 
-繰 変 中 範(零, 一):
- 表(変)
+# Keywords & Attributes
+@v 否 'not'
+@v 輪 'while'
+@v 係 'argv'
+
+# Misc Strings
+@v モ '"r"'
+@v 符 '"utf-8"'
+@v 号 '"encoding"'
+@v メ '"Usage: python vm.py <ir_file>\\n"'
+
+# Opcodes
+@v 積 '"PUSH"'
+@v 足 '"ADD"'
+@v 差 '"SUB"'
+@v 掛 '"MUL"'
+@v 割 '"DIV"'
+@v 余 '"MOD"'
+@v 刷 '"PRINT"'
+@v 蔵 '"STORE"'
+@v 荷 '"LOAD"'
+@v 札 '"LABEL"'
+@v 飛 '"JUMP"'
+@v 無 '"JZERO"'
+@v 同 '"EQ"'
+@v 負 '"LT"'
+
+# Vars
+@v 道 'path'
+@v 文 'text'
+@v 行 'line'
+@v 素 'sline'
+@v 部 'parts'
+@v 令 'insts'
+@v ラ 'labels'
+@v 憶 'mem'
+@v 筒 'stack'
+@v 指 'ip'
+@v 寸 'size'
+@v 技 'op'
+@v 値 'val'
+@v 甲 'a'
+@v 乙 'b'
+@v 具 'arg'
+@v オ 'opts'
+
+$
+m s
+
+i 長(s.係) < 2:
+ s.誤.書(メ)
+ s.逝(1)
+
+道 = s.係[1]
+オ = {号: 符}
+文 = 開(道, モ, **オ).読()
+
+# --- 1. Parse & Label Scan ---
+令 = []
+ラ = {}
+指 = 0
+
+f 行 n 文.裂():
+ 素 = 行.削()
+ # Check if empty
+ i 否 素:
+  C
+ 
+ 部 = 素.分()
+ 令.加(部)
+ 
+ 技 = 部[0]
+ i 技 == 札:
+  # LABEL L1
+  具 = 部[1]
+  ラ[具] = 指
+ 
+ 指 = 指 + 1
+
+# --- 2. Execution Loop ---
+憶 = {}
+筒 = []
+指 = 0
+寸 = 長(令)
+
+輪 指 < 寸:
+ 部 = 令[指]
+ 技 = 部[0]
+ 
+ 指 = 指 + 1
+ 
+ # Flow Control
+ i 技 == 札:
+  C
+ 
+ i 技 == 飛:
+  具 = 部[1]
+  指 = ラ[具]
+  C
+
+ i 技 == 無:
+  具 = 部[1]
+  値 = 筒.取()
+  i 値 == 0:
+   指 = ラ[具]
+  C
+
+ # Stack Ops
+ i 技 == 積:
+  具 = 部[1]
+  t:
+   値 = 数(具)
+  x:
+   値 = 具
+  筒.加(値)
+
+ i 技 == 蔵:
+  具 = 部[1]
+  値 = 筒.取()
+  憶[具] = 値
+
+ i 技 == 荷:
+  具 = 部[1]
+  筒.加(憶[具])
+
+ i 技 == 刷:
+  値 = 筒.取()
+  印(値)
+
+ # Arithmetic
+ i 技 == 足:
+  乙 = 筒.取()
+  甲 = 筒.取()
+  筒.加(甲 + 乙)
+
+ i 技 == 差:
+  乙 = 筒.取()
+  甲 = 筒.取()
+  筒.加(甲 - 乙)
+
+ i 技 == 掛:
+  乙 = 筒.取()
+  甲 = 筒.取()
+  筒.加(甲 * 乙)
+
+ i 技 == 割:
+  乙 = 筒.取()
+  甲 = 筒.取()
+  筒.加(数(甲 / 乙))
+
+ i 技 == 余:
+  乙 = 筒.取()
+  甲 = 筒.取()
+  筒.加(甲 % 乙)
+
+ # Comparison
+ i 技 == 同:
+  乙 = 筒.取()
+  甲 = 筒.取()
+  i 甲 == 乙:
+   筒.加(1)
+  e:
+   筒.加(0)
+
+ i 技 == 負:
+  乙 = 筒.取()
+  甲 = 筒.取()
+  i 甲 < 乙:
+   筒.加(1)
+  e:
+   筒.加(0)
