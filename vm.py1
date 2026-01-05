@@ -1,4 +1,3 @@
-@m s 'sys'
 @v p 'print'
 $
-p(s.argv[1])
+p("OK")
