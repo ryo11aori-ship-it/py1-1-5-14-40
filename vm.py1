@@ -1,15 +1,7 @@
-@v 表 "print"
-@v 範 "range"
-
-@v f "for"
-@v i "if"
-@v e "else"
-@v n "in"
-
-@v 零 "0"
-@v 一 "1"
-
+@v 表 'print'
+@v 範 'range'
+@v 零 '0'
+@v 一 '1'
 $
 
-f k n 範(零, 一):
- 表(k)
+表(零)
