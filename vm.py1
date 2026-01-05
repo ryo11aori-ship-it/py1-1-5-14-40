@@ -1,10 +1,2 @@
-# vm.py1  (stage-0 minimal)
-
-# IR 1行だけ読む（まずここまで）
-f = open(ARGV[1])
-inst = f.readline()
-f.close()
-
-# 改行対策（strip 相当を避ける）
-if inst == "HALT\n":
-    print(0)
+a$=$0$
+print$a$
