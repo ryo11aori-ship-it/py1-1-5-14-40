@@ -310,6 +310,11 @@ int main(int argc, char *argv[]) {
             Object key = pop(); Object obj = pop();
             if(obj.type==OBJ_DICT) push(dict_get(obj.v.d, key.v.s));
             else if(obj.type==OBJ_LIST) push(obj.v.l->items[key.v.i]);
+            // 【重要】以下を追加：文字列のインデックスアクセス (Lexerで必須)
+            else if(obj.type==OBJ_STR) {
+                char buf[2] = { obj.v.s[key.v.i], 0 };
+                push(make_str(buf));
+            }
         }
         else if (strcmp(cmd, "SET") == 0) {
             Object key = pop(); Object obj = pop(); Object val = pop();
@@ -330,7 +335,6 @@ int main(int argc, char *argv[]) {
             for(int i=0; i<n; i++) dict_set(d.v.d, keys[i].v.s, vals[i]);
             free(vals); free(keys); push(d);
         }
-        // 【追加】CONTAINS
         else if (strcmp(cmd, "CONTAINS") == 0) {
             Object container = pop();
             Object item = pop();
