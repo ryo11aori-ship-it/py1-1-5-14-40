@@ -1,54 +1,10 @@
-# vm.py1
+# vm.py1  (stage-0 minimal)
 
-# ==== state ====
-s = []        # stack
-pc = 0        # program counter
-code = []     # IR lines
-
-# ==== load IR ====
+# IR 1行だけ読む（まずここまで）
 f = open(ARGV[1])
-for line in f:
-    t = line.strip()
-    if t != "":
-        code.append(t)
+inst = f.readline()
 f.close()
 
-# ==== execute ====
-while pc < len(code):
-    inst = code[pc]
-    pc = pc + 1
-
-    if inst.startswith("PUSH"):
-        n = int(inst.split()[1])
-        s.append(n)
-
-    elif inst == "ADD":
-        b = s.pop()
-        a = s.pop()
-        s.append(a + b)
-
-    elif inst == "SUB":
-        b = s.pop()
-        a = s.pop()
-        s.append(a - b)
-
-    elif inst == "MUL":
-        b = s.pop()
-        a = s.pop()
-        s.append(a * b)
-
-    elif inst == "DIV":
-        b = s.pop()
-        a = s.pop()
-        s.append(a // b)
-
-    elif inst == "PRINT":
-        v = s.pop()
-        print(v)
-
-    elif inst == "HALT":
-        break
-
-    else:
-        print("Unknown instruction:", inst)
-        break
+# 改行対策（strip 相当を避ける）
+if inst == "HALT\n":
+    print(0)
