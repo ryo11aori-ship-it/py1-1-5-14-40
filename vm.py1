@@ -1,3 +1,2 @@
-@v p "print"
 $
-p("O")
+print("O")
