@@ -1,16 +1,14 @@
-@v 1 'sys'
-@v 2 'argv'
-@v 3 'open'
-@v 4 'splitlines'
-@v 5 'join'
-@v 6 'write'
-@v 7 'stderr'
-@v 9 '\n'
+@v a 'sys'
+@v b 'argv'
+@v c 'open'
+@v d 'read'
+@v e 'write'
+@v s 'stderr'
+@v n '\n'
 $
-d m():
- f = 3(1.2[1])
- L = f.4()
- T = L.5("9")
- 1.7.6(T)
-
-m()
+m a
+d q():
+ f = c(a.b[1])
+ t = f.d()
+ a.s.e(t)
+q()
