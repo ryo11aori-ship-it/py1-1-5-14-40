@@ -1,5 +1,5 @@
 @v p 'print'
 @v s 'sys'
-@v a 'argv'
+@v j 'argv'
 $
-p(s[a][1])
+p(s[j][1])
