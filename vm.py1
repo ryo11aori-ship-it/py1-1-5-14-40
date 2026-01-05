@@ -1,14 +1,16 @@
-@v o 'open'
-@v w 'write'
-@v s 'splitlines'
-@v j 'join'
-@v k 'sys'
-@v a 'argv'
+@v 1 'sys'
+@v 2 'argv'
+@v 3 'open'
+@v 4 'splitlines'
+@v 5 'join'
+@v 6 'write'
+@v 7 'stderr'
+@v 9 '\n'
 $
-f m():
- f = o(k.a[1])
- L = f.s()
- T = L.j("\n")
- k.stderr.w(T)
+d m():
+ f = 3(1.2[1])
+ L = f.4()
+ T = L.5("9")
+ 1.7.6(T)
 
 m()
