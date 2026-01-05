@@ -1,3 +1,5 @@
 @v p 'print'
+@v s 'sys'
+@v a 'argv'
 $
-p("Z")
+p(s[a][1])
