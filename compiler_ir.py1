@@ -1,0 +1,308 @@
+@v s 'sys'
+@v 星 'ast'
+@v 表 'print'
+@v 開 'open'
+@v 読 'read'
+@v 確 'isinstance'
+@v 逝 'exit'
+@v 書 'write'
+@v 誤 'stderr'
+@v 形 'format'
+@v 寸 'len'
+@v 裂 'splitlines'
+@v 削 'strip'
+@v 引 'argv'
+@v 解 'parse'
+@v 始 'startswith'
+@v 分 'split'
+@v 結 'join'
+@v 塗 'str'
+
+# AST Types (Class Names)
+@v 根 'Module'
+@v 式 'Expr'
+@v 呼 'Call'
+@v 定 'Constant'
+@v 二 'BinOp'
+@v 足 'Add'
+@v 減 'Sub'
+@v 掛 'Mult'
+@v 除 'Div'
+@v 余 'Mod'
+@v 名 'Name'
+@v 代 'Assign'
+@v タ 'targets'
+@v 輪 'While'
+@v 条 'test'
+@v も 'If'
+@v 他 'orelse'
+@v 較 'Compare'
+@v 辺 'left'
+@v 演 'ops'
+@v 子 'comparators'
+@v 等 'Eq'
+@v 少 'Lt'
+@v 以 'LtE'
+# 【修正】Attribute Node -> 性
+@v 性 'Attribute'
+@v 字 'Subscript'
+@v 切 'Slice'
+@v 配 'List'
+@v 彙 'Dict'
+@v 入 'In'
+
+# AST Attributes (Field Names)
+@v 価 'value'
+@v 左 'left'
+@v 右 'right'
+@v 算 'op'
+@v 関 'func'
+@v 識 'id'
+@v 類 'args'
+@v 体 'body'
+# 【修正】Attribute.attr -> 属
+@v 属 'attr'
+@v ス 'slice'
+@v 中 'elts'
+@v 索 'keys'
+@v 直 'values'
+
+# IR Instructions
+@v 積 '"PUSH {}"'
+@v 加 '"ADD"'
+@v 差 '"SUB"'
+@v 乗 '"MUL"'
+@v 割 '"DIV"'
+@v 剰 '"MOD"'
+@v 印 '"PRINT"'
+@v 刷 '"print"'
+@v 蔵 '"STORE {}"'
+@v 荷 '"LOAD {}"'
+@v 札 '"LABEL {}"'
+@v 飛 '"JUMP {}"'
+@v 無 '"JZERO {}"'
+@v 同 '"EQ"'
+@v 負 '"LT"'
+@v 喚 '"CALL {}"'
+@v 得 '"GET"'
+@v 置 '"SET"'
+@v 束 '"MKLIST {}"'
+@v 集 '"MKDICT {}"'
+@v 包 '"CONTAINS"'
+
+# Misc
+@v 改 '"\\n"'
+@v 符 '"utf-8"'
+@v 号 '"encoding"'
+@v モ '"r"'
+@v メ '"Usage: python compiler_ir.py <source_file>\\n"'
+@v ド '"$"'
+@v 冠 '"@v"'
+@v 鬱 'str'
+@v 単 'chr'
+@v 循 'while'
+
+# Vars
+@v 辞 'D'
+@v 節 'n'
+@v 項 'x'
+@v 道 'p'
+@v 文 't'
+@v 列 'L'
+@v 行 'l'
+@v 素 'S'
+@v 身 'B'
+@v 旗 'f'
+@v 部 'P'
+@v 頭 'H'
+@v 鍵 'k'
+@v 値 'v'
+@v 真 'real'
+@v 仮 'A'
+@v 木 'T'
+@v 巡 'V'
+@v オ 'O'
+@v 残 'E'
+@v 点 'Q'
+@v 間 'W'
+@v 番 'C'
+@v 新 'NL'
+@v 壱 'L1'
+@v 弐 'L2'
+@v 参 'OP'
+@v 計 'i'
+
+$
+m s
+m 星
+
+# Global
+辞 = {}
+番 = [0]
+点 = 単(39)
+間 = 単(32)
+
+# Label Generator
+d 新():
+ 番[0] = 番[0] + 1
+ r "L" + 塗(番[0])
+
+d 巡(節):
+ # Values
+ i 確(節, 星.定):
+  表(積.形(節.価))
+ 
+ i 確(節, 星.名):
+  表(荷.形(節.識))
+
+ # Assignment
+ i 確(節, 星.代):
+  巡(節.価)
+  f 項 n 節.タ:
+   i 確(項, 星.名):
+    表(蔵.形(項.識))
+   i 確(項, 星.字):
+    巡(項.価)
+    巡(項.ス)
+    表(置)
+
+ # Operations
+ i 確(節, 星.二):
+  巡(節.左)
+  巡(節.右)
+  i 確(節.算, 星.足):
+   表(加)
+  i 確(節.算, 星.減):
+   表(差)
+  i 確(節.算, 星.掛):
+   表(乗)
+  i 確(節.算, 星.除):
+   表(割)
+  i 確(節.算, 星.余):
+   表(剰)
+
+ i 確(節, 星.較):
+  巡(節.辺)
+  巡(節.子[0])
+  参 = 節.演[0]
+  i 確(参, 星.等):
+   表(同)
+  i 確(参, 星.少):
+   表(負)
+  i 確(参, 星.以):
+   表(負)
+  i 確(参, 星.入):
+   表(包)
+
+ # Subscript
+ i 確(節, 星.字):
+  巡(節.価)
+  巡(節.ス)
+  表(得)
+
+ # List Literal
+ i 確(節, 星.配):
+  f 素 n 節.中:
+   巡(素)
+  表(束.形(寸(節.中)))
+
+ # Dict Literal
+ i 確(節, 星.彙):
+  計 = 0
+  循 計 < 寸(節.索):
+   巡(節.索[計])
+   巡(節.直[計])
+   計 = 計 + 1
+  表(集.形(寸(節.索)))
+
+ # Control Flow
+ i 確(節, 星.も):
+  壱 = 新()
+  弐 = 新()
+  巡(節.条)
+  表(無.形(壱))
+  f 項 n 節.体:
+   巡(項)
+  表(飛.形(弐))
+  表(札.形(壱))
+  f 項 n 節.他:
+   巡(項)
+  表(札.形(弐))
+
+ i 確(節, 星.輪):
+  壱 = 新()
+  弐 = 新()
+  表(札.形(壱))
+  巡(節.条)
+  表(無.形(弐))
+  f 項 n 節.体:
+   巡(項)
+  表(飛.形(壱))
+  表(札.形(弐))
+
+ # Function/Method Call
+ i 確(節, 星.式):
+  巡(節.価)
+
+ i 確(節, 星.呼):
+  f 項 n 節.類:
+   巡(項)
+  
+  # Method: obj.method(args)
+  # 【修正】 isinstace(..., 星.性) (Attribute Node)
+  i 確(節.関, 星.性):
+   巡(節.関.価)
+   # CALL method_name (attr field)
+   # 【修正】 .属 (attr field)
+   表(喚.形(節.関.属))
+
+  # Function: func(args)
+  i 確(節.関, 星.名):
+   仮 = 節.関.識
+   真 = 仮
+   i 仮 n 辞:
+    真 = 辞[仮]
+   
+   i 真 == 刷:
+    表(印)
+   e:
+    表(喚.形(真))
+
+ # Module
+ i 確(節, 星.根):
+  f 文 n 節.体:
+   巡(文)
+
+# Main
+i 寸(s.引) < 2:
+ s.誤.書(メ)
+ s.逝(1)
+
+道 = s.引[1]
+オ = {号: 符}
+文 = 開(道, モ, **オ).読()
+列 = 文.裂()
+
+身 = 鬱()
+旗 = 0
+
+f 行 n 列:
+ 素 = 行.削()
+ i 旗:
+  身 = 身 + 行 + 改
+ e:
+  i 素 == ド:
+   旗 = 1
+   C
+  
+  i 素.始(冠):
+   部 = 素.分()
+   i 寸(部) >= 3:
+    鍵 = 部[1]
+    残 = 部[2:]
+    値 = 間.結(残)
+    値 = 値.削(点)
+    辞[鍵] = 値
+
+木 = 星.解(身)
+巡(木)
