@@ -262,6 +262,8 @@ int main(int argc, char *argv[]) {
     }
     fclose(fp);
 
+    // ... (前略)
+
     int ip = 0;
     while (ip < prog_size) {
         char buf[LINE_BUF_SIZE];
@@ -275,28 +277,22 @@ int main(int argc, char *argv[]) {
         else if (strcmp(cmd, "PUSH") == 0) {
             if (arg && is_number(arg)) push(make_int(atoi(arg)));
             else if (arg) push(make_str(arg));
-            else push(make_int(0));
+            // 【修正】引数がない(NULL)場合は、空文字列をプッシュする (v="" 対応)
+            else push(make_str(""));
         }
-        else if (strcmp(cmd, "STORE") == 0) set_var(arg, pop());
-        else if (strcmp(cmd, "LOAD") == 0) push(get_var(arg));
-        else if (strcmp(cmd, "PRINT") == 0) {
-             Object o = pop();
-             if(o.type==OBJ_STR) printf("%s\n", o.v.s);
-             else printf("%d\n", o.v.i);
+// ... (中略: ADD, SUBなどはそのまま)
+        else if (strcmp(cmd, "GET") == 0) {
+            Object key = pop(); Object obj = pop();
+            if(obj.type==OBJ_DICT) push(dict_get(obj.v.d, key.v.s));
+            else if(obj.type==OBJ_LIST) push(obj.v.l->items[key.v.i]);
+            // 【維持】文字列のインデックスアクセス
+            else if(obj.type==OBJ_STR) {
+                char buf[2] = { obj.v.s[key.v.i], 0 };
+                push(make_str(buf));
+            }
         }
-        else if (strcmp(cmd, "ADD") == 0) {
-             Object b = pop(); Object a = pop();
-             // 【修正】型緩和: Int+Int以外は文字列結合
-             if(a.type==OBJ_INT && b.type==OBJ_INT) push(make_int(a.v.i+b.v.i));
-             else { 
-                 // Simple string conversion for concatenation
-                 char sa[2048], sb[2048];
-                 if(a.type==OBJ_INT) sprintf(sa, "%d", a.v.i); else strcpy(sa, a.v.s);
-                 if(b.type==OBJ_INT) sprintf(sb, "%d", b.v.i); else strcpy(sb, b.v.s);
-                 char tmp[4096]; sprintf(tmp,"%s%s", sa, sb); 
-                 push(make_str(tmp)); 
-             }
-        }
+// ... (後略)
+
         else if (strcmp(cmd, "SUB") == 0) { Object b=pop(); Object a=pop(); push(make_int(a.v.i-b.v.i)); }
         else if (strcmp(cmd, "MUL") == 0) { Object b=pop(); Object a=pop(); push(make_int(a.v.i*b.v.i)); }
         else if (strcmp(cmd, "DIV") == 0) { Object b=pop(); Object a=pop(); push(make_int(a.v.i/b.v.i)); }
