@@ -11,17 +11,23 @@
 @v 始 'startswith'
 @v 終 'exit'
 @v 実 'exec'
+@v 字 'chr'
 
 # Modules
 @v 系 'sys'
 @v 係 'argv'
 @v 込 '"import sys"'
 
-# Syntax Chars
+# Syntax Chars (Use chr() to avoid parser confusion)
 @v 冠 '"@v"'
 @v 空 '" "'
-@v 単 '"\'"'
-@v 双 '"\""'
+@v 単 'chr(39)'
+@v 双 'chr(34)'
+
+# Messages
+@v 説 '"Usage: py1_compiler.py <source.py1>"'
+@v モ '"r"'
+@v 権 '"utf-8"'
 
 # Control Flow
 @v も 'if'
@@ -52,17 +58,16 @@ $
 # Check Args
 外 = 系.係
 も 寸(外) < 2:
- 表("Usage: py1_compiler.py <source.py1>")
+ 表(説)
  系.終(1)
 
 # Read Source File
 径 = 外[1]
-# open(path, "r", encoding="utf-8") ... shortened for 1-char compliance logic
-# relying on default encoding or simple read
-本 = 開(径, "r").読()
+# open(path, "r", encoding="utf-8")
+本 = 開(径, モ, encoding=権).読()
 生 = 本.行()
 
-# Pass 1: Collect Macros (@v)
+# Pass 1: Collect Macros
 辞 = {}
 並 = []
 
@@ -72,14 +77,13 @@ $
  線 = 線.削()
  
  も 線.始(冠):
-  # Parse: @v Key 'Value'
-  # split(sep, maxsplit) -> maxsplit=2 to keep value safe
+  # Split by space, max 2 splits
   部 = 線.裂(空, 2)
   も 寸(部) > 2:
    鍵 = 部[1]
    値 = 部[2]
    
-   # Strip quotes
+   # Strip quotes using chr(39)/chr(34) vars
    値 = 値.削(単)
    値 = 値.削(双)
    
@@ -93,7 +97,7 @@ $
 循 順 < 寸(生):
  線 = 生[順]
  
- # Check if macro definition (skip output)
+ # Skip definition lines
  も 線.削().始(冠):
   0
  他:
