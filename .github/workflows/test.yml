@@ -160,6 +160,16 @@ jobs:
         
         echo "--- Running FizzBuzz on py1VM ---"
         python py1vm.py fizzbuzz.ir
+         # 14. Phase 4: REPL Build & Batch Test
+    
+    - name: 14. Phase 4 REPL Build
+      run: |
+        echo "--- Compiling py1REPL ---"
+        python compiler_gen3.py py1repl.py1 > py1repl.py
+        
+        echo "--- Testing REPL in Batch Mode (FizzBuzz) ---"
+        # ファイル引数を渡せば、従来のVMとして動くはず
+        python py1repl.py fizzbuzz.ir
 
 
 
