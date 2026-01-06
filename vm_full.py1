@@ -1,0 +1,324 @@
+# System Functions
+@v 表 'print'
+@v 整 'int'
+@v 寸 'len'
+@v 字 'str'
+@v 追 'append'
+@v 抜 'pop'
+@v 裂 'split'
+@v 数 'isnumeric'
+@v 換 'chr'
+
+# Control Flow
+@v 術 'def'
+@v も 'if'
+@v 他 'else'
+@v 循 'while'
+@v 返 'return'
+@v 入 'in'
+
+# Keys
+@v 筒 '"stack"'
+@v 憶 '"mem"'
+@v 指 '"ip"'
+@v 令 '"code"'
+@v 票 '"labels"'
+
+# Opcodes (Operation keys)
+@v 積 '"PUSH"'
+@v 足 '"ADD"'
+@v 引 '"SUB"'
+@v 掛 '"MUL"'
+@v 割 '"DIV"'
+@v 剰 '"MOD"'
+@v 印 '"PRINT"'
+@v 蔵 '"STORE"'
+@v 荷 '"LOAD"'
+@v 札 '"LABEL"'
+@v 飛 '"JUMP"'
+@v 無 '"JZERO"'
+@v 負 '"LT"'
+@v 同 '"EQ"'
+@v 喚 '"CALL"'
+@v 束 '"MKLIST"'
+@v 得 '"GET"'
+@v 包 '"CONTAINS"'
+
+# Built-in function names for CALL
+@v 長 '"len"'
+@v 文 '"chr"'
+@v 加 '"append"'
+
+# Data & Separator
+@v 空 '" "'
+@v 幕 '"--- FizzBuzz Test (1 to 16) ---"'
+
+# --- FizzBuzz Instruction Macros (Must be 1 char key) ---
+# Setup
+@v 始 '"PUSH 1"'
+@v 納 '"STORE n"'
+@v 読 '"LOAD n"'
+@v 増 '"ADD"'
+
+# Limits & loop
+@v 限 '"PUSH 16"'
+@v 比 '"LT"'
+@v 去 '"JZERO L_END"'
+@v 再 '"JUMP L1"'
+@v 次 '"JUMP L_NEXT"'
+
+# Labels
+@v 標 '"LABEL L1"'
+@v 終 '"LABEL L_END"'
+@v 参 '"LABEL L_CHK3"'
+@v 伍 '"LABEL L_CHK5"'
+@v 数 '"LABEL L_NUM"'
+@v 続 '"LABEL L_NEXT"'
+
+# Modulo Logic
+@v 拾 '"PUSH 15"'
+@v 割 '"MOD"'
+@v 零 '"PUSH 0"'
+@v 等 '"EQ"'
+@v 謎 '"JZERO L_CHK3"'
+
+@v 三 '"PUSH 3"'
+@v 誤 '"JZERO L_CHK5"'
+
+@v 五 '"PUSH 5"'
+@v ぬ '"JZERO L_NUM"'
+
+# Strings
+@v Ｆ '"PUSH Fizz"'
+@v Ｂ '"PUSH Buzz"'
+@v Ｚ '"PUSH FizzBuzz"'
+
+# Variables for VM logic
+@v 態 'state'
+@v 順 'idx'
+@v コ 'codes'
+@v 行 'line'
+@v 部 'parts'
+@v 技 'op'
+@v 具 'arg'
+@v 山 'stack'
+@v 値 'val'
+@v 甲 'val_a'
+@v 乙 'val_b'
+@v メ 'mem'
+@v 辞 'labels'
+@v 鍵 'key'
+@v 動 'step'
+@v 調 'scan'
+@v 走 'run'
+
+$
+
+# --- Label Scan Function ---
+術 調(コ):
+ 辞 = {}
+ 順 = 0
+ 循 順 < 寸(コ):
+  行 = コ[順]
+  部 = 行.裂(空)
+  技 = 部[0]
+  も 技 == 札:
+   具 = 部[1]
+   辞[具] = 順
+  順 = 順 + 1
+ 返 辞
+
+# --- 1-Step Execution Function ---
+術 動(態):
+ 順 = 態[指]
+ コ = 態[令]
+ 辞 = 態[票]
+ も 順 < 寸(コ):
+  行 = コ[順]
+  部 = 行.裂(空)
+  技 = 部[0]
+  山 = 態[筒]
+  メ = 態[憶]
+  
+  # Basic Ops
+  も 技 == 積:
+   具 = 部[1]
+   も 具.数():
+    山.追(整(具))
+   他:
+    山.追(具)
+  他:
+   も 技 == 足:
+    乙 = 山.抜()
+    甲 = 山.抜()
+    山.追(甲 + 乙)
+   他:
+    も 技 == 引:
+     乙 = 山.抜()
+     甲 = 山.抜()
+     山.追(甲 - 乙)
+    他:
+     も 技 == 剰:
+      乙 = 山.抜()
+      甲 = 山.抜()
+      山.追(甲 % 乙)
+     他:
+      も 技 == 印:
+       値 = 山.抜()
+       表(値)
+      
+      # Memory
+      他:
+       も 技 == 蔵:
+        具 = 部[1]
+        値 = 山.抜()
+        メ[具] = 値
+       他:
+        も 技 == 荷:
+         具 = 部[1]
+         山.追(メ[具])
+        
+        # Logic / Control
+        他:
+         も 技 == 負:
+          乙 = 山.抜()
+          甲 = 山.抜()
+          も 甲 < 乙:
+           山.追(1)
+          他:
+           山.追(0)
+         他:
+          も 技 == 同:
+           乙 = 山.抜()
+           甲 = 山.抜()
+           も 甲 == 乙:
+            山.追(1)
+           他:
+            山.追(0)
+          他:
+           も 技 == 無:
+            具 = 部[1]
+            値 = 山.抜()
+            も 値 == 0:
+             態[指] = 辞[具]
+             返 0
+           他:
+            も 技 == 飛:
+             具 = 部[1]
+             態[指] = 辞[具]
+             返 0
+            他:
+             も 技 == 札:
+              0
+             
+             # Advanced Ops
+             他:
+              も 技 == 束:
+               山.追([])
+              他:
+               も 技 == 得:
+                乙 = 山.抜()
+                甲 = 山.抜()
+                山.追(甲[乙])
+               他:
+                も 技 == 包:
+                 乙 = 山.抜()
+                 甲 = 山.抜()
+                 # 'in' check
+                 も 甲 入 乙:
+                  山.追(1)
+                 他:
+                  山.追(0)
+                他:
+                 も 技 == 喚:
+                  具 = 部[1]
+                  も 具 == 長:
+                   値 = 山.抜()
+                   山.追(寸(値))
+                  他:
+                   も 具 == 文:
+                    値 = 山.抜()
+                    山.追(換(値))
+                   他:
+                    も 具 == 加:
+                     乙 = 山.抜()
+                     甲 = 山.抜()
+                     甲.追(乙)
+  態[指] = 順 + 1
+
+# --- Loop Driver ---
+術 走(コ):
+ 辞 = 調(コ)
+ 態 = {}
+ 態[筒] = []
+ 態[憶] = {}
+ 態[指] = 0
+ 態[令] = コ
+ 態[票] = 辞
+ 循 態[指] < 寸(コ):
+  動(態)
+
+# --- Test Case: FizzBuzz (1 to 16) ---
+コ = []
+コ.追(始)
+コ.追(納)
+
+# L1
+コ.追(標)
+コ.追(読)
+コ.追(限)
+コ.追(比)
+コ.追(去)
+
+# Check 15
+コ.追(読)
+コ.追(拾)
+コ.追(割)
+コ.追(零)
+コ.追(等)
+コ.追(謎)
+コ.追(Ｚ)
+コ.追(印)
+コ.追(次)
+
+# Check 3
+コ.追(参)
+コ.追(読)
+コ.追(三)
+コ.追(割)
+コ.追(零)
+コ.追(等)
+コ.追(誤)
+コ.追(Ｆ)
+コ.追(印)
+コ.追(次)
+
+# Check 5
+コ.追(伍)
+コ.追(読)
+コ.追(五)
+コ.追(割)
+コ.追(零)
+コ.追(等)
+コ.追(ぬ)
+コ.追(Ｂ)
+コ.追(印)
+コ.追(次)
+
+# Number
+コ.追(数)
+コ.追(読)
+コ.追(印)
+
+# Next
+コ.追(続)
+コ.追(読)
+コ.追(始)
+コ.追(増)
+コ.追(納)
+コ.追(再)
+
+コ.追(終)
+
+表(幕)
+走(コ)
