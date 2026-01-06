@@ -53,7 +53,7 @@
 @v 空 '" "'
 @v 幕 '"--- FizzBuzz Test (1 to 16) ---"'
 
-# --- FizzBuzz Instruction Macros (Must be 1 char key) ---
+# --- FizzBuzz Instruction Macros ---
 # Setup
 @v 始 '"PUSH 1"'
 @v 納 '"STORE n"'
@@ -72,12 +72,12 @@
 @v 終 '"LABEL L_END"'
 @v 参 '"LABEL L_CHK3"'
 @v 伍 '"LABEL L_CHK5"'
-@v 数 '"LABEL L_NUM"'
+@v 番 '"LABEL L_NUM"'
 @v 続 '"LABEL L_NEXT"'
 
 # Modulo Logic
 @v 拾 '"PUSH 15"'
-@v 割 '"MOD"'
+# 'MOD' uses 剰 defined above
 @v 零 '"PUSH 0"'
 @v 等 '"EQ"'
 @v 謎 '"JZERO L_CHK3"'
@@ -273,7 +273,7 @@ $
 # Check 15
 コ.追(読)
 コ.追(拾)
-コ.追(割)
+コ.追(剰)
 コ.追(零)
 コ.追(等)
 コ.追(謎)
@@ -285,7 +285,7 @@ $
 コ.追(参)
 コ.追(読)
 コ.追(三)
-コ.追(割)
+コ.追(剰)
 コ.追(零)
 コ.追(等)
 コ.追(誤)
@@ -297,7 +297,7 @@ $
 コ.追(伍)
 コ.追(読)
 コ.追(五)
-コ.追(割)
+コ.追(剰)
 コ.追(零)
 コ.追(等)
 コ.追(ぬ)
@@ -306,7 +306,7 @@ $
 コ.追(次)
 
 # Number
-コ.追(数)
+コ.追(番)
 コ.追(読)
 コ.追(印)
 
