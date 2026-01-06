@@ -1,0 +1,111 @@
+# System Functions
+@v 表 'print'
+@v 寸 'len'
+@v 追 'append'
+@v 裂 'split'
+@v 削 'strip'
+@v 行 'splitlines'
+@v 開 'open'
+@v 読 'read'
+@v 換 'replace'
+@v 始 'startswith'
+@v 終 'exit'
+@v 実 'exec'
+
+# Modules
+@v 系 'sys'
+@v 係 'argv'
+@v 込 '"import sys"'
+
+# Syntax Chars
+@v 冠 '"@v"'
+@v 空 '" "'
+@v 単 '"\'"'
+@v 双 '"\""'
+
+# Control Flow
+@v も 'if'
+@v 他 'else'
+@v 循 'while'
+@v 入 'in'
+
+# Variables
+@v 外 'args'
+@v 径 'path'
+@v 本 'body'
+@v 生 'lines'
+@v 順 'i'
+@v 線 'line'
+@v 部 'parts'
+@v 鍵 'key'
+@v 値 'val'
+@v 辞 'macros'
+@v 並 'keys'
+@v 出 'out'
+@v 今 'k_idx'
+
+$
+
+# Import sys
+実(込)
+
+# Check Args
+外 = 系.係
+も 寸(外) < 2:
+ 表("Usage: py1_compiler.py <source.py1>")
+ 系.終(1)
+
+# Read Source File
+径 = 外[1]
+# open(path, "r", encoding="utf-8") ... shortened for 1-char compliance logic
+# relying on default encoding or simple read
+本 = 開(径, "r").読()
+生 = 本.行()
+
+# Pass 1: Collect Macros (@v)
+辞 = {}
+並 = []
+
+順 = 0
+循 順 < 寸(生):
+ 線 = 生[順]
+ 線 = 線.削()
+ 
+ も 線.始(冠):
+  # Parse: @v Key 'Value'
+  # split(sep, maxsplit) -> maxsplit=2 to keep value safe
+  部 = 線.裂(空, 2)
+  も 寸(部) > 2:
+   鍵 = 部[1]
+   値 = 部[2]
+   
+   # Strip quotes
+   値 = 値.削(単)
+   値 = 値.削(双)
+   
+   辞[鍵] = 値
+   並.追(鍵)
+ 
+ 順 = 順 + 1
+
+# Pass 2: Replace and Output
+順 = 0
+循 順 < 寸(生):
+ 線 = 生[順]
+ 
+ # Check if macro definition (skip output)
+ も 線.削().始(冠):
+  0
+ 他:
+  # Apply macros
+  出 = 線
+  今 = 0
+  循 今 < 寸(並):
+   鍵 = 並[今]
+   値 = 辞[鍵]
+   出 = 出.換(鍵, 値)
+   今 = 今 + 1
+  
+  表(出)
+
+ 順 = 順 + 1
