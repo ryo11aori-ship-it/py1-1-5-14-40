@@ -1,0 +1,108 @@
+# Windows Native IR Generator for FizzBuzz
+# This mimics x64 Assembly + Windows API logic
+
+# System
+@v 表 'print'
+@v 追 'append'
+@v 字 'str'
+@v 結合 '"\n".join'
+
+# Opcodes (Windows Native IR)
+# Memory / Register
+@v 置 '"MOV"'    # MOV dst, src
+@v 確 '"ALLOC"'  # VirtualAlloc-like logic
+@v 書 '"WRITE"'  # Write to memory
+
+# Control
+@v 飛 '"JMP"'
+@v 零 '"JZ"'     # Jump if Zero
+@v 非 '"JNZ"'    # Jump if Not Zero
+@v 比 '"CMP"'    # Compare
+
+# OS API
+@v 読 '"LOAD_DLL"' # LoadLibrary
+@v 得 '"GET_PROC"' # GetProcAddress
+@v 呼 '"CALL_API"' # Call function (x64 ABI: RCX, RDX, R8, R9...)
+
+# Registers (Virtual)
+@v 壱 '"R1"' # Counter
+@v 弐 '"R2"' # Limit
+@v 参 '"R3"' # Scratch
+@v 肆 '"R4"' # Handle (Stdout)
+
+# Data
+@v 幕 '"--- Generating Windows Native IR ---"'
+@v コ 'codes'
+
+# Values
+@v 蔵 '"kernel32.dll"'
+@v 出 '"GetStdHandle"'
+@v 書込 '"WriteFile"'
+@v 終 '"ExitProcess"'
+@v 負1 '"-11"' # STD_OUTPUT_HANDLE
+
+$
+
+コ = []
+
+# --- Header: Setup OS API ---
+# Handle = GetStdHandle(-11)
+コ.追("LOAD_DLL kernel32.dll")
+コ.追("GET_PROC GetStdHandle")
+# Arg1 (RCX) = -11
+コ.追("MOV RCX -11")
+コ.追("CALL_API GetStdHandle")
+# Result is in RAX, save to R4
+コ.追("MOV R4 RAX")
+
+# Prepare WriteFile address
+コ.追("GET_PROC WriteFile")
+# Prepare ExitProcess address
+コ.追("GET_PROC ExitProcess")
+
+# --- Logic: FizzBuzz Loop (1 to 16) ---
+# R1 = 1 (Counter)
+コ.追("MOV R1 1")
+
+# LABEL LOOP_START
+コ.追("LABEL LOOP_START")
+
+# CMP R1, 16
+コ.追("MOV R2 16")
+コ.追("CMP R1 R2")
+# JZ EXIT (if R1 == 16) - simplified logic for mock
+コ.追("JZ EXIT")
+
+# ... (FizzBuzz logic omitted for brevity in Phase 1, strictly testing API calls) ...
+# For this Phase 1 test, we just output the number "1" (hardcoded simulation)
+# to prove we can call "WriteFile" via our Mock VM.
+
+# WriteFile(Handle, Buffer, Len, Written, Overlapped)
+# In real ASM, we need to format int to string memory.
+# Here, we assume address 100 has string "1\n"
+コ.追("WRITE_MEM 100 49") # '1'
+コ.追("WRITE_MEM 101 10") # '\n'
+
+# Arg1: RCX = Handle (R4)
+コ.追("MOV RCX R4")
+# Arg2: RDX = Buffer Address (100)
+コ.追("MOV RDX 100")
+# Arg3: R8 = Length (2)
+コ.追("MOV R8 2")
+# Arg4: R9 = WrittenBytesPtr (200)
+コ.追("MOV R9 200")
+# Arg5: Stack param (0) - Mock VM handles this simply
+コ.追("PUSH 0") 
+コ.追("CALL_API WriteFile")
+
+# Increment R1
+コ.追("ADD R1 1")
+# JMP LOOP_START
+# コ.追("JMP LOOP_START") # Disable loop for single pass test
+
+# LABEL EXIT
+コ.追("LABEL EXIT")
+コ.追("MOV RCX 0")
+コ.追("CALL_API ExitProcess")
+
+表(結合(コ))
