@@ -30,17 +30,36 @@ jobs:
     - name: Install Black
       run: pip install black
 
+       # ... (前略)
+
     # 1. ブートストラップ
     - name: 1. Bootstrap Generation 1
       run: |
+        echo "--- Normalizing Source to LF ---"
+        # WindowsのCheckoutでCRLFになっている可能性があるのでLFに統一
+        dos2unix compiler.py1
+        
+        echo "--- Compiling Gen 1 ---"
         python py1.py compiler.py1 > compiler_gen2.py
+        
+        echo "--- Normalizing Output to LF ---"
+        # WindowsのPythonが出力したCRLFをLFに変換
+        dos2unix compiler_gen2.py
+        
+        # Blackでフォーマット (BlackがCRLFに戻す可能性があるので再度dos2unix)
         black compiler_gen2.py
+        dos2unix compiler_gen2.py
 
     # 2. セルフホスト
     - name: 2. Bootstrap Generation 2
       run: |
+        echo "--- Compiling Gen 2 ---"
         python compiler_gen2.py compiler.py1 > compiler_gen3.py
+        
+        echo "--- Normalizing Output to LF ---"
+        dos2unix compiler_gen3.py
         black compiler_gen3.py
+        dos2unix compiler_gen3.py
 
     # 3. 厳密な同一性検証 (SHA256)
     - name: 3. Verify Strict Idempotency (SHA256)
@@ -52,16 +71,19 @@ jobs:
         cat gen2.sha256
         cat gen3.sha256
         
-        # ハッシュ値のみを抽出して比較
         HASH2=$(cut -d ' ' -f 1 gen2.sha256)
         HASH3=$(cut -d ' ' -f 1 gen3.sha256)
         
         if [ "$HASH2" = "$HASH3" ]; then
-          echo "SUCCESS: Byte-level reproducibility achieved."
+          echo "SUCCESS: Byte-level reproducibility achieved (LF normalized)."
         else
-          echo "FAILURE: Checksums do not match."
+          echo "FAILURE: Checksums do not match even after normalization."
           exit 1
         fi
+
+    # ... (以下、他のステップも同様に dos2unix が必要な箇所があれば適用推奨ですが、
+    #      ハッシュ比較以外では必須ではありません)
+
 
     # 4. FizzBuzz (Python Transpilation)
     - name: 4. Application Test (FizzBuzz - Python)
