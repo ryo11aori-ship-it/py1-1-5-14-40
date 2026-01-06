@@ -1,156 +1,124 @@
-@v P 'print'
-@v I 'int'
-@v L 'len'
-@v S 'str'
-@v A 'append'
-@v O 'pop'
-@v K 'split'
-@v N 'isnumeric'
+# System Functions (Renamed to Kanji to avoid Reserved Chars collision)
+@v 表 'print'
+@v 整 'int'
+@v 寸 'len'
+@v 字 'str'
+@v 追 'append'
+@v 抜 'pop'
+@v 裂 'split'
+@v 数 'isnumeric'
 
-# Keys for State Dictionary
+# Control Flow
+@v 術 'def'
+@v も 'if'
+@v 他 'else'
+
+# Keys
 @v 筒 '"stack"'
 @v 憶 '"mem"'
 @v 指 '"ip"'
 @v 令 '"code"'
 @v 札 '"labels"'
 
-# Opcodes (IR)
+# Opcodes
 @v 積 '"PUSH"'
-@v 加 '"ADD"'
-@v 差 '"SUB"'
-@v 乗 '"MUL"'
+@v 足 '"ADD"'
+@v 引 '"SUB"'
+@v 掛 '"MUL"'
 @v 印 '"PRINT"'
 @v 蔵 '"STORE"'
 @v 荷 '"LOAD"'
 
-# Variables (1-char)
-@v 態 's'
-@v 順 'i'
-@v 文 'c'
-@v 行 'l'
-@v 部 'p'
-@v 技 'o'
-@v 具 'a'
-@v 山 't'
-@v 値 'v'
-@v 甲 'x'
-@v 乙 'y'
-@v メ 'm'
-
-# Other
+# Separator & Data
 @v 空 '" "'
-@v 真 'True'
+@v 壱 '"PUSH 10"'
+@v 弐 '"PUSH 20"'
+@v 参 '"ADD"'
+@v 肆 '"PRINT"'
+@v 幕 '"--- Step ---"'
+
+# Variables (Keys are Kanji, Values are safe Python var names)
+@v 態 'state'
+@v 順 'idx'
+@v 文 'codes'
+@v 行 'line'
+@v 部 'parts'
+@v 技 'op'
+@v 具 'arg'
+@v 山 'stack'
+@v 値 'val'
+@v 甲 'val_a'
+@v 乙 'val_b'
+@v メ 'mem'
 
 $
 
 # --- 1-Step Execution Function ---
-# s: State Dict {stack:[], mem:{}, ip:0, code:[], labels:{}}
-d 動(態):
- # Get current IP and Code
+# s: State Dict
+術 動(態):
  順 = 態[指]
  文 = 態[令]
  
- # Check boundary
- も 順 < L(文):
-  # Get instruction line
+ も 順 < 寸(文):
   行 = 文[順]
-  
-  # Parse (split by space)
-  部 = 行.K(空)
+  部 = 行.裂(空)
   技 = 部[0]
   
-  # Get Stack & Mem ref
   山 = 態[筒]
   メ = 態[憶]
-  
-  # --- Dispatch ---
   
   # PUSH val
   も 技 == 積:
    具 = 部[1]
-   # Try int conversion (simplified)
-   も 具.N():
-    山.A(I(具))
+   も 具.数():
+    山.追(整(具))
    他:
-    山.A(具)
+    山.追(具)
   
   # ADD
   他:
-   も 技 == 加:
-    乙 = 山.O()
-    甲 = 山.O()
-    山.A(甲 + 乙)
+   も 技 == 足:
+    乙 = 山.抜()
+    甲 = 山.抜()
+    山.追(甲 + 乙)
   
-  # SUB
-  他:
-   も 技 == 差:
-    乙 = 山.O()
-    甲 = 山.O()
-    山.A(甲 - 乙)
-  
-  # MUL
-  他:
-   も 技 == 乗:
-    乙 = 山.O()
-    甲 = 山.O()
-    山.A(甲 * 乙)
-   
   # PRINT
   他:
    も 技 == 印:
-    値 = 山.O()
-    P(値)
+    値 = 山.抜()
+    表(値)
 
-  # STORE var
-  他:
-   も 技 == 蔵:
-    具 = 部[1]
-    値 = 山.O()
-    メ[具] = 値
-  
-  # LOAD var
-  他:
-   も 技 == 荷:
-    具 = 部[1]
-    山.A(メ[具])
-
-  # --- Update IP ---
-  # (JUMP logic will go here in future, currently just +1)
+  # Update IP
   態[指] = 順 + 1
 
-# --- Phase 2 Manual Test ---
-# Setup State manually
-# Code:
-# PUSH 10
-# PUSH 20
-# ADD
-# PRINT
+# --- Manual Test Driver ---
+# Construct Code List
 文 = []
-文.A("PUSH 10")
-文.A("PUSH 20")
-文.A("ADD")
-文.A("PRINT")
+文.追(壱)
+文.追(弐)
+文.追(参)
+文.追(肆)
 
+# Init State
 態 = {}
 態[筒] = []
 態[憶] = {}
 態[指] = 0
 態[令] = 文
-態[札] = {} # Empty for now
 
-# Execute 4 steps manually (No Loop!)
-P("--- Step 1 ---")
+# Run 4 steps
+表(幕)
 動(態)
-P(態[筒])
+表(態[筒])
 
-P("--- Step 2 ---")
+表(幕)
 動(態)
-P(態[筒])
+表(態[筒])
 
-P("--- Step 3 ---")
+表(幕)
 動(態)
-P(態[筒])
+表(態[筒])
 
-P("--- Step 4 ---")
+表(幕)
 動(態)
-P(態[筒])
+表(態[筒])
