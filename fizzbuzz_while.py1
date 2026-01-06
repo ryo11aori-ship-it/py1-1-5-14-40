@@ -1,17 +1,21 @@
 @v P 'print'
+@v 循 'while'
+@v も 'if'
+@v 他 'else'
+
 $
 # FizzBuzz using while loop
 n = 1
-while n < 16:
+循 n < 16:
  i = n
- if i % 15 == 0:
+ も i % 15 == 0:
   P("FizzBuzz")
- else:
-  if i % 3 == 0:
+ 他:
+  も i % 3 == 0:
    P("Fizz")
-  else:
-   if i % 5 == 0:
+  他:
+   も i % 5 == 0:
     P("Buzz")
-   else:
+   他:
     P(i)
  n = n + 1
