@@ -18,16 +18,18 @@
 @v 係 'argv'
 @v 込 '"import sys"'
 
-# Syntax Chars (Use chr() to avoid parser confusion)
+# Syntax Chars
 @v 冠 '"@v"'
 @v 空 '" "'
 @v 単 'chr(39)'
 @v 双 'chr(34)'
 
-# Messages
+# Messages and encoding
 @v 説 '"Usage: py1_compiler.py <source.py1>"'
 @v モ '"r"'
 @v 権 '"utf-8"'
+# 【修正】encoding キーワード引数のマクロ定義
+@v 号 'encoding'
 
 # Control Flow
 @v も 'if'
@@ -63,8 +65,8 @@ $
 
 # Read Source File
 径 = 外[1]
-# open(path, "r", encoding="utf-8")
-本 = 開(径, モ, encoding=権).読()
+# open(path, "r", encoding="utf-8") -> using macro 号 for encoding
+本 = 開(径, モ, 号=権).読()
 生 = 本.行()
 
 # Pass 1: Collect Macros
@@ -83,7 +85,7 @@ $
    鍵 = 部[1]
    値 = 部[2]
    
-   # Strip quotes using chr(39)/chr(34) vars
+   # Strip quotes
    値 = 値.削(単)
    値 = 値.削(双)
    
