@@ -118,3 +118,15 @@ jobs:
         # "|| true" をつけることで、VMがクラッシュしてもエラーで止まらず、
         # ログを最後まで吐き出させて終了コード0（成功扱い）にする
         ./vm lexer.ir || true
+        # ... (Step 9 まではそのまま) ...
+
+    # 10. Phase 2: Python VM (No Loop) Prototype Test
+    - name: 10. Phase 2 VM Prototype
+      run: |
+        echo "--- Compiling VM Prototype ---"
+        # py1コンパイラ(gen3)を使って、py1コードをPythonコードに変換
+        python compiler_gen3.py vm_step.py1 > vm_step.py
+        
+        echo "--- Running VM Prototype ---"
+        python vm_step.py
+
