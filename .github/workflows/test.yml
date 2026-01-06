@@ -204,6 +204,24 @@ jobs:
         # 最終生成物が正しく動くか、FizzBuzz IRを食わせてテスト
         python py1repl_final.py fizzbuzz.ir
 
+    # 17. Phase 1: Windows Native IR Definition & Mock Execution
+    - name: 17. Windows Native IR
+      run: |
+        echo "--- 1. Generating WinIR Code ---"
+        # py1コードとしてWinIR生成スクリプトを実行し、IRファイルを作る
+        # ※本来はコンパイラがやる仕事だが、まずは仕様定義のためスクリプトで生成
+        python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py
+        python win_ir_gen.py > fizzbuzz_win.ir
+        
+        echo "--- Generated WinIR ---"
+        cat fizzbuzz_win.ir
+        
+        echo "--- 2. Compiling Mock VM ---"
+        python stage2_compiler.py vm_win_mock.py1 > vm_win_mock.py
+        
+        echo "--- 3. Running WinIR on Mock VM ---"
+        python vm_win_mock.py fizzbuzz_win.ir
+
 
 
 
