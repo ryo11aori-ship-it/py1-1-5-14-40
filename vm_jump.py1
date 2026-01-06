@@ -1,0 +1,233 @@
+# System Functions
+@v 表 'print'
+@v 整 'int'
+@v 寸 'len'
+@v 字 'str'
+@v 追 'append'
+@v 抜 'pop'
+@v 裂 'split'
+@v 数 'isnumeric'
+
+# Control Flow
+@v 術 'def'
+@v も 'if'
+@v 他 'else'
+@v 循 'while'
+
+# Keys
+@v 筒 '"stack"'
+@v 憶 '"mem"'
+@v 指 '"ip"'
+@v 令 '"code"'
+@v 票 '"labels"'
+
+# Opcodes
+@v 積 '"PUSH"'
+@v 足 '"ADD"'
+@v 印 '"PRINT"'
+@v 蔵 '"STORE"'
+@v 荷 '"LOAD"'
+@v 札 '"LABEL"'
+@v 飛 '"JUMP"'
+@v 無 '"JZERO"'
+@v 負 '"LT"'
+@v 同 '"EQ"'
+
+# Data
+@v 空 '" "'
+@v 幕 '"--- Loop Test (1 to 3) ---"'
+
+# Variables
+@v 態 'state'
+@v 順 'idx'
+@v 文 'codes'
+@v 行 'line'
+@v 部 'parts'
+@v 技 'op'
+@v 具 'arg'
+@v 山 'stack'
+@v 値 'val'
+@v 甲 'val_a'
+@v 乙 'val_b'
+@v メ 'mem'
+@v 辞 'labels'
+@v 鍵 'key'
+@v 動 'step'
+@v 調 'scan'
+@v 走 'run'
+
+$
+
+# --- Label Scan Function ---
+# Pre-scan codes to find LABEL positions
+術 調(文):
+ 辞 = {}
+ 順 = 0
+ 循 順 < 寸(文):
+  行 = 文[順]
+  部 = 行.裂(空)
+  技 = 部[0]
+  も 技 == 札:
+   具 = 部[1]
+   辞[具] = 順
+  順 = 順 + 1
+ return 辞
+
+# --- 1-Step Execution Function ---
+術 動(態):
+ 順 = 態[指]
+ 文 = 態[令]
+ 辞 = 態[票]
+ 
+ も 順 < 寸(文):
+  行 = 文[順]
+  部 = 行.裂(空)
+  技 = 部[0]
+  山 = 態[筒]
+  メ = 態[憶]
+  
+  # PUSH val
+  も 技 == 積:
+   具 = 部[1]
+   も 具.数():
+    山.追(整(具))
+   他:
+    山.追(具)
+  
+  # ADD
+  他:
+   も 技 == 足:
+    乙 = 山.抜()
+    甲 = 山.抜()
+    山.追(甲 + 乙)
+  
+  # PRINT
+  他:
+   も 技 == 印:
+    値 = 山.抜()
+    表(値)
+
+  # STORE var
+  他:
+   も 技 == 蔵:
+    具 = 部[1]
+    値 = 山.抜()
+    メ[具] = 値
+
+  # LOAD var
+  他:
+   も 技 == 荷:
+    具 = 部[1]
+    山.追(メ[具])
+
+  # LT (Less Than) a < b
+  他:
+   も 技 == 負:
+    乙 = 山.抜()
+    甲 = 山.抜()
+    も 甲 < 乙:
+     山.追(1)
+    他:
+     山.追(0)
+
+  # JZERO label
+  他:
+   も 技 == 無:
+    具 = 部[1]
+    値 = 山.抜()
+    も 値 == 0:
+     態[指] = 辞[具]
+     return 0 # Jumped, so return early (don't increment IP)
+
+  # JUMP label
+  他:
+   も 技 == 飛:
+    具 = 部[1]
+    態[指] = 辞[具]
+    return 0
+
+  # LABEL (No op)
+  他:
+   も 技 == 札:
+    0 # Pass
+
+  # Update IP
+  態[指] = 順 + 1
+
+# --- Loop Driver (Phase 3 Prep) ---
+術 走(文):
+ 辞 = 調(文)
+ 態 = {}
+ 態[筒] = []
+ 態[憶] = {}
+ 態[指] = 0
+ 態[令] = 文
+ 態[票] = 辞
+ 
+ # Loop until end
+ 循 態[指] < 寸(文):
+  動(態)
+
+# --- Test Case: Count 1 to 3 ---
+# i = 1
+# L1:
+# print i
+# i = i + 1
+# if i < 4 goto L1
+文 = []
+文.追("PUSH 1")
+文.追("STORE i")
+文.追("LABEL L1")
+文.追("LOAD i")
+文.追("PRINT")
+文.追("LOAD i")
+文.追("PUSH 1")
+文.追("ADD")
+文.追("STORE i")
+文.追("LOAD i")
+文.追("PUSH 4")
+文.追("LT")
+文.追("PUSH 1")
+文.追("EQ") # not imp yet, but JZERO works with 0/1 logic. JZERO jumps if 0.
+# LT returns 1(True) or 0(False).
+# We want to Jump if True (i < 4).
+# So we need "JUMP_IF_TRUE" or "JZERO" logic invert.
+# Let's simplify: Loop logic "while i < 4"
+# condition: i < 4 -> 1
+# JZERO jumps if 0.
+# So if 1, it proceeds. We want jump if 1.
+# Wait, typical assembly is JZERO.
+# Let's change logic: "if not (i < 4) goto EXIT" -> JZERO EXIT
+# "JUMP L1" at end.
+文.追("JZERO L2")
+文.追("JUMP L1")
+文.追("LABEL L2")
+
+# Re-write Logic for simple JZERO test
+# i = 0
+# L1:
+# i = i + 1
+# print i
+# t = i < 3
+# if t == 0 goto L2 (Exit)
+# JUMP L1
+# L2:
+文 = []
+文.追("PUSH 0")
+文.追("STORE i")
+文.追("LABEL L1")
+文.追("LOAD i")
+文.追("PUSH 1")
+文.追("ADD")
+文.追("STORE i")
+文.追("LOAD i")
+文.追("PRINT")
+文.追("LOAD i")
+文.追("PUSH 3")
+文.追("LT")     # 1 if i < 3, else 0
+文.追("JZERO L2") # if 0 (i>=3), goto L2
+文.追("JUMP L1")
+文.追("LABEL L2")
+
+表(幕)
+走(文)
