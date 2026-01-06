@@ -1,0 +1,156 @@
+@v P 'print'
+@v I 'int'
+@v L 'len'
+@v S 'str'
+@v A 'append'
+@v O 'pop'
+@v K 'split'
+@v N 'isnumeric'
+
+# Keys for State Dictionary
+@v 筒 '"stack"'
+@v 憶 '"mem"'
+@v 指 '"ip"'
+@v 令 '"code"'
+@v 札 '"labels"'
+
+# Opcodes (IR)
+@v 積 '"PUSH"'
+@v 加 '"ADD"'
+@v 差 '"SUB"'
+@v 乗 '"MUL"'
+@v 印 '"PRINT"'
+@v 蔵 '"STORE"'
+@v 荷 '"LOAD"'
+
+# Variables (1-char)
+@v 態 's'
+@v 順 'i'
+@v 文 'c'
+@v 行 'l'
+@v 部 'p'
+@v 技 'o'
+@v 具 'a'
+@v 山 't'
+@v 値 'v'
+@v 甲 'x'
+@v 乙 'y'
+@v メ 'm'
+
+# Other
+@v 空 '" "'
+@v 真 'True'
+
+$
+
+# --- 1-Step Execution Function ---
+# s: State Dict {stack:[], mem:{}, ip:0, code:[], labels:{}}
+d 動(態):
+ # Get current IP and Code
+ 順 = 態[指]
+ 文 = 態[令]
+ 
+ # Check boundary
+ も 順 < L(文):
+  # Get instruction line
+  行 = 文[順]
+  
+  # Parse (split by space)
+  部 = 行.K(空)
+  技 = 部[0]
+  
+  # Get Stack & Mem ref
+  山 = 態[筒]
+  メ = 態[憶]
+  
+  # --- Dispatch ---
+  
+  # PUSH val
+  も 技 == 積:
+   具 = 部[1]
+   # Try int conversion (simplified)
+   も 具.N():
+    山.A(I(具))
+   他:
+    山.A(具)
+  
+  # ADD
+  他:
+   も 技 == 加:
+    乙 = 山.O()
+    甲 = 山.O()
+    山.A(甲 + 乙)
+  
+  # SUB
+  他:
+   も 技 == 差:
+    乙 = 山.O()
+    甲 = 山.O()
+    山.A(甲 - 乙)
+  
+  # MUL
+  他:
+   も 技 == 乗:
+    乙 = 山.O()
+    甲 = 山.O()
+    山.A(甲 * 乙)
+   
+  # PRINT
+  他:
+   も 技 == 印:
+    値 = 山.O()
+    P(値)
+
+  # STORE var
+  他:
+   も 技 == 蔵:
+    具 = 部[1]
+    値 = 山.O()
+    メ[具] = 値
+  
+  # LOAD var
+  他:
+   も 技 == 荷:
+    具 = 部[1]
+    山.A(メ[具])
+
+  # --- Update IP ---
+  # (JUMP logic will go here in future, currently just +1)
+  態[指] = 順 + 1
+
+# --- Phase 2 Manual Test ---
+# Setup State manually
+# Code:
+# PUSH 10
+# PUSH 20
+# ADD
+# PRINT
+文 = []
+文.A("PUSH 10")
+文.A("PUSH 20")
+文.A("ADD")
+文.A("PRINT")
+
+態 = {}
+態[筒] = []
+態[憶] = {}
+態[指] = 0
+態[令] = 文
+態[札] = {} # Empty for now
+
+# Execute 4 steps manually (No Loop!)
+P("--- Step 1 ---")
+動(態)
+P(態[筒])
+
+P("--- Step 2 ---")
+動(態)
+P(態[筒])
+
+P("--- Step 3 ---")
+動(態)
+P(態[筒])
+
+P("--- Step 4 ---")
+動(態)
+P(態[筒])
