@@ -117,6 +117,8 @@
 @v 鬱 'str'
 @v 単 'chr'
 @v 循 'while'
+@v 号 '"encoding"'
+
 
 # Vars
 @v 辞 'D'
