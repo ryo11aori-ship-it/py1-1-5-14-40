@@ -1,0 +1,176 @@
+# Windows Native IR Mock VM
+# Runs WinIR on Linux by mocking kernel32.dll
+
+# System
+@v 表 'print'
+@v 整 'int'
+@v 寸 'len'
+@v 追 'append'
+@v 抜 'pop'
+@v 裂 'split'
+@v 削 'strip'
+@v 行 'splitlines'
+@v 開 'open'
+@v 読 'read'
+@v 換 'replace'
+@v 始 'startswith'
+@v 終 'exit'
+@v 実 'exec'
+@v 字 'chr'
+@v 数 'isnumeric'
+
+# Modules
+@v 系 'sys'
+@v 係 'argv'
+@v 込 '"import sys"'
+
+# Mock OS State
+@v レ 'regs'
+@v メ 'mem'
+@v 指 'ip'
+@v 辞 'labels'
+@v API 'apis'
+
+# Opcodes
+@v 置 '"MOV"'
+@v 呼 '"CALL_API"'
+@v 読 '"LOAD_DLL"'
+@v 得 '"GET_PROC"'
+@v 書 '"WRITE_MEM"'
+@v 札 '"LABEL"'
+
+# Args
+@v 外 'args'
+@v 径 'path'
+@v 本 'body'
+@v 生 'lines'
+@v コ 'codes'
+@v 順 'i'
+@v 線 'line'
+@v 部 'parts'
+@v 技 'op'
+@v 具 'arg'
+
+# API Names (Mock)
+@v 核 '"kernel32.dll"'
+@v ハ '"GetStdHandle"'
+@v ラ '"WriteFile"'
+@v 逝 '"ExitProcess"'
+
+$
+
+実(込)
+
+# --- Mock Implementation of Windows API ---
+術 偽(名):
+ # GetStdHandle(-11) -> return 1 (Mock Handle)
+ も 名 == ハ:
+  レ["RAX"] = 1
+ 
+ # WriteFile(Handle, BufAddr, Len, ...)
+ 他:
+  も 名 == ラ:
+   # RDX has buffer address
+   アドレス = レ["RDX"]
+   長さ = レ["R8"]
+   # Read from memory
+   バッファ = ""
+   カ = 0
+   循 カ < 長さ:
+    文字コード = メ.get(アドレス + カ, 0)
+    バッファ = バッファ + 字(文字コード)
+    カ = カ + 1
+   # Simulate Output
+   表("MockWin: " + バッファ.削())
+   レ["RAX"] = 1 # Success
+  
+  # ExitProcess(Code)
+  他:
+   も 名 == 逝:
+    コード = レ["RCX"]
+    表("MockWin: ExitProcess " + 字(コード))
+    系.終(0)
+
+# --- VM Logic ---
+術 動(コ):
+ レ = {}
+ メ = {}
+ API = {}
+ 指 = 0
+ 
+ # 1. Label Scan
+ 辞 = {}
+ 順 = 0
+ 循 順 < 寸(コ):
+  線 = コ[順]
+  部 = 線.裂(" ")
+  も 部[0] == 札:
+   辞[部[1]] = 順
+  順 = 順 + 1
+ 
+ # 2. Execution Loop
+ 循 指 < 寸(コ):
+  線 = コ[指]
+  部 = 線.裂(" ")
+  技 = 部[0]
+  
+  # LOAD_DLL (Mock)
+  も 技 == 読:
+   0 # Do nothing for mock
+  
+  # GET_PROC (Mock)
+  他:
+   も 技 == 得:
+    API[部[1]] = 部[1] # Map name to name
+  
+  # CALL_API
+  他:
+   も 技 == 呼:
+    偽(部[1])
+  
+  # MOV dst src
+  他:
+   も 技 == 置:
+    先 = 部[1]
+    元 = 部[2]
+    # Check if src is reg or imm
+    も 元.数():
+     レ[先] = 整(元)
+    他:
+     # Src is reg?
+     も 元 in レ:
+      レ[先] = レ[元]
+     他:
+      # Src is literal str/int? assume int for now
+      レ[先] = 整(元)
+
+  # WRITE_MEM addr val
+  他:
+   も 技 == 書:
+    番地 = 整(部[1])
+    値 = 整(部[2])
+    メ[番地] = 値
+
+  指 = 指 + 1
+
+# --- Main ---
+外 = 系.係
+も 寸(外) < 2:
+ 表("Usage: vm_win_mock.py <win.ir>")
+ 系.終(1)
+
+径 = 外[1]
+# open(path, "r", encoding="utf-8") -> simplified
+本 = 開(径, "r").読()
+生 = 本.行()
+コ = []
+
+順 = 0
+循 順 < 寸(生):
+ 線 = 生[順]
+ 線 = 線.削()
+ も 寸(線) > 0:
+  コ.追(線)
+ 順 = 順 + 1
+
+動(コ)
