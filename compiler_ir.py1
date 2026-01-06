@@ -35,8 +35,10 @@
 @v 幕 'start'
 @v 閉 'end'
 @v 線 'line'
+# Error Message
+@v 警 '"Error: Token \'{}\' is too long. Use 1 char.\\n"'
 
-# AST Types (Class Names)
+# AST Types
 @v 根 'Module'
 @v 式 'Expr'
 @v 呼 'Call'
@@ -61,7 +63,6 @@
 @v 等 'Eq'
 @v 少 'Lt'
 @v 以 'LtE'
-# Attribute Node
 @v 性 'Attribute'
 @v 字 'Subscript'
 @v 切 'Slice'
@@ -69,7 +70,7 @@
 @v 彙 'Dict'
 @v 入 'In'
 
-# AST Attributes (Field Names)
+# AST Attributes
 @v 価 'value'
 @v 左 'left'
 @v 右 'right'
@@ -78,7 +79,6 @@
 @v 識 'id'
 @v 類 'args'
 @v 体 'body'
-# Attribute.attr
 @v 属 'attr'
 @v ス 'slice'
 @v 中 'elts'
@@ -118,7 +118,6 @@
 @v 単 'chr'
 @v 循 'while'
 @v 号 '"encoding"'
-
 
 # Vars
 @v 辞 'D'
@@ -348,6 +347,11 @@ f 個 n 群:
  段 = 個.線
  
  i 種 == 研.語:
+  # Strict 1-char check BEFORE replacement
+  i 寸(言) > 1:
+   s.誤.書(警.形(言))
+   s.逝(1)
+
   i 言 n 辞:
    言 = 辞[言]
  
