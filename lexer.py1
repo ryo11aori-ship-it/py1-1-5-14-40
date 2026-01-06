@@ -14,13 +14,13 @@
 @v 記 'OP'
 
 # Char sets
-@v 数字 '"0123456789"'
-@v 英字 '"abcdefghijklmnopqrstuvwxyz_"'
-@v 記号 '"+-*/%=:(),[]"'
+@v 数 '"0123456789"'
+@v 英 '"abcdefghijklmnopqrstuvwxyz_"'
+@v 記 '"+-*/%=:(),[]"'
 
 # Source
-@v 行１ '"def func():"'
-@v 行２ '" x = 10"'
+@v 一 '"def func():"'
+@v 二 '" x = 10"'
 @v 筒 '[]'
 @v 原 'S'
 @v 計 'I'
@@ -32,7 +32,7 @@ $
 
 # Construct Source
 改 = C(10)
-原 = 行１ + 改 + 行２
+原 = 一 + 改 + 二
 
 # Initialize List
 列 = 筒
@@ -54,9 +54,9 @@ $
   
   他:
    # Name
-   も c n 英字:
+   も c n 英:
     v = ""
-    循 c n 英字:
+    循 c n 英:
      v = v + c
      計 = 計 + 1
      も 計 < 限:
@@ -67,9 +67,9 @@ $
    
    他:
     # Number
-    も c n 数字:
+    も c n 数:
      v = ""
-     循 c n 数字:
+     循 c n 数:
       v = v + c
       計 = 計 + 1
       も 計 < 限:
@@ -80,7 +80,7 @@ $
     
     他:
      # Symbol
-     も c n 記号:
+     も c n 記:
       列.append(c)
       計 = 計 + 1
      
