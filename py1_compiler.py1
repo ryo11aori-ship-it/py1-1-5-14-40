@@ -23,12 +23,13 @@
 @v 空 '" "'
 @v 単 'chr(39)'
 @v 双 'chr(34)'
+# 【追加】Separator ($)
+@v ド '"$"'
 
 # Messages and encoding
 @v 説 '"Usage: py1_compiler.py <source.py1>"'
 @v モ '"r"'
 @v 権 '"utf-8"'
-# 【修正】encoding キーワード引数のマクロ定義
 @v 号 'encoding'
 
 # Control Flow
@@ -65,7 +66,7 @@ $
 
 # Read Source File
 径 = 外[1]
-# open(path, "r", encoding="utf-8") -> using macro 号 for encoding
+# open(path, "r", encoding="utf-8")
 本 = 開(径, モ, 号=権).読()
 生 = 本.行()
 
@@ -103,15 +104,19 @@ $
  も 線.削().始(冠):
   0
  他:
-  # Apply macros
-  出 = 線
-  今 = 0
-  循 今 < 寸(並):
-   鍵 = 並[今]
-   値 = 辞[鍵]
-   出 = 出.換(鍵, 値)
-   今 = 今 + 1
-  
-  表(出)
+  # 【追加】Skip separator line ($)
+  も 線.削() == ド:
+   0
+  他:
+   # Apply macros
+   出 = 線
+   今 = 0
+   循 今 < 寸(並):
+    鍵 = 並[今]
+    値 = 辞[鍵]
+    出 = 出.換(鍵, 値)
+    今 = 今 + 1
+   
+   表(出)
 
  順 = 順 + 1
