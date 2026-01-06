@@ -35,8 +35,8 @@
 @v 幕 'start'
 @v 閉 'end'
 @v 線 'line'
-# Error Message
-@v 警 '"Error: Token \'{}\' is too long. Use 1 char.\\n"'
+# Error Message (Fixed: Removed single quotes inside)
+@v 警 '"Error: Token {} is too long. Use 1 char.\\n"'
 
 # AST Types
 @v 根 'Module'
