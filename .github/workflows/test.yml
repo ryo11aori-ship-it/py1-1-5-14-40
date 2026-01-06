@@ -171,5 +171,18 @@ jobs:
         # ファイル引数を渡せば、従来のVMとして動くはず
         python py1repl.py fizzbuzz.ir
 
+         # 15. Phase 5: Self-Hosting Compiler
+    - name: 15. Self-Hosting Compiler
+      run: |
+        echo "--- Bootstrap: Compiling py1_compiler.py1 using old compiler ---"
+        python compiler_gen3.py py1_compiler.py1 > py1_compiler.py
+        
+        echo "--- Self-Host: Compiling FizzBuzz using NEW compiler ---"
+        # 新しいコンパイラ(py1_compiler.py)を使ってソースをコンパイル
+        python py1_compiler.py fizzbuzz_while.py1 > fizzbuzz_new.py
+        
+        echo "--- Running New FizzBuzz ---"
+        python fizzbuzz_new.py
+
 
 
