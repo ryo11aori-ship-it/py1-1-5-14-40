@@ -1,4 +1,4 @@
-# System Functions (Renamed to Kanji to avoid Reserved Chars collision)
+# System Functions
 @v 表 'print'
 @v 整 'int'
 @v 寸 'len'
@@ -37,7 +37,7 @@
 @v 肆 '"PRINT"'
 @v 幕 '"--- Step ---"'
 
-# Variables (Keys are Kanji, Values are safe Python var names)
+# Variables
 @v 態 'state'
 @v 順 'idx'
 @v 文 'codes'
@@ -55,59 +55,46 @@
 $
 
 # --- 1-Step Execution Function ---
-# s: State Dict
+# indentation: 1 space per level, no empty lines in blocks
 術 動(態):
  順 = 態[指]
  文 = 態[令]
- 
  も 順 < 寸(文):
   行 = 文[順]
   部 = 行.裂(空)
   技 = 部[0]
-  
   山 = 態[筒]
   メ = 態[憶]
-  
-  # PUSH val
   も 技 == 積:
    具 = 部[1]
    も 具.数():
     山.追(整(具))
    他:
     山.追(具)
-  
-  # ADD
   他:
    も 技 == 足:
     乙 = 山.抜()
     甲 = 山.抜()
     山.追(甲 + 乙)
-  
-  # PRINT
-  他:
-   も 技 == 印:
-    値 = 山.抜()
-    表(値)
-
-  # Update IP
+   他:
+    も 技 == 印:
+     値 = 山.抜()
+     表(値)
   態[指] = 順 + 1
 
 # --- Manual Test Driver ---
-# Construct Code List
 文 = []
 文.追(壱)
 文.追(弐)
 文.追(参)
 文.追(肆)
 
-# Init State
 態 = {}
 態[筒] = []
 態[憶] = {}
 態[指] = 0
 態[令] = 文
 
-# Run 4 steps
 表(幕)
 動(態)
 表(態[筒])
