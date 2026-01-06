@@ -1,4 +1,4 @@
-name: Test py1 Compiler & Self-Hosting
+name: Test py1 Compiler & Self-Hosting (Windows)
 
 on: [push, pull_request]
 
@@ -9,7 +9,12 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest # Windows環境を指定
+
+    # Windows上のGit Bashを使用 (Linuxコマンド互換のため)
+    defaults:
+      run:
+        shell: bash
 
     steps:
     - uses: actions/checkout@v3
@@ -19,12 +24,8 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Setup Locale
-      run: |
-        sudo locale-gen ja_JP.UTF-8
-        sudo update-locale LANG=ja_JP.UTF-8
-        export LANG=ja_JP.UTF-8
-        export LC_ALL=ja_JP.UTF-8
+    # Windowsでは sudo locale-gen は不要/不可のため削除
+    # PythonのUTF-8設定は global env で実施済み
 
     - name: Install Black
       run: pip install black
@@ -70,9 +71,6 @@ jobs:
 
     # 5. Unicodeテスト
     - name: 5. Unicode Test
-      env:
-        LANG: ja_JP.UTF-8
-        LC_ALL: ja_JP.UTF-8
       run: |
         python compiler_gen3.py unicode_test.py1 > output_uni.py
         python output_uni.py
@@ -84,47 +82,38 @@ jobs:
         python compiler_ir.py fizzbuzz_while.py1 > fizzbuzz.ir
         cat fizzbuzz.ir
 
-        # ... (前略)
-
     # 7. ネイティブVM (C言語) のビルドと実行
+    # Windowsなので .exe を明示
     - name: 7. Native VM Execution (C Implementation)
       run: |
         echo "--- Compiling VM in C ---"
-        gcc -o vm vm.c
+        gcc -o vm.exe vm.c
         
         echo "--- Executing FizzBuzz on Native VM ---"
-        ./vm fizzbuzz.ir
-
-        # ... (前略)
+        ./vm.exe fizzbuzz.ir
 
     # 8. 機能テスト
     - name: 8. Feature Test (List/Dict/Methods)
       run: |
         python compiler_ir.py feature_test.py1 > features.ir
-        ./vm features.ir
+        ./vm.exe features.ir
 
     # 9. Lexer Test (Minimal)
-        # 9. Lexer Test (Minimal)
     - name: 9. Minimal Lexer Test
       run: |
         echo "--- Compiling Lexer ---"
         python compiler_ir.py lexer.py1 > lexer.ir
         
         echo "--- DEBUG: Show Generated IR ---"
-        # ここで生成された中間コードを無理やり表示させる
         cat -n lexer.ir
         
         echo "--- Running Lexer on VM ---"
-        # "|| true" をつけることで、VMがクラッシュしてもエラーで止まらず、
-        # ログを最後まで吐き出させて終了コード0（成功扱い）にする
-        ./vm lexer.ir || true
-        # ... (Step 9 まではそのまま) ...
+        ./vm.exe lexer.ir || true
 
     # 10. Phase 2: Python VM (No Loop) Prototype Test
     - name: 10. Phase 2 VM Prototype
       run: |
         echo "--- Compiling VM Prototype ---"
-        # py1コンパイラ(gen3)を使って、py1コードをPythonコードに変換
         python compiler_gen3.py vm_step.py1 > vm_step.py
         
         echo "--- Running VM Prototype ---"
@@ -152,7 +141,6 @@ jobs:
     - name: 13. Phase 3 py1VM
       run: |
         echo "--- Generating FizzBuzz IR ---"
-        # 念のためIRを再生成
         python compiler_ir.py fizzbuzz_while.py1 > fizzbuzz.ir
         
         echo "--- Compiling py1VM ---"
@@ -160,15 +148,14 @@ jobs:
         
         echo "--- Running FizzBuzz on py1VM ---"
         python py1vm.py fizzbuzz.ir
-         # 14. Phase 4: REPL Build & Batch Test
-    
+
+    # 14. Phase 4: REPL Build & Batch Test
     - name: 14. Phase 4 REPL Build
       run: |
         echo "--- Compiling py1REPL ---"
         python compiler_gen3.py py1repl.py1 > py1repl.py
         
         echo "--- Testing REPL in Batch Mode (FizzBuzz) ---"
-        # ファイル引数を渡せば、従来のVMとして動くはず
         python py1repl.py fizzbuzz.ir
 
     # 15. Phase 5: Self-Hosting Compiler
@@ -178,7 +165,6 @@ jobs:
         python compiler_gen3.py py1_compiler.py1 > py1_compiler.py
         
         echo "--- Self-Host: Compiling FizzBuzz using NEW compiler ---"
-        # 新しいコンパイラ(py1_compiler.py)を使ってソースをコンパイル
         python py1_compiler.py fizzbuzz_while.py1 > fizzbuzz_new.py
         
         echo "--- Running New FizzBuzz ---"
@@ -188,28 +174,21 @@ jobs:
     - name: 16. Final Golden Chain
       run: |
         echo "=== Step 1: Bootstrap (Start the fire) ==="
-        # 旧コンパイラで、最初のpy1コンパイラ(Stage 1)を生成
         python compiler_gen3.py py1_compiler.py1 > stage1_compiler.py
         
         echo "=== Step 2: Self-Hosting (The compiler compiles itself) ==="
-        # Stage 1 コンパイラを使って、自分自身(py1_compiler.py1)を再コンパイル
-        # これで生まれる Stage 2 は「py1によって作られたpy1コンパイラ」となる
         python stage1_compiler.py py1_compiler.py1 > stage2_compiler.py
         
         echo "=== Step 3: Final Build (Build the REPL with the pure compiler) ==="
-        # 純血の Stage 2 コンパイラを使って、REPLをコンパイル
         python stage2_compiler.py py1repl.py1 > py1repl_final.py
         
         echo "=== Step 4: Verification (Run FizzBuzz on the final REPL) ==="
-        # 最終生成物が正しく動くか、FizzBuzz IRを食わせてテスト
         python py1repl_final.py fizzbuzz.ir
 
     # 17. Phase 1: Windows Native IR Definition & Mock Execution
     - name: 17. Windows Native IR
       run: |
         echo "--- 1. Generating WinIR Code ---"
-        # py1コードとしてWinIR生成スクリプトを実行し、IRファイルを作る
-        # ※本来はコンパイラがやる仕事だが、まずは仕様定義のためスクリプトで生成
         python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py
         python win_ir_gen.py > fizzbuzz_win.ir
         
@@ -221,7 +200,3 @@ jobs:
         
         echo "--- 3. Running WinIR on Mock VM ---"
         python vm_win_mock.py fizzbuzz_win.ir
-
-
-
-
