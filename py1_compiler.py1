@@ -23,7 +23,6 @@
 @v 空 '" "'
 @v 単 'chr(39)'
 @v 双 'chr(34)'
-# 【追加】Separator ($)
 @v ド '"$"'
 
 # Messages and encoding
@@ -86,9 +85,13 @@ $
    鍵 = 部[1]
    値 = 部[2]
    
-   # Strip quotes
-   値 = 値.削(単)
-   値 = 値.削(双)
+   # Strip quotes safely (Exclusive logic)
+   # Only strip the outer layer!
+   も 値.始(単):
+    値 = 値.削(単)
+   他:
+    も 値.始(双):
+     値 = 値.削(双)
    
    辞[鍵] = 値
    並.追(鍵)
@@ -104,7 +107,7 @@ $
  も 線.削().始(冠):
   0
  他:
-  # 【追加】Skip separator line ($)
+  # Skip separator line ($)
   も 線.削() == ド:
    0
   他:
