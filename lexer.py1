@@ -1,6 +1,7 @@
 @v P 'print'
 @v L 'len'
 @v C 'chr'
+@v 追 'append'
 
 # Control Flow Keywords
 @v 循 'while'
@@ -8,17 +9,14 @@
 @v 他 'else'
 @v n 'in'
 
-# Token Types
-@v 名 'NAME'
-
 # Char sets
 @v 数 '"0123456789"'
 @v 英 '"abcdefghijklmnopqrstuvwxyz_"'
 @v 記 '"+-*/%=:(),[]"'
 
 # Source
-@v 一 '"def func():"'
-@v 二 '" x = 10"'
+@v 上 '"def func():"'
+@v 下 '" x = 10"'
 @v 筒 '[]'
 @v 原 'S'
 @v 計 'I'
@@ -30,7 +28,7 @@ $
 
 # Construct Source
 改 = C(10)
-原 = 一 + 改 + 二
+原 = 上 + 改 + 下
 
 # Initialize List
 列 = 筒
@@ -61,7 +59,7 @@ $
       c = 原[計]
      他:
       c = " "
-    列.append(v)
+    列.追(v)
    
    他:
     # Number
@@ -74,12 +72,12 @@ $
        c = 原[計]
       他:
        c = " "
-     列.append(v)
+     列.追(v)
     
     他:
      # Symbol
      も c n 記:
-      列.append(c)
+      列.追(c)
       計 = 計 + 1
      
      他:
