@@ -16,7 +16,6 @@
 
 # Modules
 @v 系 'sys'
-# 【追加】sys.argv のプロパティ名
 @v 係 'argv'
 
 # Control Flow
@@ -62,7 +61,6 @@
 @v 空 '" "'
 @v モ '"r"'
 @v 権 '"utf-8"'
-# 【追加】openのキーワード引数 encoding
 @v 号 'encoding'
 
 # Variables
@@ -83,13 +81,14 @@
 @v 動 'step'
 @v 調 'scan'
 @v 走 'run'
-# 【修正】引 -> 外 (argv variable)
 @v 外 'args'
 @v 径 'path'
 @v 本 'body'
 @v 生 'raw_lines'
 
 $
+# Import sys
+m 系
 
 # --- Label Scan Function ---
 術 調(コ):
@@ -253,7 +252,6 @@ $
 
 # Read File
 径 = 外[1]
-# open(path, "r", encoding="utf-8")
 本 = 開(径, モ, 号=権).読()
 
 # Parse Lines
