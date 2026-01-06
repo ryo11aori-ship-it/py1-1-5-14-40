@@ -1,26 +1,32 @@
 @v P 'print'
-@v S 'str'
 @v L 'len'
+@v 追 'append'
+@v 割 'split'
+@v 結 'join'
+@v 形 'format'
+@v 筒 '[]'
+@v 彙 '{}'
+
 $
 # List Test
-l = []
-l.append("A")
-l.append("B")
+l = 筒
+l.追("A")
+l.追("B")
 P(L(l))
 P(l[0])
 P(l[1])
 
 # Dict Test
-D = {}
-D["k"] = "val"
-P(D["k"])
+d = 彙
+d["k"] = "val"
+P(d["k"])
 
 # String Join/Split
 s = "x,y"
-parts = s.split(",")
-P(parts[0])
-joined = "-".join(parts)
-P(joined)
+p = s.割(",")
+P(p[0])
+j = "-".結(p)
+P(j)
 
 # Format
-P("Hello {}".format("World"))
+P("Hello {}".形("World"))
