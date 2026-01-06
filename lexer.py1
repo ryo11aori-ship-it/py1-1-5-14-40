@@ -10,8 +10,6 @@
 
 # Token Types
 @v 名 'NAME'
-@v 数 'NUM'
-@v 記 'OP'
 
 # Char sets
 @v 数 '"0123456789"'
