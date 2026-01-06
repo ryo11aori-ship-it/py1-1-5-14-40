@@ -42,7 +42,7 @@
 # Opcodes
 @v 置 '"MOV"'
 @v 呼 '"CALL_API"'
-@v 連 '"LOAD_DLL"' # Changed from 読
+@v 連 '"LOAD_DLL"'
 @v 得 '"GET_PROC"'
 @v 書 '"WRITE_MEM"'
 @v 札 '"LABEL"'
@@ -212,7 +212,6 @@ $
 
 径 = 外[1]
 # open(path, "r", encoding="utf-8")
-# 読 (read) is now correctly mapped to 'read'
 本 = 開(径, "r", encoding="utf-8").読()
 生 = 本.行()
 コ = []
