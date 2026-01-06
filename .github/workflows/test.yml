@@ -147,6 +147,19 @@ jobs:
         
         echo "--- Running VM Full ---"
         python vm_full.py
+    
+    # 13. Phase 3: Final py1 VM execution
+    - name: 13. Phase 3 py1VM
+      run: |
+        echo "--- Generating FizzBuzz IR ---"
+        # 念のためIRを再生成
+        python compiler_ir.py fizzbuzz_while.py1 > fizzbuzz.ir
+        
+        echo "--- Compiling py1VM ---"
+        python compiler_gen3.py py1vm.py1 > py1vm.py
+        
+        echo "--- Running FizzBuzz on py1VM ---"
+        python py1vm.py fizzbuzz.ir
 
 
 
