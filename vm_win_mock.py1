@@ -30,7 +30,6 @@
 @v 他 'else'
 @v 循 'while'
 @v 入 'in'
-# 【追加】elif macro to avoid nesting hell
 @v 或 'elif'
 
 # Mock OS State
@@ -43,7 +42,7 @@
 # Opcodes
 @v 置 '"MOV"'
 @v 呼 '"CALL_API"'
-@v 読 '"LOAD_DLL"'
+@v 連 '"LOAD_DLL"' # Changed from 読
 @v 得 '"GET_PROC"'
 @v 書 '"WRITE_MEM"'
 @v 札 '"LABEL"'
@@ -97,7 +96,6 @@ $
  # WriteFile
  或 名 == ラ:
   アドレス = レ["RDX"]
-   # R8 is length
   長さ = レ["R8"]
   バッファ = ""
   カ = 0
@@ -136,10 +134,10 @@ $
   部 = 線.裂(" ")
   技 = 部[0]
   
-  # Opcode Dispatch using if-elif (flat structure)
+  # Opcode Dispatch
   
-  # LOAD_DLL
-  も 技 == 読:
+  # LOAD_DLL (Link)
+  も 技 == 連:
    0
   
   # GET_PROC
@@ -214,6 +212,7 @@ $
 
 径 = 外[1]
 # open(path, "r", encoding="utf-8")
+# 読 (read) is now correctly mapped to 'read'
 本 = 開(径, "r", encoding="utf-8").読()
 生 = 本.行()
 コ = []
