@@ -13,12 +13,15 @@
 @v 逝 'exit'
 @v 削 'strip'
 @v 行 'splitlines'
-# 【New】Input for REPL
 @v 訊 'input'
+# 【New】Exec for importing modules
+@v 実 'exec'
 
 # Modules
 @v 系 'sys'
 @v 係 'argv'
+# 【New】Import command string
+@v 込 '"import sys"'
 
 # Control Flow
 @v 術 'def'
@@ -54,7 +57,7 @@
 @v 得 '"GET"'
 @v 包 '"CONTAINS"'
 
-# Built-in function names for CALL
+# Built-in function names
 @v 長 '"len"'
 @v 文 '"chr"'
 @v 加 '"append"'
@@ -94,6 +97,9 @@
 @v 真 'True'
 
 $
+
+# --- Import sys via exec ---
+実(込)
 
 # --- Label Scan Function ---
 術 調(コ):
@@ -197,7 +203,7 @@ $
               態[指] = 辞[具]
               返 0
              他:
-              # LABEL (No op)
+              # LABEL
               も 技 == 札:
                0
               他:
@@ -237,7 +243,7 @@ $
                       甲.追(乙)
   態[指] = 順 + 1
 
-# --- Loop Driver (Executes until IP catches up) ---
+# --- Loop Driver ---
 術 走(態):
  コ = 態[令]
  辞 = 調(コ)
@@ -252,7 +258,7 @@ $
 態[憶] = {}
 態[指] = 0
 
-# Check Args: File Mode vs REPL Mode
+# Check Args
 も 寸(外) > 1:
  # File Mode
  径 = 外[1]
