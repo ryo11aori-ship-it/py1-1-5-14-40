@@ -139,4 +139,14 @@ jobs:
         echo "--- Running VM Jump ---"
         python vm_jump.py
 
+    # 12. Phase 2.5: VM Full (FizzBuzz)
+    - name: 12. VM Full FizzBuzz
+      run: |
+        echo "--- Compiling VM Full ---"
+        python compiler_gen3.py vm_full.py1 > vm_full.py
+        
+        echo "--- Running VM Full ---"
+        python vm_full.py
+
+
 
