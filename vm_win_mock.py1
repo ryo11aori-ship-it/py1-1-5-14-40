@@ -24,6 +24,13 @@
 @v 係 'argv'
 @v 込 '"import sys"'
 
+# Control Flow & Syntax
+@v 術 'def'
+@v も 'if'
+@v 他 'else'
+@v 循 'while'
+@v 入 'in'
+
 # Mock OS State
 @v レ 'regs'
 @v メ 'mem'
@@ -39,7 +46,7 @@
 @v 書 '"WRITE_MEM"'
 @v 札 '"LABEL"'
 
-# Args
+# Args & Vars
 @v 外 'args'
 @v 径 'path'
 @v 本 'body'
@@ -50,6 +57,19 @@
 @v 部 'parts'
 @v 技 'op'
 @v 具 'arg'
+# 【追加】Missing vars
+@v 偽 'mock_api'
+@v 名 'name'
+@v 先 'dst'
+@v 元 'src'
+@v 番地 'addr'
+@v 値 'val'
+@v アドレス 'buf_addr'
+@v 長さ 'length'
+@v バッファ 'buffer'
+@v カ 'k'
+@v 文字コード 'char_code'
+@v コード 'exit_code'
 
 # API Names (Mock)
 @v 核 '"kernel32.dll"'
