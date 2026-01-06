@@ -171,7 +171,7 @@ jobs:
         # ファイル引数を渡せば、従来のVMとして動くはず
         python py1repl.py fizzbuzz.ir
 
-         # 15. Phase 5: Self-Hosting Compiler
+    # 15. Phase 5: Self-Hosting Compiler
     - name: 15. Self-Hosting Compiler
       run: |
         echo "--- Bootstrap: Compiling py1_compiler.py1 using old compiler ---"
@@ -183,6 +183,27 @@ jobs:
         
         echo "--- Running New FizzBuzz ---"
         python fizzbuzz_new.py
+       
+    # 16. Phase 6: The Golden Chain (Full Self-Hosting)
+    - name: 16. Final Golden Chain
+      run: |
+        echo "=== Step 1: Bootstrap (Start the fire) ==="
+        # 旧コンパイラで、最初のpy1コンパイラ(Stage 1)を生成
+        python compiler_gen3.py py1_compiler.py1 > stage1_compiler.py
+        
+        echo "=== Step 2: Self-Hosting (The compiler compiles itself) ==="
+        # Stage 1 コンパイラを使って、自分自身(py1_compiler.py1)を再コンパイル
+        # これで生まれる Stage 2 は「py1によって作られたpy1コンパイラ」となる
+        python stage1_compiler.py py1_compiler.py1 > stage2_compiler.py
+        
+        echo "=== Step 3: Final Build (Build the REPL with the pure compiler) ==="
+        # 純血の Stage 2 コンパイラを使って、REPLをコンパイル
+        python stage2_compiler.py py1repl.py1 > py1repl_final.py
+        
+        echo "=== Step 4: Verification (Run FizzBuzz on the final REPL) ==="
+        # 最終生成物が正しく動くか、FizzBuzz IRを食わせてテスト
+        python py1repl_final.py fizzbuzz.ir
+
 
 
 
