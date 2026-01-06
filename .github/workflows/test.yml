@@ -129,4 +129,14 @@ jobs:
         
         echo "--- Running VM Prototype ---"
         python vm_step.py
+        
+    # 11. Phase 2.5: VM Jump & Loop Test
+    - name: 11. VM Jump Test
+      run: |
+        echo "--- Compiling VM Jump ---"
+        python compiler_gen3.py vm_jump.py1 > vm_jump.py
+        
+        echo "--- Running VM Jump ---"
+        python vm_jump.py
+
 
