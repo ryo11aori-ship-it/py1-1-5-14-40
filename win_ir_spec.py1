@@ -8,27 +8,28 @@
 @v 結合 '"\n".join'
 
 # Opcodes (Windows Native IR)
-# Memory / Register
-@v 置 '"MOV"'    # MOV dst, src
-@v 確 '"ALLOC"'  # VirtualAlloc-like logic
-@v 書 '"WRITE"'  # Write to memory
+@v 置 '"MOV"'
+@v 確 '"ALLOC"'
+@v 書 '"WRITE_MEM"'
 
 # Control
 @v 飛 '"JMP"'
-@v 零 '"JZ"'     # Jump if Zero
-@v 非 '"JNZ"'    # Jump if Not Zero
-@v 比 '"CMP"'    # Compare
+@v 零 '"JZ"'
+@v 非 '"JNZ"'
+@v 比 '"CMP"'
+@v 加 '"ADD"'
 
 # OS API
-@v 読 '"LOAD_DLL"' # LoadLibrary
-@v 得 '"GET_PROC"' # GetProcAddress
-@v 呼 '"CALL_API"' # Call function (x64 ABI: RCX, RDX, R8, R9...)
+@v 連 '"LOAD_DLL"' # Changed from 読 to avoid conflict with read()
+@v 得 '"GET_PROC"'
+@v 呼 '"CALL_API"'
+@v 押 '"PUSH"'
 
-# Registers (Virtual)
-@v 壱 '"R1"' # Counter
-@v 弐 '"R2"' # Limit
-@v 参 '"R3"' # Scratch
-@v 肆 '"R4"' # Handle (Stdout)
+# Registers
+@v 壱 '"R1"'
+@v 弐 '"R2"'
+@v 参 '"R3"'
+@v 肆 '"R4"'
 
 # Data
 @v 幕 '"--- Generating Windows Native IR ---"'
@@ -39,7 +40,7 @@
 @v 出 '"GetStdHandle"'
 @v 書込 '"WriteFile"'
 @v 終 '"ExitProcess"'
-@v 負1 '"-11"' # STD_OUTPUT_HANDLE
+@v 負1 '"-11"'
 
 $
 
@@ -49,10 +50,8 @@ $
 # Handle = GetStdHandle(-11)
 コ.追("LOAD_DLL kernel32.dll")
 コ.追("GET_PROC GetStdHandle")
-# Arg1 (RCX) = -11
 コ.追("MOV RCX -11")
 コ.追("CALL_API GetStdHandle")
-# Result is in RAX, save to R4
 コ.追("MOV R4 RAX")
 
 # Prepare WriteFile address
@@ -61,7 +60,6 @@ $
 コ.追("GET_PROC ExitProcess")
 
 # --- Logic: FizzBuzz Loop (1 to 16) ---
-# R1 = 1 (Counter)
 コ.追("MOV R1 1")
 
 # LABEL LOOP_START
@@ -70,16 +68,10 @@ $
 # CMP R1, 16
 コ.追("MOV R2 16")
 コ.追("CMP R1 R2")
-# JZ EXIT (if R1 == 16) - simplified logic for mock
+# JZ EXIT
 コ.追("JZ EXIT")
 
-# ... (FizzBuzz logic omitted for brevity in Phase 1, strictly testing API calls) ...
-# For this Phase 1 test, we just output the number "1" (hardcoded simulation)
-# to prove we can call "WriteFile" via our Mock VM.
-
-# WriteFile(Handle, Buffer, Len, Written, Overlapped)
-# In real ASM, we need to format int to string memory.
-# Here, we assume address 100 has string "1\n"
+# FizzBuzz Logic Mock (Output "1")
 コ.追("WRITE_MEM 100 49") # '1'
 コ.追("WRITE_MEM 101 10") # '\n'
 
@@ -91,14 +83,12 @@ $
 コ.追("MOV R8 2")
 # Arg4: R9 = WrittenBytesPtr (200)
 コ.追("MOV R9 200")
-# Arg5: Stack param (0) - Mock VM handles this simply
+# Arg5: Stack param (0)
 コ.追("PUSH 0") 
 コ.追("CALL_API WriteFile")
 
 # Increment R1
 コ.追("ADD R1 1")
-# JMP LOOP_START
-# コ.追("JMP LOOP_START") # Disable loop for single pass test
 
 # LABEL EXIT
 コ.追("LABEL EXIT")
