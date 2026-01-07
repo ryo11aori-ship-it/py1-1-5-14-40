@@ -1450,6 +1450,34 @@ jobs:
         
         echo "--- Running Cat ---"
         cat.exe
+      # 31. Upload All Phase C Artifacts
+    
+    - name: 31. Upload All Artifacts (Phase C Complete)
+      uses: actions/upload-artifact@v4
+      with:
+        name: py1-phase-c-complete
+        path: |
+          # Source Code
+          *.py1
+          
+          # Generated Compilers (Python & Native)
+          stage*_compiler.py
+          compiler_gen*.py
+          compiler_native.py
+          
+          # Intermediate Representations
+          *.ir
+          win_ir_gen.py
+          cat_ir_gen.py
+          
+          # Native Code & Executables
+          *.asm
+          *.obj
+          *.exe
+          
+          # Verification Hashes
+          *.sha256
+
 
 
 
