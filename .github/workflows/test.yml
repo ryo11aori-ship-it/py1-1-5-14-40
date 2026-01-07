@@ -1272,6 +1272,7 @@ jobs:
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
         # 29. Create 'cat' Source (Strict 1-char variables)
+        # 29. Create 'cat' Source (Strict Formatting Fix)
     - name: 29. Create Cat Source
       run: |
         cat <<EOF > cat_spec.py1
@@ -1317,31 +1318,32 @@ jobs:
         # Target Filename (fizzbuzz_native.asm)
         # We will write this char by char
         
-        # Buffers & Consts (Renamed to 1-char)
-        @v 壺 '"1"+"0"+"0"' # Filename Buffer
-        @v 地 '"2"+"0"+"0"' # Read Buffer (was 読込)
-        @v 無 '"0"'         # Zero (was 零値)
-        @v 負 '"-"+"1"'     # Minus 1 (was 終値)
+        # Buffers & Consts
+        @v 壺 '"1"+"0"+"0"'
+        @v 地 '"2"+"0"+"0"'
+        @v 無 '"0"'
+        @v 負 '"-"+"1"'
         @v 空 '" "'
-        @v 〆 '"0"'         # Null terminator (was 終端)
+        @v 〆 '"0"'
 
         # Char codes
-        @v 譜 '"1"+"0"+"2"' # f
-        @v 伊 '"1"+"0"+"5"' # i
-        @v 豆 '"1"+"2"+"2"' # z
-        @v 仏 '"9"+"8"'     # b
-        @v 宇 '"1"+"1"+"7"' # u
-        @v ＿ '"9"+"5"'     # _
-        @v 寝 '"1"+"1"+"0"' # n
-        @v 阿 '"9"+"7"'     # a
-        @v 帝 '"1"+"1"+"6"' # t
-        @v Ｖ '"1"+"1"+"8"' # v
-        @v 絵 '"1"+"0"+"1"' # e
-        @v ド '"4"+"6"'     # .
-        @v 須 '"1"+"1"+"5"' # s
-        @v 矛 '"1"+"0"+"9"' # m (renamed from 無 to avoid conflict)
-        
-        # Note: '無' is 0, '矛' is 'm' (109)
+        @v 譜 '"1"+"0"+"2"'
+        @v 伊 '"1"+"0"+"5"'
+        @v 豆 '"1"+"2"+"2"'
+        @v 仏 '"9"+"8"'
+        @v 宇 '"1"+"1"+"7"'
+        @v ＿ '"9"+"5"'
+        @v 寝 '"1"+"1"+"0"'
+        @v 阿 '"9"+"7"'
+        @v 帝 '"1"+"1"+"6"'
+        @v Ｖ '"1"+"1"+"8"'
+        @v 絵 '"1"+"0"+"1"'
+        @v ド '"4"+"6"'
+        @v 須 '"1"+"1"+"5"'
+        @v 矛 '"1"+"0"+"9"'
+
+        # StdOut Handle Const (-11)
+        @v 陰 '"-"+"1"+"1"'
 
         $
         コ = []
@@ -1372,7 +1374,6 @@ jobs:
         # Get StdOut Handle
         # HANDLE GetStdHandle(DWORD nStdHandle)
         # STD_OUTPUT_HANDLE = -11
-        @v 陰 '"-"+"1"+"1"'
         コ.追(置 + 空 + 繰 + 空 + 陰)
         コ.追(呼 + 空 + 出)
         
@@ -1382,32 +1383,32 @@ jobs:
         # Open File
         # _sys_open(RCX=FilenameAddr)
         コ.追(置 + 空 + 繰 + 空 + 壺)
-        コ.追(取 + 空 + 繰 + 空 + 壺) # LEA
-        コ.追(呼 + 空 + 開)           # CALL _sys_open
-        コ.追(置 + 空 + 壱 + 空 + 蓄) # RBX = File Handle
+        コ.追(取 + 空 + 繰 + 空 + 壺)
+        コ.追(呼 + 空 + 開)
+        コ.追(置 + 空 + 壱 + 空 + 蓄)
 
         # Get File Size
         # GetFileSize(Handle, NULL)
         コ.追(置 + 空 + 繰 + 空 + 壱)
         コ.追(置 + 空 + タ + 空 + 無)
         コ.追(呼 + 空 + 寸)
-        コ.追(置 + 空 + 弐 + 空 + 蓄) # R12 = Size
+        コ.追(置 + 空 + 弐 + 空 + 蓄)
 
         # Read File
         # ReadFile(Handle, Buffer, Size, &BytesRead, NULL)
-        コ.追(置 + 空 + 繰 + 空 + 壱)   # Handle
-        コ.追(取 + 空 + タ + 空 + 地)   # Buffer (200)
-        コ.追(置 + 空 + 蜂 + 空 + 弐)   # Size
-        コ.追(取 + 空 + 苦 + 空 + 壺)   # BytesRead (Reuse 100 as scratch)
-        コ.追(押 + 空 + 無)             # Overlapped = NULL
+        コ.追(置 + 空 + 繰 + 空 + 壱)
+        コ.追(取 + 空 + タ + 空 + 地)
+        コ.追(置 + 空 + 蜂 + 空 + 弐)
+        コ.追(取 + 空 + 苦 + 空 + 壺)
+        コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 読)
 
         # Write to StdOut
         # WriteFile(StdOut, Buffer, Size, &BytesWritten, NULL)
-        コ.追(置 + 空 + 繰 + 空 + 肆)   # StdOut (Saved in R13)
-        コ.追(取 + 空 + タ + 空 + 地)   # Buffer
-        コ.追(置 + 空 + 蜂 + 空 + 弐)   # Size
-        コ.追(取 + 空 + 苦 + 空 + 壺)   # Scratch
+        コ.追(置 + 空 + 繰 + 空 + 肆)
+        コ.追(取 + 空 + タ + 空 + 地)
+        コ.追(置 + 空 + 蜂 + 空 + 弐)
+        コ.追(取 + 空 + 苦 + 空 + 壺)
         コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 記)
 
@@ -1422,12 +1423,13 @@ jobs:
         表(結(コ))
         EOF
 
-        # Generate ASM
-        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py
+        # Generate ASM (DEBUG enabled)
+        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py || (cat cat_ir_gen.py && exit 1)
         python cat_ir_gen.py > cat.ir
         
         # Compile to Native
         python compiler_native.py cat.ir > cat_native.asm
+
 
     # 30. Build & Run Cat (CMD Shell)
     - name: 30. Build & Run Cat (CMD Shell)
