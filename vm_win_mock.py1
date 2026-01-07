@@ -37,7 +37,7 @@
 @v メ 'mem'
 @v 指 'ip'
 @v 辞 'labels'
-@v API 'apis'
+@v 局 'apis' 
 
 # Opcodes
 @v 置 '"MOV"'
@@ -66,14 +66,16 @@
 @v 名 'name'
 @v 先 'dst'
 @v 元 'src'
-@v 番地 'addr'
 @v 値 'val'
-@v アドレス 'buf_addr'
-@v 長さ 'length'
-@v バッファ 'buffer'
+
+# 【修正】Strict 1-char vars
+@v 所 'addr'
+@v 基 'buf_addr'
+@v 幅 'length'
+@v 器 'buffer'
 @v カ 'k'
-@v 文字コード 'char_code'
-@v コード 'exit_code'
+@v 符 'char_code'
+@v 果 'exit_code'
 @v 甲 'val_a'
 @v 乙 'val_b'
 
@@ -88,7 +90,6 @@ $
 実(込)
 
 # --- Mock Implementation of Windows API ---
-# Pass Regs and Mem explicitly
 術 偽(名, レ, メ):
  # GetStdHandle -> return 1
  も 名 == ハ:
@@ -96,27 +97,27 @@ $
  
  # WriteFile
  或 名 == ラ:
-  アドレス = レ["RDX"]
-  長さ = レ["R8"]
-  バッファ = ""
+  基 = レ["RDX"]
+  幅 = レ["R8"]
+  器 = ""
   カ = 0
-  循 カ < 長さ:
-   文字コード = メ.get(アドレス + カ, 0)
-   バッファ = バッファ + 字(文字コード)
+  循 カ < 幅:
+   符 = メ.get(基 + カ, 0)
+   器 = 器 + 字(符)
    カ = カ + 1
-  表("MockWin: " + バッファ.削())
+  表("MockWin: " + 器.削())
   レ["RAX"] = 1
  
  # ExitProcess
  或 名 == 逝:
-  コード = レ["RCX"]
+  果 = レ["RCX"]
   系.終(0)
 
 # --- VM Logic ---
 術 動(コ):
  レ = {}
  メ = {}
- API = {}
+ 局 = {}
  指 = 0
  
  # 1. Label Scan
@@ -143,7 +144,7 @@ $
   
   # GET_PROC
   或 技 == 得:
-   API[部[1]] = 部[1]
+   局[部[1]] = 部[1]
   
   # CALL_API
   或 技 == 呼:
@@ -164,9 +165,9 @@ $
 
   # WRITE_MEM addr val
   或 技 == 書:
-   番地 = 整(部[1])
+   所 = 整(部[1])
    値 = 整(部[2])
-   メ[番地] = 値
+   メ[所] = 値
   
   # CMP a b
   或 技 == 比:
