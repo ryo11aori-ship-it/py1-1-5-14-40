@@ -1271,8 +1271,8 @@ jobs:
         # Re-compile the native compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-        # 29. Create 'cat' Source (Strict 1-char variables)
-        # 29. Create 'cat' Source (Strict Formatting Fix)
+      # 29. Create 'cat' Source (Strict 1-char variables)
+      # 29. Create 'cat' Source (Strict Formatting Fix)
     - name: 29. Create Cat Source
       run: |
         cat <<EOF > cat_spec.py1
