@@ -21,6 +21,8 @@
 @v 得 '"GET_PROC"'
 @v 呼 '"CALL_API"'
 @v 押 '"PUSH"'
+@v 札 '"LABEL"'
+
 
 # Registers
 @v 壱 '"R1"'
