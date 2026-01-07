@@ -1273,14 +1273,7 @@ jobs:
 
 
 
-      # 29. Create 'cat' Source (Strict 1-char variables)
-      # 29. Create 'cat' Source (Strict Formatting Fix)
-        # 29. Create 'cat' Source (Strict Formatting Fix 2)
-        # 29. Create 'cat' Source (Fix: Replace invalid char '＿' with '底')
-        # 29. Create 'cat' Source (Fix: Use chr(10) instead of \n to avoid SyntaxError)
-        # 29. Create Simple Native I/O Test (Hello World)
-        # 29. Create Cat Source (Debug: Simple Native Hello World)
-        # 29. Create Cat Source (Fix: Variable name collision '終')
+          # 29. Create Cat Source (Debug: Simple Hello - FIXED)
     - name: 29. Create Cat Source (Debug: Simple Hello)
       run: |
         cat <<EOF > cat_spec.py1
@@ -1315,7 +1308,8 @@ jobs:
         @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
         @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
         @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
-        # ExitProcess
+        
+        # ExitProcess (Renamed variable '終' is used ONLY for this now)
         @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
 
         @v 壺 '"1"+"0"+"0"'
@@ -1328,7 +1322,7 @@ jobs:
         @v 譜 '"7"+"2"'
         # i
         @v 伊 '"1"+"0"+"5"'
-        # newline (Renamed from 終 to 改 to avoid collision)
+        # newline (Renamed to '改' to avoid collision)
         @v 改 '"1"+"0"'
         
         @v コ 'codes'
@@ -1337,8 +1331,11 @@ jobs:
         コ = []
 
         # Prepare "Hi\n" at address 100
+        # H
         コ.追(書 + 空 + 壺 + 空 + 譜)
+        # i
         コ.追(書 + 空 + 字(101) + 空 + 伊)
+        # \n
         コ.追(書 + 空 + 字(102) + 空 + 改)
 
         # Get StdOut Handle
@@ -1361,10 +1358,24 @@ jobs:
         表(結(コ))
         EOF
 
-        # Generate IR & ASM
-        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py
+        # Generate ASM (DEBUG enabled)
+        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py || (cat cat_ir_gen.py && exit 1)
         python cat_ir_gen.py > cat.ir
         python compiler_native.py cat.ir > cat_native.asm
+
+    # 30. Build & Run Cat (CMD Shell)
+    - name: 30. Build & Run Cat (CMD Shell)
+      shell: cmd
+      run: |
+        echo "--- Assembling Cat ---"
+        nasm -f win64 cat_native.asm -o cat_native.obj
+        
+        echo "--- Linking Cat ---"
+        link.exe cat_native.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:cat.exe
+        
+        echo "--- Running Cat ---"
+        cat.exe
+
 
     # 30. Build & Run Cat (CMD Shell)
     - name: 30. Build & Run Cat (CMD Shell)
