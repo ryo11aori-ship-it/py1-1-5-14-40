@@ -214,7 +214,7 @@ jobs:
         python stage2_compiler.py py1repl.py1 > py1repl_final.py
         python py1repl_final.py fizzbuzz.ir
 
-        # 17. Windows Native IR (Final: Real FizzBuzz Logic)
+      # 17. Windows Native IR (Final: Real FizzBuzz Logic)
     - name: 17. Windows Native IR
       run: |
         # --- 1. WinIR Generator (Spec) ---
