@@ -88,7 +88,8 @@ $
 実(込)
 
 # --- Mock Implementation of Windows API ---
-術 偽(名):
+# Pass Regs and Mem explicitly
+術 偽(名, レ, メ):
  # GetStdHandle -> return 1
  も 名 == ハ:
   レ["RAX"] = 1
@@ -146,7 +147,8 @@ $
   
   # CALL_API
   或 技 == 呼:
-   偽(部[1])
+   # Pass Regs and Mem to Mock API
+   偽(部[1], レ, メ)
   
   # MOV dst src
   或 技 == 置:
