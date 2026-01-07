@@ -5,7 +5,6 @@
 @v 表 'print'
 @v 追 'append'
 @v 字 'str'
-# 【修正】結合 -> 結
 @v 結 '"\n".join'
 
 # Opcodes
@@ -23,12 +22,17 @@
 @v 押 '"PUSH"'
 @v 札 '"LABEL"'
 
+# Registers (Mapped to Real x64 Non-Volatile Regs)
+# R1 (Counter) -> RBX
+@v 壱 '"RBX"'
+# R2 (Limit) -> R12
+@v 弐 '"R12"'
+# R3 (Scratch) -> R14
+@v 参 '"R14"'
+# R4 (Handle) -> R13
+@v 肆 '"R13"'
 
-# Registers
-@v 壱 '"R1"'
-@v 弐 '"R2"'
-@v 参 '"R3"'
-@v 肆 '"R4"'
+# Volatile Regs (Arguments)
 @v 繰 '"RCX"'
 @v タ '"RDX"'
 @v 蜂 '"R8"'
@@ -39,10 +43,8 @@
 @v コ 'codes'
 @v 蔵 '"kernel32.dll"'
 @v 出 '"GetStdHandle"'
-# 【修正】書込 -> 記 (Write)
 @v 記 '"WriteFile"'
 @v 終 '"ExitProcess"'
-# 【修正】負1 -> 陰 (Negative/Shadow)
 @v 陰 '"-11"'
 @v 空 '" "'
 
@@ -66,7 +68,6 @@ $
 コ = []
 
 # --- Helper logic using concatenation to avoid string literals ---
-# MOV RCX -11 -> 置 + 空 + 繰 + 空 + 陰
 
 # LOAD_DLL kernel32.dll
 コ.追(連 + 空 + 蔵)
@@ -76,7 +77,7 @@ $
 コ.追(置 + 空 + 繰 + 空 + 陰)
 # CALL_API GetStdHandle
 コ.追(呼 + 空 + 出)
-# MOV R4 RAX
+# MOV R13(R4) RAX (Save Handle)
 コ.追(置 + 空 + 肆 + 空 + 蓄)
 
 # GET_PROC WriteFile
@@ -85,13 +86,13 @@ $
 コ.追(得 + 空 + 終)
 
 # --- Logic: FizzBuzz Loop (1 to 16) ---
-# MOV R1 1
+# MOV RBX(R1) 1
 コ.追(置 + 空 + 壱 + 空 + 一)
 
 # LABEL LOOP_START
 コ.追(札 + 空 + 廻)
 
-# CMP R1 16
+# CMP RBX 16
 コ.追(置 + 空 + 弐 + 空 + 限)
 コ.追(比 + 空 + 壱 + 空 + 弐)
 # JZ EXIT
@@ -103,7 +104,7 @@ $
 # WRITE_MEM 101 10 ('\n')
 コ.追(書 + 空 + 次 + 空 + 十)
 
-# Arg1: RCX = Handle (R4)
+# Arg1: RCX = Handle (R13)
 コ.追(置 + 空 + 繰 + 空 + 肆)
 # Arg2: RDX = Buffer Address (100)
 コ.追(置 + 空 + タ + 空 + 頁)
@@ -116,7 +117,7 @@ $
 # CALL_API WriteFile
 コ.追(呼 + 空 + 記)
 
-# Increment R1
+# Increment RBX
 コ.追(加 + 空 + 壱 + 空 + 一)
 
 # LABEL EXIT
