@@ -878,4 +878,215 @@ jobs:
           # Mock VM
           vm_win_mock.py
 
+    # ---------------------------------------------------
+    # Phase B: Remove GCC Dependency (Pure Native Link)
+    # ---------------------------------------------------
+
+    # 24. Setup MSVC Dev Environment (Link.exe)
+    - name: 24. Setup MSVC Dev Environment
+      uses: ilammy/msvc-dev-cmd@v1
+
+    # 25. Create Native Compiler (Entry point: start, No C Runtime)
+    - name: 25. Create Native Compiler (compiler_native.py1)
+      run: |
+        cat <<EOF > compiler_native.py1
+        # Native x64 Compiler (No C Runtime, Raw Win32 Calls)
+        @v 表 'print'
+        @v 寸 'len'
+        @v 追 'append'
+        @v 裂 'split'
+        @v 削 'strip'
+        @v 行 'splitlines'
+        @v 開 'open'
+        @v 読 'read'
+        @v 換 'replace'
+        @v 始 'startswith'
+        @v 終 'exit'
+        @v 実 'exec'
+        @v 字 'chr'
+        @v 数 'isnumeric'
+
+        @v 系 'sys'
+        @v 係 'argv'
+        @v 込 '"import sys"'
+        @v も 'if'
+        @v 他 'else'
+        @v 循 'while'
+        @v 入 'in'
+        @v 或 'elif'
+
+        @v 置 '"M"+"O"+"V"'
+        @v 取 '"L"+"E"+"A"'
+        @v 呼 '"C"+"A"+"L"+"L"'
+        @v 連 '"L"+"O"+"A"+"D"'
+        @v 得 '"G"+"E"+"T"'
+        @v 書 '"W"+"R"+"I"+"T"+"E"'
+        @v 札 '"L"+"A"+"B"+"E"+"L"'
+        @v 較 '"C"+"M"+"P"'
+        @v 零 '"J"+"Z"'
+        @v 飛 '"J"+"M"+"P"'
+        @v 加 '"A"+"D"+"D"'
+        @v 押 '"P"+"U"+"S"+"H"'
+
+        # Header: Change 'main' to 'start' to bypass C Runtime
+        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n\nstart:\n  sub rsp, 40\n"'
+        @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
+
+        @v 改 '"\n"'
+        @v 空 '" "'
+        @v 点 '","'
+        @v 幕 '"  "'
+        @v 基 '"byte [mem_base + "'
+        @v 閉 '"]"'
+        @v 影 '"qword [rsp + 32]"'
+
+        @v 転 '"mov "'
+        @v 汲 '"lea "'
+        @v 足 '"add "'
+        @v 比 '"cmp "'
+        @v 跳 '"je "'
+        @v 舞 '"jmp "'
+        @v 喚 '"call "'
+        @v 注 '"; "'
+        @v 釘 '":"'
+        @v 処 '"[mem_base + "'
+        @v 端 '"]"'
+
+        # Register mapping
+        @v 大 '"R"+"A"+"X"'
+        @v 小 '"a"+"l"'
+
+        @v 説 '"Usage: compiler_native.py <win.ir>"'
+        @v モ '"r"'
+        @v 権 '"utf-8"'
+        @v 号 'encoding'
+        @v 無 '""'
+        @v 井 '"#"'
+
+        @v 外 'args'
+        @v 径 'path'
+        @v 本 'body'
+        @v 生 'lines'
+        @v 順 'i'
+        @v 線 'line'
+        @v 部 'parts'
+        @v 技 'op'
+        @v 先 'dst'
+        @v 元 'src'
+        @v 出 'out'
+
+        $
+
+        実(込)
+
+        外 = 系.係
+        も 寸(外) < 2:
+         表(説)
+         系.終(1)
+
+        径 = 外[1]
+        本 = 開(径, モ, 号=権).読()
+        生 = 本.行()
+
+        表(頭)
+
+        順 = 0
+        循 順 < 寸(生):
+         線 = 生[順]
+         線 = 線.削()
+         部 = 線.裂(空)
+         技 = 部[0]
+         出 = 無
+
+         も 寸(線) == 0:
+          0
+         
+         も 線.始(井):
+          0
+
+         或 技 == 連:
+          出 = 注 + 線
+         或 技 == 得:
+          出 = 注 + 線
+         或 技 == 札:
+          出 = 部[1] + 釘
+
+         或 技 == 置:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 転 + 先 + 点 + 元
+         或 技 == 取:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 汲 + 先 + 点 + 処 + 元 + 端
+         或 技 == 加:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 足 + 先 + 点 + 元
+         或 技 == 較:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 比 + 先 + 点 + 元
+         或 技 == 零:
+          先 = 部[1]
+          出 = 幕 + 跳 + 先
+         
+         或 技 == 飛:
+          先 = 部[1]
+          出 = 幕 + 舞 + 先
+
+         或 技 == 書:
+          先 = 部[1]
+          元 = 部[2]
+          も 元 == 大:
+           元 = 小
+          出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
+         
+         或 技 == 押:
+          元 = 部[1]
+          出 = 幕 + 転 + 影 + 点 + 元
+         
+         或 技 == 呼:
+          先 = 部[1]
+          出 = 幕 + 喚 + 先
+
+         も 寸(出) > 0:
+          表(出)
+
+         順 = 順 + 1
+
+        表(尾)
+        EOF
+
+    # 26. Build Pure Native EXE (No GCC)
+    - name: 26. Build Pure Native EXE (No GCC)
+      run: |
+        echo "--- Compiling Native Compiler ---"
+        python stage2_compiler.py compiler_native.py1 > compiler_native.py
+        
+        echo "--- Generating Native ASM ---"
+        python compiler_native.py fizzbuzz_win.ir > fizzbuzz_native.asm
+        
+        echo "--- Assembling with NASM ---"
+        nasm -f win64 fizzbuzz_native.asm -o fizzbuzz_native.obj
+        
+        echo "--- Linking with MSVC Linker (Pure Kernel32) ---"
+        # Link directly against kernel32.lib without CRT
+        link.exe fizzbuzz_native.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:fizzbuzz_native.exe
+        
+        echo "--- Running Pure Native EXE ---"
+        ./fizzbuzz_native.exe
+
+    # 27. Upload Native Artifacts
+    - name: 27. Upload Native Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: py1-native-release
+        path: |
+          compiler_native.py
+          fizzbuzz_native.asm
+          fizzbuzz_native.obj
+          fizzbuzz_native.exe
+
+
 
