@@ -1089,5 +1089,356 @@ jobs:
           fizzbuzz_native.obj
           fizzbuzz_native.exe
 
+    # ---------------------------------------------------
+    # Phase C: Native File I/O (The "cat" Command)
+    # ---------------------------------------------------
+
+    # 28. Update Native Compiler with File I/O Support
+    - name: 28. Update Native Compiler (Add File I/O)
+      run: |
+        cat <<EOF > compiler_native.py1
+        # Native x64 Compiler with File I/O Support
+        @v 表 'print'
+        @v 寸 'len'
+        @v 追 'append'
+        @v 裂 'split'
+        @v 削 'strip'
+        @v 行 'splitlines'
+        @v 開 'open'
+        @v 読 'read'
+        @v 換 'replace'
+        @v 始 'startswith'
+        @v 終 'exit'
+        @v 実 'exec'
+        @v 字 'chr'
+        @v 数 'isnumeric'
+
+        @v 系 'sys'
+        @v 係 'argv'
+        @v 込 '"import sys"'
+        @v も 'if'
+        @v 他 'else'
+        @v 循 'while'
+        @v 入 'in'
+        @v 或 'elif'
+
+        @v 置 '"M"+"O"+"V"'
+        @v 取 '"L"+"E"+"A"'
+        @v 呼 '"C"+"A"+"L"+"L"'
+        @v 連 '"L"+"O"+"A"+"D"'
+        @v 得 '"G"+"E"+"T"'
+        @v 書 '"W"+"R"+"I"+"T"+"E"'
+        @v 札 '"L"+"A"+"B"+"E"+"L"'
+        @v 較 '"C"+"M"+"P"'
+        @v 零 '"J"+"Z"'
+        @v 飛 '"J"+"M"+"P"'
+        @v 加 '"A"+"D"+"D"'
+        @v 押 '"P"+"U"+"S"+"H"'
+
+        # Header: Add File APIs and wrapper for CreateFile (7 args)
+        # _sys_open: Wrapper to handle stack arguments for CreateFileA
+        # RCX = Filename
+        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 88\n  jmp main_logic\n\n_sys_open:\n  ; CreateFileA(Name, GENERIC_READ, SHARE_READ, NULL, OPEN_EXISTING, ATTR_NORMAL, NULL)\n  mov rdx, 0x80000000\n  mov r8, 1\n  xor r9, r9\n  mov qword [rsp+32], 3\n  mov qword [rsp+40], 128\n  mov qword [rsp+48], 0\n  call CreateFileA\n  ret\n\nmain_logic:\n"'
+        
+        @v 尾 '"  add rsp, 88\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
+
+        @v 改 '"\n"'
+        @v 空 '" "'
+        @v 点 '","'
+        @v 幕 '"  "'
+        @v 基 '"byte [mem_base + "'
+        @v 閉 '"]"'
+        @v 影 '"qword [rsp + 32]"'
+
+        @v 転 '"mov "'
+        @v 汲 '"lea "'
+        @v 足 '"add "'
+        @v 比 '"cmp "'
+        @v 跳 '"je "'
+        @v 舞 '"jmp "'
+        @v 喚 '"call "'
+        @v 注 '"; "'
+        @v 釘 '":"'
+        @v 処 '"[mem_base + "'
+        @v 端 '"]"'
+
+        # Register mapping
+        @v 大 '"R"+"A"+"X"'
+        @v 小 '"a"+"l"'
+
+        @v 説 '"Usage: compiler_native.py <win.ir>"'
+        @v モ '"r"'
+        @v 権 '"utf-8"'
+        @v 号 'encoding'
+        @v 無 '""'
+        @v 井 '"#"'
+
+        @v 外 'args'
+        @v 径 'path'
+        @v 本 'body'
+        @v 生 'lines'
+        @v 順 'i'
+        @v 線 'line'
+        @v 部 'parts'
+        @v 技 'op'
+        @v 先 'dst'
+        @v 元 'src'
+        @v 出 'out'
+
+        $
+
+        実(込)
+
+        外 = 系.係
+        も 寸(外) < 2:
+         表(説)
+         系.終(1)
+
+        径 = 外[1]
+        本 = 開(径, モ, 号=権).読()
+        生 = 本.行()
+
+        表(頭)
+
+        順 = 0
+        循 順 < 寸(生):
+         線 = 生[順]
+         線 = 線.削()
+         部 = 線.裂(空)
+         技 = 部[0]
+         出 = 無
+
+         も 寸(線) == 0:
+          0
+         
+         も 線.始(井):
+          0
+
+         或 技 == 連:
+          出 = 注 + 線
+         或 技 == 得:
+          出 = 注 + 線
+         或 技 == 札:
+          出 = 部[1] + 釘
+
+         或 技 == 置:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 転 + 先 + 点 + 元
+         或 技 == 取:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 汲 + 先 + 点 + 処 + 元 + 端
+         或 技 == 加:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 足 + 先 + 点 + 元
+         或 技 == 較:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 比 + 先 + 点 + 元
+         或 技 == 零:
+          先 = 部[1]
+          出 = 幕 + 跳 + 先
+         
+         或 技 == 飛:
+          先 = 部[1]
+          出 = 幕 + 舞 + 先
+
+         或 技 == 書:
+          先 = 部[1]
+          元 = 部[2]
+          も 元 == 大:
+           元 = 小
+          出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
+         
+         或 技 == 押:
+          元 = 部[1]
+          出 = 幕 + 転 + 影 + 点 + 元
+         
+         或 技 == 呼:
+          先 = 部[1]
+          出 = 幕 + 喚 + 先
+
+         も 寸(出) > 0:
+          表(出)
+
+         順 = 順 + 1
+
+        表(尾)
+        EOF
+
+        # Re-compile the native compiler script
+        python stage2_compiler.py compiler_native.py1 > compiler_native.py
+
+    # 29. Create 'cat' Source (Reads 'fizzbuzz_native.asm' and prints it)
+    - name: 29. Create Cat Source
+      run: |
+        cat <<EOF > cat_spec.py1
+        # Native Cat Command
+        @v 表 'print'
+        @v 追 'append'
+        @v 字 'str'
+        @v 結 '"\n".join'
+
+        @v 置 '"M"+"O"+"V"'
+        @v 取 '"L"+"E"+"A"'
+        @v 呼 '"C"+"A"+"L"+"L"'
+        @v 連 '"L"+"O"+"A"+"D"'
+        @v 得 '"G"+"E"+"T"'
+        @v 書 '"W"+"R"+"I"+"T"+"E"'
+        @v 札 '"L"+"A"+"B"+"E"+"L"'
+        @v 比 '"C"+"M"+"P"'
+        @v 零 '"J"+"Z"'
+        @v 飛 '"J"+"M"+"P"'
+        @v 加 '"A"+"D"+"D"'
+        @v 押 '"P"+"U"+"S"+"H"'
+
+        @v 壱 '"R"+"B"+"X"' # File Handle
+        @v 弐 '"R"+"1"+"2"' # File Size
+        @v 繰 '"R"+"C"+"X"'
+        @v タ '"R"+"D"+"X"'
+        @v 蜂 '"R"+"8"'
+        @v 苦 '"R"+"9"'
+        @v 蓄 '"R"+"A"+"X"'
+
+        @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
+        @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
+        @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
+        @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
+        
+        # New APIs
+        @v 開 '"_"+"s"+"y"+"s"+"_"+"o"+"p"+"e"+"n"'
+        @v 読 '"R"+"e"+"a"+"d"+"F"+"i"+"l"+"e"'
+        @v 寸 '"G"+"e"+"t"+"F"+"i"+"l"+"e"+"S"+"i"+"z"+"e"'
+        @v 閉 '"C"+"l"+"o"+"s"+"e"+"H"+"a"+"n"+"d"+"l"+"e"'
+
+        # Target Filename
+        @v 名 '"f"+"i"+"z"+"z"+"b"+"u"+"z"+"z"+"_"+"n"+"a"+"t"+"i"+"v"+"e"+"."+"a"+"s"+"m"'
+        
+        # Buffers
+        @v 壺 '"1"+"0"+"0"' # Filename Buffer (100)
+        @v 読込 '"2"+"0"+"0"' # Read Buffer (200+)
+        @v 零値 '"0"'
+        @v 終値 '"-"+"1"'
+        @v 空 '" "'
+
+        # Char codes
+        @v 譜 '"1"+"0"+"2"' # f
+        @v 伊 '"1"+"0"+"5"' # i
+        @v 豆 '"1"+"2"+"2"' # z
+        @v 仏 '"9"+"8"'     # b
+        @v 宇 '"1"+"1"+"7"' # u
+        @v ＿ '"9"+"5"'     # _
+        @v 寝 '"1"+"1"+"0"' # n
+        @v 阿 '"9"+"7"'     # a
+        @v 帝 '"1"+"1"+"6"' # t
+        @v Ｖ '"1"+"1"+"8"' # v
+        @v 絵 '"1"+"0"+"1"' # e
+        @v ド '"4"+"6"'     # .
+        @v 須 '"1"+"1"+"5"' # s
+        @v 無 '"1"+"0"+"9"' # m
+        @v 終端 '"0"'
+
+        $
+        コ = []
+
+        # --- Init ---
+        # Prepare Filename at address 100
+        コ.追(書 + 空 + 壺 + 空 + 譜)
+        コ.追(書 + 空 + 字(101) + 空 + 伊)
+        コ.追(書 + 空 + 字(102) + 空 + 豆)
+        コ.追(書 + 空 + 字(103) + 空 + 豆)
+        コ.追(書 + 空 + 字(104) + 空 + 仏)
+        コ.追(書 + 空 + 字(105) + 空 + 宇)
+        コ.追(書 + 空 + 字(106) + 空 + 豆)
+        コ.追(書 + 空 + 字(107) + 空 + 豆)
+        コ.追(書 + 空 + 字(108) + 空 + ＿)
+        コ.追(書 + 空 + 字(109) + 空 + 寝)
+        コ.追(書 + 空 + 字(110) + 空 + 阿)
+        コ.追(書 + 空 + 字(111) + 空 + 帝)
+        コ.追(書 + 空 + 字(112) + 空 + 伊)
+        コ.追(書 + 空 + 字(113) + 空 + Ｖ)
+        コ.追(書 + 空 + 字(114) + 空 + 絵)
+        コ.追(書 + 空 + 字(115) + 空 + ド)
+        コ.追(書 + 空 + 字(116) + 空 + 阿)
+        コ.追(書 + 空 + 字(117) + 空 + 須)
+        コ.追(書 + 空 + 字(118) + 空 + 無)
+        コ.追(書 + 空 + 字(119) + 空 + 終端)
+
+        # Get StdOut Handle
+        コ.追(置 + 空 + 繰 + 空 + 陰)
+        コ.追(呼 + 空 + 出)
+        コ.追(置 + 空 + 壱 + 空 + 蓄) # RBX = StdOut (Actually need to save this?)
+        # Wait, we need RBX for FileHandle. Save StdOut to R13
+        @v 肆 '"R"+"1"+"3"'
+        コ.追(置 + 空 + 肆 + 空 + 蓄) 
+
+        # Open File
+        # RCX = Filename Addr (100)
+        コ.追(置 + 空 + 繰 + 空 + 壺)
+        コ.追(取 + 空 + 繰 + 空 + 壺) # LEA
+        コ.追(呼 + 空 + 開)           # CALL _sys_open
+        コ.追(置 + 空 + 壱 + 空 + 蓄) # RBX = File Handle
+
+        # Check if Valid (Handle != -1)
+        # Skipped for simplicity, assuming success
+
+        # Get File Size
+        コ.追(置 + 空 + 繰 + 空 + 壱)
+        コ.追(置 + 空 + タ + 空 + 零値)
+        コ.追(呼 + 空 + 寸)
+        コ.追(置 + 空 + 弐 + 空 + 蓄) # R12 = Size
+
+        # Read File
+        # ReadFile(Handle, Buffer, Size, &BytesRead, NULL)
+        コ.追(置 + 空 + 繰 + 空 + 壱)   # Handle
+        コ.追(取 + 空 + タ + 空 + 読込) # Buffer (200)
+        コ.追(置 + 空 + 蜂 + 空 + 弐)   # Size
+        コ.追(取 + 空 + 苦 + 空 + 壺)   # BytesRead (Reuse 100 as scratch)
+        コ.追(押 + 空 + 零値)           # Overlapped = NULL
+        コ.追(呼 + 空 + 読)
+
+        # Write to StdOut
+        # WriteFile(StdOut, Buffer, Size, &BytesWritten, NULL)
+        コ.追(置 + 空 + 繰 + 空 + 肆)   # StdOut
+        コ.追(取 + 空 + タ + 空 + 読込) # Buffer
+        コ.追(置 + 空 + 蜂 + 空 + 弐)   # Size
+        コ.追(取 + 空 + 苦 + 空 + 壺)   # Scratch
+        コ.追(押 + 空 + 零値)
+        コ.追(呼 + 空 + 記)
+
+        # Close Handle
+        コ.追(置 + 空 + 繰 + 空 + 壱)
+        コ.追(呼 + 空 + 閉)
+
+        # Exit
+        コ.追(置 + 空 + 繰 + 空 + 零値)
+        コ.追(呼 + 空 + 終)
+
+        表(結(コ))
+        EOF
+
+        # Generate ASM
+        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py
+        python cat_ir_gen.py > cat.ir
+        
+        # Compile to Native
+        python compiler_native.py cat.ir > cat_native.asm
+
+    # 30. Build & Run Cat (CMD Shell)
+    - name: 30. Build & Run Cat (CMD Shell)
+      shell: cmd
+      run: |
+        echo "--- Assembling Cat ---"
+        nasm -f win64 cat_native.asm -o cat_native.obj
+        
+        echo "--- Linking Cat ---"
+        link.exe cat_native.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:cat.exe
+        
+        echo "--- Running Cat (Displaying source asm) ---"
+        cat.exe
+
+
 
 
