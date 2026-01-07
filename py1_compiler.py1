@@ -25,6 +25,8 @@
 @v 双 'chr(34)'
 @v ド '"$"'
 @v 棒 '"_"'
+# 【追加】Hash char for comments
+@v 井 '"#"'
 
 # Validation
 @v 英 'isalpha'
@@ -61,7 +63,6 @@
 @v 今 'k_idx'
 @v 警 'err_msg'
 @v カ 'char_idx'
-# 【修正】Renamed from 字 to 文 to avoid conflict with chr()
 @v 文 'char'
 @v 積 'acc'
 
@@ -127,52 +128,56 @@ $
   も 線.削() == ド:
    0
   他:
-   # --- ULTRA STRICT VALIDATION ---
-   
-   # 1. No Raw Quotes
-   も 単 入 線:
-    警 = 禁 + 線
-    表(警)
-    系.終(1)
-   も 双 入 線:
-    警 = 禁 + 線
-    表(警)
-    系.終(1)
-
-   # 2. No Long Words (Alphabetic sequences > 1)
-   積 = 0
-   カ = 0
-   循 カ < 寸(線):
-    文 = 線[カ]
+   # 【追加】Skip Comment Lines (Pass through without check)
+   も 線.削().始(井):
+    表(線)
+   他:
+    # --- ULTRA STRICT VALIDATION ---
     
-    # Check if char is alphabet or underscore
-    も 文.英():
-     積 = 積 + 1
-    他:
-     # Underscore check
-     も 文 == 棒:
-      積 = 積 + 1
-     他:
-      # Reset on non-alpha (numbers, spaces, symbols)
-      積 = 0
-    
-    # Trigger Error
-    も 積 > 1:
-     警 = 罰 + 線
+    # 1. No Raw Quotes
+    も 単 入 線:
+     警 = 禁 + 線
+     表(警)
+     系.終(1)
+    も 双 入 線:
+     警 = 禁 + 線
      表(警)
      系.終(1)
 
-    カ = カ + 1
+    # 2. No Long Words (Alphabetic sequences > 1)
+    積 = 0
+    カ = 0
+    循 カ < 寸(線):
+     文 = 線[カ]
+     
+     # Check if char is alphabet or underscore
+     も 文.英():
+      積 = 積 + 1
+     他:
+      # Underscore check
+      も 文 == 棒:
+       積 = 積 + 1
+      他:
+       # Reset
+       積 = 0
+     
+     # Trigger Error
+     も 積 > 1:
+      警 = 罰 + 線
+      表(警)
+      系.終(1)
 
-   # --- MACRO REPLACEMENT ---
-   出 = 線
-   今 = 0
-   循 今 < 寸(並):
-    鍵 = 並[今]
-    値 = 辞[鍵]
-    出 = 出.換(鍵, 値)
-    今 = 今 + 1
-   
-   表(出)
+     カ = カ + 1
+
+    # --- MACRO REPLACEMENT ---
+    出 = 線
+    今 = 0
+    循 今 < 寸(並):
+     鍵 = 並[今]
+     値 = 辞[鍵]
+     出 = 出.換(鍵, 値)
+     今 = 今 + 1
+    
+    表(出)
 
  順 = 順 + 1
