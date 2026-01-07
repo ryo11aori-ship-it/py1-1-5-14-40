@@ -1275,6 +1275,7 @@ jobs:
       # 29. Create 'cat' Source (Strict Formatting Fix)
         # 29. Create 'cat' Source (Strict Formatting Fix 2)
         # 29. Create 'cat' Source (Fix: Replace invalid char '＿' with '底')
+        # 29. Create 'cat' Source (Fix: Use chr(10) instead of \n to avoid SyntaxError)
     - name: 29. Create Cat Source
       run: |
         cat <<EOF > cat_spec.py1
@@ -1282,7 +1283,8 @@ jobs:
         @v 表 'print'
         @v 追 'append'
         @v 字 'str'
-        @v 結 '"\n".join'
+        @v 結 'chr(10).join'
+
         @v 置 '"M"+"O"+"V"'
         @v 取 '"L"+"E"+"A"'
         @v 呼 '"C"+"A"+"L"+"L"'
@@ -1295,6 +1297,7 @@ jobs:
         @v 飛 '"J"+"M"+"P"'
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
+
         @v 壱 '"R"+"B"+"X"'
         @v 弐 '"R"+"1"+"2"'
         @v 繰 '"R"+"C"+"X"'
@@ -1303,20 +1306,24 @@ jobs:
         @v 苦 '"R"+"9"'
         @v 蓄 '"R"+"A"+"X"'
         @v 肆 '"R"+"1"+"3"'
+
         @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
         @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
         @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
         @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
+        
         @v 開 '"_"+"s"+"y"+"s"+"_"+"o"+"p"+"e"+"n"'
         @v 読 '"R"+"e"+"a"+"d"+"F"+"i"+"l"+"e"'
         @v 寸 '"G"+"e"+"t"+"F"+"i"+"l"+"e"+"S"+"i"+"z"+"e"'
         @v 閉 '"C"+"l"+"o"+"s"+"e"+"H"+"a"+"n"+"d"+"l"+"e"'
+
         @v 壺 '"1"+"0"+"0"'
         @v 地 '"2"+"0"+"0"'
         @v 無 '"0"'
         @v 負 '"-"+"1"'
         @v 空 '" "'
         @v 〆 '"0"'
+
         @v 譜 '"1"+"0"+"2"'
         @v 伊 '"1"+"0"+"5"'
         @v 豆 '"1"+"2"+"2"'
@@ -1332,6 +1339,7 @@ jobs:
         @v 須 '"1"+"1"+"5"'
         @v 矛 '"1"+"0"+"9"'
         @v 陰 '"-"+"1"+"1"'
+        
         @v コ 'codes'
 
         $
@@ -1361,7 +1369,7 @@ jobs:
         # Get StdOut Handle
         コ.追(置 + 空 + 繰 + 空 + 陰)
         コ.追(呼 + 空 + 出)
-        # Save StdOut Handle to R13 (肆)
+        # Save StdOut Handle to R13
         コ.追(置 + 空 + 肆 + 空 + 蓄)
         # Open File
         コ.追(置 + 空 + 繰 + 空 + 壺)
@@ -1396,12 +1404,13 @@ jobs:
         表(結(コ))
         EOF
 
-        # Generate ASM
+        # Generate ASM (DEBUG enabled)
         python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py || (cat cat_ir_gen.py && exit 1)
         python cat_ir_gen.py > cat.ir
         
         # Compile to Native
         python compiler_native.py cat.ir > cat_native.asm
+
 
 
 
