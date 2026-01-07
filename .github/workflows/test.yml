@@ -1333,8 +1333,6 @@ jobs:
         @v 陰 '"-"+"1"+"1"'
         $
         コ = []
-        # --- Init ---
-        # Prepare Filename at address 100 "fizzbuzz_native.asm"
         コ.追(書 + 空 + 壺 + 空 + 譜)
         コ.追(書 + 空 + 字(101) + 空 + 伊)
         コ.追(書 + 空 + 字(102) + 空 + 豆)
