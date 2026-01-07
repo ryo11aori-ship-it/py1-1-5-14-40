@@ -808,37 +808,44 @@ jobs:
         ./fizzbuzz.exe
         
       # 22. Final Consistency Check (With Diff Debugging)
+        # 22. Final Consistency Check (3-Stage Bootstrap)
     - name: 22. Final Consistency Check
       run: |
-        echo "--- Verifying Stage 1 vs Stage 2 (New Compiler Self-Hosting) ---"
+        echo "=== Ouroboros Test: 3-Stage Bootstrap Verification ==="
+        echo "Reason: The new compiler preserves comments, while the bootstrap one didn't."
+        echo "        We must verify stability between Stage 2 and Stage 3."
         
-        # 1. Generate Stage 1 (using Gen3)
+        # 1. Gen3 -> Stage 1 (Transition from Old World)
+        echo "Generating Stage 1..."
         python compiler_gen3.py py1_compiler.py1 > stage1_compiler.py
         
-        # 2. Generate Stage 2 (using Stage 1)
+        # 2. Stage 1 -> Stage 2 (First Self-Hosted Build)
+        echo "Generating Stage 2..."
         python stage1_compiler.py py1_compiler.py1 > stage2_compiler.py
         
-        # 3. Normalize
-        dos2unix stage1_compiler.py
+        # 3. Stage 2 -> Stage 3 (Stability Check)
+        echo "Generating Stage 3..."
+        python stage2_compiler.py py1_compiler.py1 > stage3_compiler.py
+        
+        # 4. Normalize & Compare
         dos2unix stage2_compiler.py
+        dos2unix stage3_compiler.py
         
-        # 4. Compare
-        sha256sum stage1_compiler.py > stage1.sha256
         sha256sum stage2_compiler.py > stage2.sha256
+        sha256sum stage3_compiler.py > stage3.sha256
         
-        HASH1=$(cut -d ' ' -f 1 stage1.sha256)
         HASH2=$(cut -d ' ' -f 1 stage2.sha256)
+        HASH3=$(cut -d ' ' -f 1 stage3.sha256)
         
-        echo "Stage 1: $HASH1"
         echo "Stage 2: $HASH2"
+        echo "Stage 3: $HASH3"
         
-        if [ "$HASH1" = "$HASH2" ]; then
-          echo "SUCCESS: The Strict Compiler is bit-perfectly self-hosting."
+        if [ "$HASH2" = "$HASH3" ]; then
+          echo "SUCCESS: The compiler has reached a fixed point."
+          echo "         Stage 2 and Stage 3 are bit-perfectly identical."
         else
-          echo "FAILURE: Mutation detected."
-          echo "--- SHOWING DIFF (Stage 1 vs Stage 2) ---"
-          # -u: Unified format, || true: Don't exit immediately so we can see the output
-          diff -u stage1_compiler.py stage2_compiler.py || true
-          echo "--- END DIFF ---"
+          echo "FAILURE: The compiler is unstable."
+          diff -u stage2_compiler.py stage3_compiler.py || true
           exit 1
         fi
+
