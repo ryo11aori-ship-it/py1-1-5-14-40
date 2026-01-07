@@ -236,4 +236,30 @@ jobs:
     - name: 19. Check NASM
       run: |
         nasm -v
+        # 20. Generate x64 Assembly
+    
+    - name: 20. Generate x64 ASM
+      run: |
+        echo "--- Compiling x64 Compiler ---"
+        python stage2_compiler.py compiler_x64.py1 > compiler_x64.py
+        
+        echo "--- Compiling WinIR to ASM ---"
+        python compiler_x64.py fizzbuzz_win.ir > fizzbuzz.asm
+        
+        echo "--- ASM Content ---"
+        cat fizzbuzz.asm
+
+    # 21. Build & Run EXE
+    - name: 21. Build & Run EXE
+      run: |
+        echo "--- Assembling (NASM) ---"
+        nasm -f win64 fizzbuzz.asm -o fizzbuzz.obj
+        
+        echo "--- Linking (GCC) ---"
+        # GCC acts as a linker here
+        gcc fizzbuzz.obj -o fizzbuzz.exe
+        
+        echo "--- Running FIZZBUZZ.EXE ---"
+        ./fizzbuzz.exe
+
 
