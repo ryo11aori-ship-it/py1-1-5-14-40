@@ -1377,19 +1377,5 @@ jobs:
         cat.exe
 
 
-    # 30. Build & Run Cat (CMD Shell)
-    - name: 30. Build & Run Cat (CMD Shell)
-      shell: cmd
-      run: |
-        echo "--- Assembling Cat ---"
-        nasm -f win64 cat_native.asm -o cat_native.obj
-        
-        echo "--- Linking Cat ---"
-        link.exe cat_native.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:cat.exe
-        
-        echo "--- Running Cat ---"
-        cat.exe
-
-
 
 
