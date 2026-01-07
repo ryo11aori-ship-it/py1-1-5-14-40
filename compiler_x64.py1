@@ -1,0 +1,160 @@
+# WinIR to NASM x64 Compiler
+# Strict 1-char variable naming applied.
+
+# System
+@v 表 'print'
+@v 寸 'len'
+@v 追 'append'
+@v 裂 'split'
+@v 削 'strip'
+@v 行 'splitlines'
+@v 開 'open'
+@v 読 'read'
+@v 換 'replace'
+@v 始 'startswith'
+@v 終 'exit'
+@v 実 'exec'
+@v 字 'chr'
+@v 数 'isnumeric'
+
+# Modules
+@v 系 'sys'
+@v 係 'argv'
+@v 込 '"import sys"'
+
+# Control Flow
+@v も 'if'
+@v 他 'else'
+@v 循 'while'
+@v 入 'in'
+@v 或 'elif'
+
+# Opcodes (WinIR)
+@v 置 '"MOV"'
+@v 呼 '"CALL_API"'
+@v 連 '"LOAD_DLL"'
+@v 得 '"GET_PROC"'
+@v 書 '"WRITE_MEM"'
+@v 札 '"LABEL"'
+@v 比 '"CMP"'
+@v 零 '"JZ"'
+@v 加 '"ADD"'
+@v 押 '"PUSH"'
+
+# Assembly Templates
+# Header: Setup text section, externs, main entry
+# Note: "sub rsp, 40" reserves Shadow Space (32) + Alignment (8)
+@v 頭 '"section .text\n  global main\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n\nmain:\n  sub rsp, 40\n"'
+# Footer: Restore stack, ret, bss section
+@v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
+
+# Formatting Constants
+@v 改 '"\n"'
+@v 空 '" "'
+@v 点 '","'
+@v 幕 '"  "'
+@v 基 '"byte [mem_base + "'
+@v 閉 '"]"'
+@v 影 '"qword [rsp + 32]"'
+
+# Variables
+@v 外 'args'
+@v 径 'path'
+@v 本 'body'
+@v 生 'lines'
+@v 順 'i'
+@v 線 'line'
+@v 部 'parts'
+@v 技 'op'
+@v 先 'dst'
+@v 元 'src'
+@v 出 'out'
+
+$
+
+実(込)
+
+# Main Logic
+外 = 系.係
+も 寸(外) < 2:
+ 表("Usage: compiler_x64.py <win.ir>")
+ 系.終(1)
+
+径 = 外[1]
+本 = 開(径, "r", encoding="utf-8").読()
+生 = 本.行()
+
+# Output Header
+表(頭)
+
+順 = 0
+循 順 < 寸(生):
+ 線 = 生[順]
+ 線 = 線.削()
+ 部 = 線.裂(空)
+ 技 = 部[0]
+ 出 = ""
+
+ # Skip empty lines
+ も 寸(線) == 0:
+  0
+
+ # LOAD_DLL / GET_PROC -> Handled by static linking (extern), ignore in ASM body
+ 或 技 == 連:
+  出 = "; " + 線
+ 或 技 == 得:
+  出 = "; " + 線
+
+ # LABEL name -> name:
+ 或 技 == 札:
+  出 = 部[1] + ":"
+
+ # MOV dst, src -> mov dst, src
+ 或 技 == 置:
+  先 = 部[1]
+  元 = 部[2]
+  出 = 幕 + "mov " + 先 + 点 + 元
+
+ # ADD dst, src -> add dst, src
+ 或 技 == 加:
+  先 = 部[1]
+  元 = 部[2]
+  出 = 幕 + "add " + 先 + 点 + 元
+
+ # CMP dst, src -> cmp dst, src
+ 或 技 == 比:
+  先 = 部[1]
+  元 = 部[2]
+  出 = 幕 + "cmp " + 先 + 点 + 元
+
+ # JZ label -> je label
+ 或 技 == 零:
+  先 = 部[1]
+  出 = 幕 + "je " + 先
+
+ # WRITE_MEM addr val -> mov byte [mem_base + addr], val
+ 或 技 == 書:
+  先 = 部[1]
+  元 = 部[2]
+  # "  mov byte [mem_base + " + addr + "], " + val
+  出 = 幕 + "mov " + 基 + 先 + 閉 + 点 + 元
+
+ # PUSH val -> mov qword [rsp + 32], val (Win64 Arg5 slot)
+ 或 技 == 押:
+  元 = 部[1]
+  # "  mov qword [rsp + 32], " + val
+  出 = 幕 + "mov " + 影 + 点 + 元
+ 
+ # CALL_API name -> call name
+ 或 技 == 呼:
+  先 = 部[1]
+  出 = 幕 + "call " + 先
+
+ # Output generated line
+ も 寸(出) > 0:
+  表(出)
+
+ 順 = 順 + 1
+
+# Output Footer
+表(尾)
