@@ -849,3 +849,33 @@ jobs:
           exit 1
         fi
 
+    # 23. Upload All Artifacts
+    - name: 23. Upload All Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: py1-release-artifacts
+        path: |
+          # Source Code
+          *.py1
+          
+          # Generated Compilers (Stages)
+          stage*_compiler.py
+          compiler_gen*.py
+          compiler_x64.py
+          
+          # Intermediate Representations
+          *.ir
+          win_ir_gen.py
+          
+          # Native Code & Executables
+          *.asm
+          *.obj
+          *.exe
+          
+          # Verification Hashes
+          *.sha256
+          
+          # Mock VM
+          vm_win_mock.py
+
+
