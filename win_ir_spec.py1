@@ -5,21 +5,18 @@
 @v 表 'print'
 @v 追 'append'
 @v 字 'str'
-@v 結合 '"\n".join'
+# 【修正】結合 -> 結
+@v 結 '"\n".join'
 
-# Opcodes (Windows Native IR)
+# Opcodes
 @v 置 '"MOV"'
 @v 確 '"ALLOC"'
 @v 書 '"WRITE_MEM"'
-
-# Control
 @v 飛 '"JMP"'
 @v 零 '"JZ"'
 @v 非 '"JNZ"'
 @v 比 '"CMP"'
 @v 加 '"ADD"'
-
-# OS API
 @v 連 '"LOAD_DLL"'
 @v 得 '"GET_PROC"'
 @v 呼 '"CALL_API"'
@@ -30,69 +27,101 @@
 @v 弐 '"R2"'
 @v 参 '"R3"'
 @v 肆 '"R4"'
+@v 繰 '"RCX"'
+@v タ '"RDX"'
+@v 蜂 '"R8"'
+@v 苦 '"R9"'
+@v 蓄 '"RAX"'
 
-# Data
-@v 幕 '"--- Generating Windows Native IR ---"'
+# Data & Values
 @v コ 'codes'
-
-# Values
 @v 蔵 '"kernel32.dll"'
 @v 出 '"GetStdHandle"'
-@v 書込 '"WriteFile"'
+# 【修正】書込 -> 記 (Write)
+@v 記 '"WriteFile"'
 @v 終 '"ExitProcess"'
-@v 負1 '"-11"'
+# 【修正】負1 -> 陰 (Negative/Shadow)
+@v 陰 '"-11"'
+@v 空 '" "'
+
+# Constants for Logic
+@v 一 '"1"'
+@v 十 '"10"'
+@v 限 '"16"'
+@v 二 '"2"'
+@v 頁 '"100"'
+@v 次 '"101"'
+@v 予 '"200"'
+@v 無 '"0"'
+@v 判 '"49"'
+
+# Labels
+@v 廻 '"LOOP_START"'
+@v 去 '"EXIT"'
 
 $
 
 コ = []
 
-# --- Header: Setup OS API ---
-# Handle = GetStdHandle(-11)
-コ.追("LOAD_DLL kernel32.dll")
-コ.追("GET_PROC GetStdHandle")
-コ.追("MOV RCX -11")
-コ.追("CALL_API GetStdHandle")
-コ.追("MOV R4 RAX")
+# --- Helper logic using concatenation to avoid string literals ---
+# MOV RCX -11 -> 置 + 空 + 繰 + 空 + 陰
 
-# Prepare WriteFile address
-コ.追("GET_PROC WriteFile")
-# Prepare ExitProcess address
-コ.追("GET_PROC ExitProcess")
+# LOAD_DLL kernel32.dll
+コ.追(連 + 空 + 蔵)
+# GET_PROC GetStdHandle
+コ.追(得 + 空 + 出)
+# MOV RCX -11
+コ.追(置 + 空 + 繰 + 空 + 陰)
+# CALL_API GetStdHandle
+コ.追(呼 + 空 + 出)
+# MOV R4 RAX
+コ.追(置 + 空 + 肆 + 空 + 蓄)
+
+# GET_PROC WriteFile
+コ.追(得 + 空 + 記)
+# GET_PROC ExitProcess
+コ.追(得 + 空 + 終)
 
 # --- Logic: FizzBuzz Loop (1 to 16) ---
-コ.追("MOV R1 1")
+# MOV R1 1
+コ.追(置 + 空 + 壱 + 空 + 一)
 
 # LABEL LOOP_START
-コ.追("LABEL LOOP_START")
+コ.追(札 + 空 + 廻)
 
-# CMP R1, 16
-コ.追("MOV R2 16")
-コ.追("CMP R1 R2")
+# CMP R1 16
+コ.追(置 + 空 + 弐 + 空 + 限)
+コ.追(比 + 空 + 壱 + 空 + 弐)
 # JZ EXIT
-コ.追("JZ EXIT")
+コ.追(零 + 空 + 去)
 
 # FizzBuzz Logic Mock (Output "1")
-コ.追("WRITE_MEM 100 49") # '1'
-コ.追("WRITE_MEM 101 10") # '\n'
+# WRITE_MEM 100 49 ('1')
+コ.追(書 + 空 + 頁 + 空 + 判)
+# WRITE_MEM 101 10 ('\n')
+コ.追(書 + 空 + 次 + 空 + 十)
 
 # Arg1: RCX = Handle (R4)
-コ.追("MOV RCX R4")
+コ.追(置 + 空 + 繰 + 空 + 肆)
 # Arg2: RDX = Buffer Address (100)
-コ.追("MOV RDX 100")
+コ.追(置 + 空 + タ + 空 + 頁)
 # Arg3: R8 = Length (2)
-コ.追("MOV R8 2")
+コ.追(置 + 空 + 蜂 + 空 + 二)
 # Arg4: R9 = WrittenBytesPtr (200)
-コ.追("MOV R9 200")
+コ.追(置 + 空 + 苦 + 空 + 予)
 # Arg5: Stack param (0)
-コ.追("PUSH 0") 
-コ.追("CALL_API WriteFile")
+コ.追(押 + 空 + 無)
+# CALL_API WriteFile
+コ.追(呼 + 空 + 記)
 
 # Increment R1
-コ.追("ADD R1 1")
+コ.追(加 + 空 + 壱 + 空 + 一)
 
 # LABEL EXIT
-コ.追("LABEL EXIT")
-コ.追("MOV RCX 0")
-コ.追("CALL_API ExitProcess")
+コ.追(札 + 空 + 去)
+# MOV RCX 0
+コ.追(置 + 空 + 繰 + 空 + 無)
+# CALL_API ExitProcess
+コ.追(呼 + 空 + 終)
 
-表(結合(コ))
+表(結(コ))
