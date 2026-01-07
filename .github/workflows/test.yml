@@ -612,8 +612,7 @@ jobs:
     - name: 19. Check NASM
       run: nasm -v
 
-    # 19.5 Create compiler_x64.py1
-        # 19.5 Create compiler_x64.py1 (Fix: String Concatenation)
+        # 19.5 Create compiler_x64.py1 (Fix: Explicit Operand Sizes)
     - name: 19.5 Create compiler_x64.py1
       run: |
         cat <<EOF > compiler_x64.py1
@@ -757,13 +756,17 @@ jobs:
           先 = 部[1]
           出 = 幕 + 舞 + 先
 
+         # WRITE_MEM: Force BYTE size for immediate values
          或 技 == 書:
           先 = 部[1]
           元 = 部[2]
           出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
+         
+         # PUSH (Shadow Space): qword
          或 技 == 押:
           元 = 部[1]
           出 = 幕 + 転 + 影 + 点 + 元
+         
          或 技 == 呼:
           先 = 部[1]
           出 = 幕 + 喚 + 先
@@ -775,6 +778,7 @@ jobs:
 
         表(尾)
         EOF
+
 
 
     # 20. Generate x64 ASM
