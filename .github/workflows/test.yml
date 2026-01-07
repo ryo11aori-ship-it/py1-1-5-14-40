@@ -216,6 +216,7 @@ jobs:
 
     # 17. Windows Native IR
         # 17. Windows Native IR (修正版: LEA命令追加)
+        # 17. Windows Native IR (修正版: インラインコメント除去)
     - name: 17. Windows Native IR
       run: |
         # --- 1. WinIR Generator (Spec) ---
@@ -227,7 +228,7 @@ jobs:
         @v 結 '"\n".join'
 
         @v 置 '"MOV"'
-        @v 取 '"LEA"'  # New: Load Effective Address
+        @v 取 '"LEA"'
         @v 書 '"WRITE_MEM"'
         @v 零 '"JZ"'
         @v 比 '"CMP"'
@@ -279,7 +280,8 @@ jobs:
         コ.追(得 + 空 + 出)
         コ.追(置 + 空 + 繰 + 空 + 陰)
         コ.追(呼 + 空 + 出)
-        コ.追(置 + 空 + 肆 + 空 + 蓄) # Save Handle
+        # Save Handle
+        コ.追(置 + 空 + 肆 + 空 + 蓄)
         コ.追(得 + 空 + 記)
         コ.追(得 + 空 + 終)
 
@@ -300,10 +302,11 @@ jobs:
 
         # Call WriteFile
         コ.追(置 + 空 + 繰 + 空 + 肆)
-        # 【修正】Use LEA for pointers
-        コ.追(取 + 空 + タ + 空 + 頁) # LEA RDX, 100
+        # Use LEA for pointers (LEA RDX 100)
+        コ.追(取 + 空 + タ + 空 + 頁)
         コ.追(置 + 空 + 蜂 + 空 + 二)
-        コ.追(取 + 空 + 苦 + 空 + 予) # LEA R9, 200
+        # LEA R9 200
+        コ.追(取 + 空 + 苦 + 空 + 予)
         コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 記)
 
@@ -470,7 +473,7 @@ jobs:
             他:
              レ[先] = 整(元)
 
-          # 【修正】LEA behaves like MOV in Mock (int -> int)
+          # LEA behaves like MOV in Mock
           或 技 == 取:
            先 = 部[1]
            元 = 部[2]
