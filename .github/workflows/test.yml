@@ -29,7 +29,6 @@ jobs:
     # 1. ブートストラップ
     - name: 1. Bootstrap Generation 1
       run: |
-        echo "--- Normalizing Source to LF ---"
         dos2unix compiler.py1
         python py1.py compiler.py1 > compiler_gen2.py
         dos2unix compiler_gen2.py
@@ -120,8 +119,6 @@ jobs:
         gcc -o vm.exe vm.c
         ./vm.exe fizzbuzz.ir
 
-    # 8-14 Skipped for brevity
-
     # 15. Self-Hosting Compiler
     - name: 15. Self-Hosting Compiler
       run: |
@@ -137,7 +134,7 @@ jobs:
         python stage2_compiler.py py1repl.py1 > py1repl_final.py
         python py1repl_final.py fizzbuzz.ir
 
-    # 17. Windows Native IR (Correct YAML Indentation & 1-char Vars)
+    # 17. Windows Native IR (Final Fix: Correct 1-char vars)
     - name: 17. Windows Native IR
       run: |
         cat <<EOF > win_ir_spec.py1
@@ -197,13 +194,13 @@ jobs:
         # Values
         @v 穴 '"0"'
         @v 改 '"10"'
-        @v 父 '"70"'
-        @v 愛 '"105"'
-        @v 寝 '"122"'
-        @v 豚 '"66"'
-        @v 鵜 '"117"'
-        @v 丸 '"48"'
-        @v 棒 '"49"'
+        @v 父 '"70"'  
+        @v 愛 '"105"' 
+        @v 寝 '"122"' 
+        @v 豚 '"66"'  
+        @v 鵜 '"117"' 
+        @v 丸 '"48"'  
+        @v 棒 '"49"'  
         @v 損 '"-10"'
 
         # Labels
@@ -377,11 +374,11 @@ jobs:
         表(結(コ))
         EOF
 
-        # Generate IR (with error check)
+        # Generate IR (Debug enabled)
         python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py || (cat win_ir_gen.py && exit 1)
         python win_ir_gen.py > fizzbuzz_win.ir
         
-        # --- 2. Mock VM (Initialized Registers) ---
+        # --- 2. Mock VM (Correctly Initialized) ---
         cat <<EOF > vm_win_mock.py1
         # Mock VM with LEA support
         @v 表 'print'
@@ -424,6 +421,17 @@ jobs:
         @v 加 '"ADD"'
         @v 押 '"PUSH"'
 
+        # Register Macros for Init
+        @v 蓄 '"RAX"'
+        @v 壱 '"RBX"'
+        @v 繰 '"RCX"'
+        @v タ '"RDX"'
+        @v 蜂 '"R8"'
+        @v 苦 '"R9"'
+        @v 弐 '"R12"'
+        @v 肆 '"R13"'
+        @v 旗 '"ZF"'
+
         @v 外 'args'
         @v 径 'path'
         @v 本 'body'
@@ -463,11 +471,6 @@ jobs:
         @v モ '"r"'
         @v 権 '"utf-8"'
         @v 号 'encoding'
-        @v 蓄 '"RAX"'
-        @v 繰 '"RCX"'
-        @v タ '"RDX"'
-        @v 蜂 '"R8"'
-        @v 旗 '"ZF"'
         @v 空 '""'
         @v 説 '"Usage"'
 
@@ -493,8 +496,8 @@ jobs:
           系.終(0)
 
         術 動(コ):
-         # Initialize Registers to avoid ValueError
-         レ = {'RAX':0, 'RBX':0, 'RCX':0, 'RDX':0, 'R8':0, 'R9':0, 'R12':0, 'R13':0, 'ZF':0}
+         # Initialize regs to avoid KeyError/ValueError
+         レ = {蓄:0, 壱:0, 繰:0, タ:0, 蜂:0, 苦:0, 弐:0, 肆:0, 旗:0}
          メ = {}
          局 = {}
          指 = 0
@@ -610,7 +613,7 @@ jobs:
     - name: 19. Check NASM
       run: nasm -v
 
-    # 19.5 Create compiler_x64.py1 (Fix: No inline comments, Add JMP)
+    # 19.5 Create compiler_x64.py1
     - name: 19.5 Create compiler_x64.py1
       run: |
         cat <<EOF > compiler_x64.py1
