@@ -1093,11 +1093,15 @@ jobs:
     # Phase C: Native File I/O (The "cat" Command)
     # ---------------------------------------------------
 
-            # 28. Update Native Compiler (Robust Stack Strategy)
-    - name: 28. Update Native Compiler (Add File I/O)
+        # ---------------------------------------------------
+    # Phase C: Native Hello World (Base Verification)
+    # ---------------------------------------------------
+
+    # 28. Restore Working Native Compiler (Base: Step 26)
+    - name: 28. Restore Working Native Compiler
       run: |
         cat <<EOF > compiler_native.py1
-        # Native x64 Compiler with File I/O Support
+        # Native x64 Compiler (Simple & Robust)
         @v 表 'print'
         @v 寸 'len'
         @v 追 'append'
@@ -1135,10 +1139,8 @@ jobs:
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
 
-        # Header:
-        # main_logic uses 40 bytes (32 shadow + 8 align).
-        # _sys_open allocates its own frame to safely call CreateFileA (7 args).
-        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 40\n  jmp main_logic\n\n_sys_open:\n  sub rsp, 88\n  mov rdx, 0x80000000\n  mov r8, 1\n  xor r9, r9\n  mov qword [rsp+32], 3\n  mov qword [rsp+40], 128\n  mov qword [rsp+48], 0\n  call CreateFileA\n  add rsp, 88\n  ret\n\nmain_logic:\n"'
+        # Header: Use the proven 'sub rsp, 40' from FizzBuzz test
+        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 40\n"'
         
         @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
 
@@ -1271,7 +1273,7 @@ jobs:
         # Re-compile the native compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create Cat Source (Debug: Simple Hello - FIXED)
+    # 29. Create Cat Source (Native Hello World - Clean)
     - name: 29. Create Cat Source (Debug: Simple Hello)
       run: |
         cat <<EOF > cat_spec.py1
@@ -1306,8 +1308,7 @@ jobs:
         @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
         @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
         @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
-        
-        # ExitProcess (Renamed variable '終' is used ONLY for this now)
+        # ExitProcess
         @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
 
         @v 壺 '"1"+"0"+"0"'
@@ -1320,7 +1321,7 @@ jobs:
         @v 譜 '"7"+"2"'
         # i
         @v 伊 '"1"+"0"+"5"'
-        # newline (Renamed to '改' to avoid collision)
+        # newline
         @v 改 '"1"+"0"'
         
         @v コ 'codes'
@@ -1356,8 +1357,8 @@ jobs:
         表(結(コ))
         EOF
 
-        # Generate ASM (DEBUG enabled)
-        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py || (cat cat_ir_gen.py && exit 1)
+        # Generate ASM
+        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py
         python cat_ir_gen.py > cat.ir
         python compiler_native.py cat.ir > cat_native.asm
 
