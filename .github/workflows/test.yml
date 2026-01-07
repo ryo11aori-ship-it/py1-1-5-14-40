@@ -1274,6 +1274,7 @@ jobs:
       # 29. Create 'cat' Source (Strict 1-char variables)
       # 29. Create 'cat' Source (Strict Formatting Fix)
         # 29. Create 'cat' Source (Strict Formatting Fix 2)
+        # 29. Create 'cat' Source (Fix: Replace invalid char '＿' with '底')
     - name: 29. Create Cat Source
       run: |
         cat <<EOF > cat_spec.py1
@@ -1321,7 +1322,7 @@ jobs:
         @v 豆 '"1"+"2"+"2"'
         @v 仏 '"9"+"8"'
         @v 宇 '"1"+"1"+"7"'
-        @v ＿ '"9"+"5"'
+        @v 底 '"9"+"5"'
         @v 寝 '"1"+"1"+"0"'
         @v 阿 '"9"+"7"'
         @v 帝 '"1"+"1"+"6"'
@@ -1332,8 +1333,11 @@ jobs:
         @v 矛 '"1"+"0"+"9"'
         @v 陰 '"-"+"1"+"1"'
         @v コ 'codes'
+
         $
         コ = []
+        # --- Init ---
+        # Prepare Filename "fizzbuzz_native.asm"
         コ.追(書 + 空 + 壺 + 空 + 譜)
         コ.追(書 + 空 + 字(101) + 空 + 伊)
         コ.追(書 + 空 + 字(102) + 空 + 豆)
@@ -1342,7 +1346,7 @@ jobs:
         コ.追(書 + 空 + 字(105) + 空 + 宇)
         コ.追(書 + 空 + 字(106) + 空 + 豆)
         コ.追(書 + 空 + 字(107) + 空 + 豆)
-        コ.追(書 + 空 + 字(108) + 空 + ＿)
+        コ.追(書 + 空 + 字(108) + 空 + 底)
         コ.追(書 + 空 + 字(109) + 空 + 寝)
         コ.追(書 + 空 + 字(110) + 空 + 阿)
         コ.追(書 + 空 + 字(111) + 空 + 帝)
@@ -1392,12 +1396,13 @@ jobs:
         表(結(コ))
         EOF
 
-        # Generate ASM (DEBUG enabled)
+        # Generate ASM
         python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py || (cat cat_ir_gen.py && exit 1)
         python cat_ir_gen.py > cat.ir
         
         # Compile to Native
         python compiler_native.py cat.ir > cat_native.asm
+
 
 
     # 30. Build & Run Cat (CMD Shell)
