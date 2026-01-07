@@ -1097,11 +1097,11 @@ jobs:
     # Phase C: Native Hello World (Base Verification)
     # ---------------------------------------------------
 
-    # 28. Restore Working Native Compiler (Base: Step 26)
-    - name: 28. Restore Working Native Compiler
+        # 28. Update Native Compiler (Fix: Safe Stack Wrapper for CreateFile)
+    - name: 28. Update Native Compiler (Add File I/O)
       run: |
         cat <<EOF > compiler_native.py1
-        # Native x64 Compiler (Simple & Robust)
+        # Native x64 Compiler with File I/O Support
         @v 表 'print'
         @v 寸 'len'
         @v 追 'append'
@@ -1139,10 +1139,11 @@ jobs:
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
 
-        # Header: Use the proven 'sub rsp, 40' from FizzBuzz test
-        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 40\n"'
+        # Header: Safe wrapper for CreateFileA
+        # _sys_open: RCX = Filename Address (LEA'd by caller)
+        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 8\n  and rsp, -16\n  sub rsp, 256\n  jmp main_logic\n\n_sys_open:\n  ; CreateFileA wrapper\n  ; RCX is already Filename\n  mov rdx, 0x80000000 ; GENERIC_READ\n  mov r8, 1           ; FILE_SHARE_READ\n  xor r9, r9          ; SecurityAttributes = NULL\n  mov qword [rsp+32], 3   ; OPEN_EXISTING\n  mov qword [rsp+40], 128 ; FILE_ATTRIBUTE_NORMAL\n  mov qword [rsp+48], 0   ; TemplateFile = NULL\n  call CreateFileA\n  ret\n\nmain_logic:\n"'
         
-        @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
+        @v 尾 '"  add rsp, 256\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
 
         @v 改 '"\n"'
         @v 空 '" "'
