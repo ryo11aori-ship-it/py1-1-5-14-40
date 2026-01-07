@@ -61,7 +61,8 @@
 @v 今 'k_idx'
 @v 警 'err_msg'
 @v カ 'char_idx'
-@v 字 'char'
+# 【修正】Renamed from 字 to 文 to avoid conflict with chr()
+@v 文 'char'
 @v 積 'acc'
 
 $
@@ -142,14 +143,14 @@ $
    積 = 0
    カ = 0
    循 カ < 寸(線):
-    字 = 線[カ]
+    文 = 線[カ]
     
     # Check if char is alphabet or underscore
-    も 字.英():
+    も 文.英():
      積 = 積 + 1
     他:
-     # Underscore check (simple way since no 'or' macro)
-     も 字 == 棒:
+     # Underscore check
+     も 文 == 棒:
       積 = 積 + 1
      他:
       # Reset on non-alpha (numbers, spaces, symbols)
