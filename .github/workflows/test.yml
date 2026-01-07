@@ -1093,8 +1093,7 @@ jobs:
     # Phase C: Native File I/O (The "cat" Command)
     # ---------------------------------------------------
 
-        # 28. Update Native Compiler (Fix: Stack Alignment & Shadow Space)
-        # 28. Update Native Compiler (Fix: Safe Stack Wrapper for CreateFile)
+            # 28. Update Native Compiler (Robust Stack Strategy)
     - name: 28. Update Native Compiler (Add File I/O)
       run: |
         cat <<EOF > compiler_native.py1
@@ -1136,11 +1135,12 @@ jobs:
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
 
-        # Header: Safe wrapper for CreateFileA
-        # _sys_open: RCX = Filename Address (LEA'd by caller)
-        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 8\n  and rsp, -16\n  sub rsp, 256\n  jmp main_logic\n\n_sys_open:\n  ; CreateFileA wrapper\n  ; RCX is already Filename\n  mov rdx, 0x80000000 ; GENERIC_READ\n  mov r8, 1           ; FILE_SHARE_READ\n  xor r9, r9          ; SecurityAttributes = NULL\n  mov qword [rsp+32], 3   ; OPEN_EXISTING\n  mov qword [rsp+40], 128 ; FILE_ATTRIBUTE_NORMAL\n  mov qword [rsp+48], 0   ; TemplateFile = NULL\n  call CreateFileA\n  ret\n\nmain_logic:\n"'
+        # Header:
+        # main_logic uses 40 bytes (32 shadow + 8 align).
+        # _sys_open allocates its own frame to safely call CreateFileA (7 args).
+        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 40\n  jmp main_logic\n\n_sys_open:\n  sub rsp, 88\n  mov rdx, 0x80000000\n  mov r8, 1\n  xor r9, r9\n  mov qword [rsp+32], 3\n  mov qword [rsp+40], 128\n  mov qword [rsp+48], 0\n  call CreateFileA\n  add rsp, 88\n  ret\n\nmain_logic:\n"'
         
-        @v 尾 '"  add rsp, 256\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
+        @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
 
         @v 改 '"\n"'
         @v 空 '" "'
@@ -1271,9 +1271,7 @@ jobs:
         # Re-compile the native compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-
-
-          # 29. Create Cat Source (Debug: Simple Hello - FIXED)
+    # 29. Create Cat Source (Debug: Simple Hello - FIXED)
     - name: 29. Create Cat Source (Debug: Simple Hello)
       run: |
         cat <<EOF > cat_spec.py1
@@ -1375,6 +1373,7 @@ jobs:
         
         echo "--- Running Cat ---"
         cat.exe
+
 
 
 
