@@ -379,7 +379,7 @@ jobs:
         python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py || (echo "--- IR Spec Compilation Failed ---" && cat win_ir_gen.py && exit 1)
         python win_ir_gen.py > fizzbuzz_win.ir
         
-                # --- 2. Mock VM (Fix: Rename '安全' to '安') ---
+                # --- 2. Mock VM (Replace this block entirely) ---
         cat <<EOF > vm_win_mock.py1
         # Mock VM with safety check
         @v 表 'print'
@@ -474,7 +474,7 @@ jobs:
 
         実(込)
 
-        # Safety Helper (Renamed to 1 char '安')
+        # Safety Helper (One char name)
         術 安(鍵, レ):
          も 鍵 入 レ:
           返(レ[鍵])
@@ -532,7 +532,6 @@ jobs:
            元 = 部[2]
            レ[先] = 安(元, レ)
 
-          # LEA
           或 技 == 取:
            先 = 部[1]
            元 = 部[2]
@@ -548,7 +547,6 @@ jobs:
            元 = 部[2]
            甲 = 安(先, レ)
            乙 = 安(元, レ)
-           
            も 甲 == 乙:
             レ[旗] = 1
            他:
@@ -558,7 +556,6 @@ jobs:
            も レ.拾(旗, 0) == 1:
             指 = 辞[部[1]]
 
-          # JMP
           或 技 == 飛:
            指 = 辞[部[1]]
           
@@ -591,6 +588,7 @@ jobs:
 
         動(コ)
         EOF
+
 
         
         # Compile and Run Mock VM (DEBUG: Print error if failed)
