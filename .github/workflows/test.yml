@@ -214,7 +214,7 @@ jobs:
         python stage2_compiler.py py1repl.py1 > py1repl_final.py
         python py1repl_final.py fizzbuzz.ir
 
-        # 17. Windows Native IR (Final Fix: Remove ALL quotes in body)
+    # 17. Windows Native IR (Final Fix: Remove ALL quotes in body)
     - name: 17. Windows Native IR
       run: |
         cat <<EOF > win_ir_spec.py1
