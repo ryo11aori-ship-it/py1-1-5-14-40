@@ -379,7 +379,7 @@ jobs:
         python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py || (echo "--- IR Spec Compilation Failed ---" && cat win_ir_gen.py && exit 1)
         python win_ir_gen.py > fizzbuzz_win.ir
         
-                # --- 2. Mock VM (Replace this block entirely) ---
+                # --- 2. Mock VM (Fix: Use '安' helper for WRITE instruction) ---
         cat <<EOF > vm_win_mock.py1
         # Mock VM with safety check
         @v 表 'print'
@@ -468,13 +468,13 @@ jobs:
         @v 蜂 '"R"+"8"'
         @v 旗 '"Z"+"F"'
         @v 空 '""'
-        @v 説 '"U"+"s"+"a"+"g"+"e"'
+        @v 説 '"Usage"'
 
         $
 
         実(込)
 
-        # Safety Helper (One char name)
+        # Safety Helper
         術 安(鍵, レ):
          も 鍵 入 レ:
           返(レ[鍵])
@@ -537,9 +537,10 @@ jobs:
            元 = 部[2]
            レ[先] = 安(元, レ)
 
+          # FIXED: Use safety helper here!
           或 技 == 書:
            所 = 整(部[1])
-           値 = 整(部[2])
+           値 = 安(部[2], レ)
            メ[所] = 値
           
           或 技 == 比:
@@ -588,6 +589,7 @@ jobs:
 
         動(コ)
         EOF
+
 
 
         
