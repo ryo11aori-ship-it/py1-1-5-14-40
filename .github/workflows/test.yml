@@ -9,9 +9,8 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest # Windows環境を指定
+    runs-on: windows-latest
 
-    # Windows上のGit Bashを使用 (Linuxコマンド互換のため)
     defaults:
       run:
         shell: bash
@@ -24,29 +23,20 @@ jobs:
       with:
         python-version: '3.10'
 
-    # Windowsでは sudo locale-gen は不要/不可のため削除
-    # PythonのUTF-8設定は global env で実施済み
-
     - name: Install Black
       run: pip install black
-
-       # ... (前略)
 
     # 1. ブートストラップ
     - name: 1. Bootstrap Generation 1
       run: |
         echo "--- Normalizing Source to LF ---"
-        # WindowsのCheckoutでCRLFになっている可能性があるのでLFに統一
         dos2unix compiler.py1
         
         echo "--- Compiling Gen 1 ---"
         python py1.py compiler.py1 > compiler_gen2.py
         
         echo "--- Normalizing Output to LF ---"
-        # WindowsのPythonが出力したCRLFをLFに変換
         dos2unix compiler_gen2.py
-        
-        # Blackでフォーマット (BlackがCRLFに戻す可能性があるので再度dos2unix)
         black compiler_gen2.py
         dos2unix compiler_gen2.py
 
@@ -61,29 +51,80 @@ jobs:
         black compiler_gen3.py
         dos2unix compiler_gen3.py
 
-    # 3. 厳密な同一性検証 (SHA256)
+    # 3. 厳密な同一性検証
     - name: 3. Verify Strict Idempotency (SHA256)
       run: |
         echo "--- Calculating SHA256 Checksums ---"
         sha256sum compiler_gen2.py > gen2.sha256
         sha256sum compiler_gen3.py > gen3.sha256
         
-        cat gen2.sha256
-        cat gen3.sha256
-        
         HASH2=$(cut -d ' ' -f 1 gen2.sha256)
         HASH3=$(cut -d ' ' -f 1 gen3.sha256)
         
         if [ "$HASH2" = "$HASH3" ]; then
-          echo "SUCCESS: Byte-level reproducibility achieved (LF normalized)."
+          echo "SUCCESS: Byte-level reproducibility achieved."
         else
-          echo "FAILURE: Checksums do not match even after normalization."
+          echo "FAILURE: Checksums do not match."
           exit 1
         fi
 
-    # ... (以下、他のステップも同様に dos2unix が必要な箇所があれば適用推奨ですが、
-    #      ハッシュ比較以外では必須ではありません)
+    # 【重要】ここで厳格版ソースコードを生成して上書きする
+    - name: 3.5 Create Strict FizzBuzz Logic
+      run: |
+        cat <<EOF > fizzbuzz_while.py1
+        # Strict FizzBuzz Logic
+        # No raw strings, no keywords in body.
 
+        # Keywords & Functions
+        @v 表 'print'
+        @v 字 'str'
+        @v 循 'while'
+        @v も 'if'
+        @v 或 'elif'
+        @v 他 'else'
+        @v 剰 '%'
+        @v 等 '=='
+        @v 足 '+'
+        @v 小 '<'
+
+        # Values & Literals
+        @v 壱 '1'
+        @v 佰 '101'
+        @v 零 '0'
+        @v 三 '3'
+        @v 五 '5'
+        @v 拾 '15'
+        @v 泡 '"Fizz"'
+        @v 響 '"Buzz"'
+        @v 数 'i'
+        @v ド '$'
+
+        $
+
+        数 = 壱
+
+        # while i < 101:
+        循 数 小 佰:
+         
+         # if i % 15 == 0:
+         も 数 剰 拾 等 零:
+          表(泡 足 響)
+         
+         # elif i % 3 == 0:
+         或 数 剰 三 等 零:
+          表(泡)
+         
+         # elif i % 5 == 0:
+         或 数 剰 五 等 零:
+          表(響)
+         
+         # else:
+         他:
+          表(数)
+         
+         # i = i + 1
+         数 = 数 足 壱
+        EOF
 
     # 4. FizzBuzz (Python Transpilation)
     - name: 4. Application Test (FizzBuzz - Python)
@@ -104,83 +145,56 @@ jobs:
         python compiler_ir.py fizzbuzz_while.py1 > fizzbuzz.ir
         cat fizzbuzz.ir
 
-    # 7. ネイティブVM (C言語) のビルドと実行
-    # Windowsなので .exe を明示
+    # 7. ネイティブVM (C言語)
     - name: 7. Native VM Execution (C Implementation)
       run: |
-        echo "--- Compiling VM in C ---"
         gcc -o vm.exe vm.c
-        
-        echo "--- Executing FizzBuzz on Native VM ---"
         ./vm.exe fizzbuzz.ir
 
     # 8. 機能テスト
-    - name: 8. Feature Test (List/Dict/Methods)
+    - name: 8. Feature Test
       run: |
         python compiler_ir.py feature_test.py1 > features.ir
         ./vm.exe features.ir
 
-    # 9. Lexer Test (Minimal)
+    # 9. Lexer Test
     - name: 9. Minimal Lexer Test
       run: |
-        echo "--- Compiling Lexer ---"
         python compiler_ir.py lexer.py1 > lexer.ir
-        
-        echo "--- DEBUG: Show Generated IR ---"
-        cat -n lexer.ir
-        
-        echo "--- Running Lexer on VM ---"
         ./vm.exe lexer.ir || true
 
-    # 10. Phase 2: Python VM (No Loop) Prototype Test
+    # 10. Phase 2 VM Prototype
     - name: 10. Phase 2 VM Prototype
       run: |
-        echo "--- Compiling VM Prototype ---"
         python compiler_gen3.py vm_step.py1 > vm_step.py
-        
-        echo "--- Running VM Prototype ---"
         python vm_step.py
         
-    # 11. Phase 2.5: VM Jump & Loop Test
+    # 11. Phase 2.5: VM Jump Test
     - name: 11. VM Jump Test
       run: |
-        echo "--- Compiling VM Jump ---"
         python compiler_gen3.py vm_jump.py1 > vm_jump.py
-        
-        echo "--- Running VM Jump ---"
         python vm_jump.py
 
-    # 12. Phase 2.5: VM Full (FizzBuzz)
+    # 12. Phase 2.5: VM Full
     - name: 12. VM Full FizzBuzz
       run: |
-        echo "--- Compiling VM Full ---"
         python compiler_gen3.py vm_full.py1 > vm_full.py
-        
-        echo "--- Running VM Full ---"
         python vm_full.py
     
     # 13. Phase 3: Final py1 VM execution
     - name: 13. Phase 3 py1VM
       run: |
-        echo "--- Generating FizzBuzz IR ---"
         python compiler_ir.py fizzbuzz_while.py1 > fizzbuzz.ir
-        
-        echo "--- Compiling py1VM ---"
         python compiler_gen3.py py1vm.py1 > py1vm.py
-        
-        echo "--- Running FizzBuzz on py1VM ---"
         python py1vm.py fizzbuzz.ir
 
-    # 14. Phase 4: REPL Build & Batch Test
+    # 14. Phase 4: REPL Build
     - name: 14. Phase 4 REPL Build
       run: |
-        echo "--- Compiling py1REPL ---"
         python compiler_gen3.py py1repl.py1 > py1repl.py
-        
-        echo "--- Testing REPL in Batch Mode (FizzBuzz) ---"
         python py1repl.py fizzbuzz.ir
 
-    # 15. Phase 5: Self-Hosting Compiler
+    # 15. Self-Hosting Compiler (ここでStrictチェックが走るため、Step 3.5が必須)
     - name: 15. Self-Hosting Compiler
       run: |
         echo "--- Bootstrap: Compiling py1_compiler.py1 using old compiler ---"
@@ -192,74 +206,43 @@ jobs:
         echo "--- Running New FizzBuzz ---"
         python fizzbuzz_new.py
        
-    # 16. Phase 6: The Golden Chain (Full Self-Hosting)
+    # 16. Phase 6: The Golden Chain
     - name: 16. Final Golden Chain
       run: |
-        echo "=== Step 1: Bootstrap (Start the fire) ==="
         python compiler_gen3.py py1_compiler.py1 > stage1_compiler.py
-        
-        echo "=== Step 2: Self-Hosting (The compiler compiles itself) ==="
         python stage1_compiler.py py1_compiler.py1 > stage2_compiler.py
-        
-        echo "=== Step 3: Final Build (Build the REPL with the pure compiler) ==="
         python stage2_compiler.py py1repl.py1 > py1repl_final.py
-        
-        echo "=== Step 4: Verification (Run FizzBuzz on the final REPL) ==="
         python py1repl_final.py fizzbuzz.ir
 
-    # 17. Phase 1: Windows Native IR Definition & Mock Execution
+    # 17. Windows Native IR
     - name: 17. Windows Native IR
       run: |
-        echo "--- 1. Generating WinIR Code ---"
         python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py
         python win_ir_gen.py > fizzbuzz_win.ir
-        
-        echo "--- Generated WinIR ---"
         cat fizzbuzz_win.ir
-        
-        echo "--- 2. Compiling Mock VM ---"
         python stage2_compiler.py vm_win_mock.py1 > vm_win_mock.py
-        
-        echo "--- 3. Running WinIR on Mock VM ---"
         python vm_win_mock.py fizzbuzz_win.ir
 
-       # 18. Phase 2: Setup NASM (Assembler)
+    # 18. Phase 2: Setup NASM
     - name: 18. Setup NASM
       run: |
-        echo "--- Installing NASM ---"
         choco install nasm -y
-        
-        # Windows RunnerのPATHに追加
         echo "C:\Program Files\NASM" >> $GITHUB_PATH
         
     # 19. Check NASM
     - name: 19. Check NASM
-      run: |
-        nasm -v
-        # 20. Generate x64 Assembly
-    
+      run: nasm -v
+
+    # 20. Generate x64 Assembly
     - name: 20. Generate x64 ASM
       run: |
-        echo "--- Compiling x64 Compiler ---"
         python stage2_compiler.py compiler_x64.py1 > compiler_x64.py
-        
-        echo "--- Compiling WinIR to ASM ---"
         python compiler_x64.py fizzbuzz_win.ir > fizzbuzz.asm
-        
-        echo "--- ASM Content ---"
         cat fizzbuzz.asm
 
     # 21. Build & Run EXE
     - name: 21. Build & Run EXE
       run: |
-        echo "--- Assembling (NASM) ---"
         nasm -f win64 fizzbuzz.asm -o fizzbuzz.obj
-        
-        echo "--- Linking (GCC) ---"
-        # GCC acts as a linker here
         gcc fizzbuzz.obj -o fizzbuzz.exe
-        
-        echo "--- Running FIZZBUZZ.EXE ---"
         ./fizzbuzz.exe
-
-
