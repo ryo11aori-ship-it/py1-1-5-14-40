@@ -68,7 +68,7 @@ jobs:
           exit 1
         fi
 
-    # 【重要】ここで厳格版ソースコードを生成して上書きする
+    # 3.5 Strict FizzBuzz Logic
     - name: 3.5 Create Strict FizzBuzz Logic
       run: |
         cat <<EOF > fizzbuzz_while.py1
@@ -170,13 +170,13 @@ jobs:
         python vm_step.py
         
     # 11. Phase 2.5: VM Jump Test
-    - name: 11. VM Jump Test
+    - name: 11. Phase 2.5 VM Jump Test
       run: |
         python compiler_gen3.py vm_jump.py1 > vm_jump.py
         python vm_jump.py
 
     # 12. Phase 2.5: VM Full
-    - name: 12. VM Full FizzBuzz
+    - name: 12. Phase 2.5 VM Full FizzBuzz
       run: |
         python compiler_gen3.py vm_full.py1 > vm_full.py
         python vm_full.py
@@ -194,7 +194,7 @@ jobs:
         python compiler_gen3.py py1repl.py1 > py1repl.py
         python py1repl.py fizzbuzz.ir
 
-    # 15. Self-Hosting Compiler (ここでStrictチェックが走るため、Step 3.5が必須)
+    # 15. Self-Hosting Compiler
     - name: 15. Self-Hosting Compiler
       run: |
         echo "--- Bootstrap: Compiling py1_compiler.py1 using old compiler ---"
@@ -214,7 +214,7 @@ jobs:
         python stage2_compiler.py py1repl.py1 > py1repl_final.py
         python py1repl_final.py fizzbuzz.ir
 
-        # 17. Windows Native IR (修正版: ループジャンプ追加)
+    # 17. Windows Native IR (修正版: インラインコメント除去 & JMPループ)
     - name: 17. Windows Native IR
       run: |
         # --- 1. WinIR Generator (Spec) ---
@@ -229,7 +229,7 @@ jobs:
         @v 取 '"LEA"'
         @v 書 '"WRITE_MEM"'
         @v 零 '"JZ"'
-        @v 飛 '"JMP"' # New: JMP
+        @v 飛 '"JMP"'
         @v 比 '"CMP"'
         @v 加 '"ADD"'
         @v 連 '"LOAD_DLL"'
@@ -279,7 +279,6 @@ jobs:
         コ.追(得 + 空 + 出)
         コ.追(置 + 空 + 繰 + 空 + 陰)
         コ.追(呼 + 空 + 出)
-        # Save Handle
         コ.追(置 + 空 + 肆 + 空 + 蓄)
         コ.追(得 + 空 + 記)
         コ.追(得 + 空 + 終)
@@ -310,7 +309,7 @@ jobs:
         # Inc
         コ.追(加 + 空 + 壱 + 空 + 一)
         
-        # 【追加】JMP LOOP_START
+        # JMP LOOP_START
         コ.追(飛 + 空 + 廻)
 
         # EXIT
@@ -328,8 +327,6 @@ jobs:
         python win_ir_gen.py > fizzbuzz_win.ir
         
         # --- 2. Mock VM ---
-        # Mock doesn't strictly need JMP logic for this test if we skip it,
-        # but let's keep it consistent.
         cat <<'EOF' > vm_win_mock.py1
         # Mock VM with LEA support
         @v 表 'print'
@@ -506,7 +503,7 @@ jobs:
            も レ.拾(旗, 0) == 1:
             指 = 辞[部[1]]
 
-          # 【追加】JMP Logic
+          # JMP Logic
           或 技 == 飛:
            指 = 辞[部[1]]
           
@@ -547,7 +544,6 @@ jobs:
         python stage2_compiler.py vm_win_mock.py1 > vm_win_mock.py
         python vm_win_mock.py fizzbuzz_win.ir
 
-
     # 18. Phase 2: Setup NASM
     - name: 18. Setup NASM
       run: |
@@ -557,9 +553,8 @@ jobs:
     # 19. Check NASM
     - name: 19. Check NASM
       run: nasm -v
-        # 【追加】最新の厳格な compiler_x64.py1 を作成する
-    
-        # 19.5 Create compiler_x64.py1 (Fix: Add JMP support)
+
+    # 19.5 Create compiler_x64.py1 (Fix: No inline comments, Add JMP)
     - name: 19.5 Create compiler_x64.py1
       run: |
         cat <<'EOF' > compiler_x64.py1
@@ -597,7 +592,7 @@ jobs:
         @v 札 '"LABEL"'
         @v 較 '"CMP"'
         @v 零 '"JZ"'
-        @v 飛 '"JMP"'  # New: JMP Opcode
+        @v 飛 '"JMP"'
         @v 加 '"ADD"'
         @v 押 '"PUSH"'
 
@@ -617,7 +612,7 @@ jobs:
         @v 足 '"add "'
         @v 比 '"cmp "'
         @v 跳 '"je "'
-        @v 舞 '"jmp "' # New: jmp string
+        @v 舞 '"jmp "'
         @v 喚 '"call "'
         @v 注 '"; "'
         @v 釘 '":"'
@@ -699,10 +694,8 @@ jobs:
           先 = 部[1]
           出 = 幕 + 跳 + 先
          
-         # 【追加】JMP Logic
          或 技 == 飛:
           先 = 部[1]
-          # jmp label
           出 = 幕 + 舞 + 先
 
          或 技 == 書:
@@ -724,8 +717,7 @@ jobs:
         表(尾)
         EOF
 
-
-    # 20. Generate x64 ASM (既存のステップ)
+    # 20. Generate x64 ASM
     - name: 20. Generate x64 ASM
       run: |
         echo "--- Compiling x64 Compiler ---"
