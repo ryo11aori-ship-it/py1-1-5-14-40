@@ -222,3 +222,18 @@ jobs:
         
         echo "--- 3. Running WinIR on Mock VM ---"
         python vm_win_mock.py fizzbuzz_win.ir
+
+       # 18. Phase 2: Setup NASM (Assembler)
+    - name: 18. Setup NASM
+      run: |
+        echo "--- Installing NASM ---"
+        choco install nasm -y
+        
+        # Windows RunnerのPATHに追加
+        echo "C:\Program Files\NASM" >> $GITHUB_PATH
+        
+    # 19. Check NASM
+    - name: 19. Check NASM
+      run: |
+        nasm -v
+
