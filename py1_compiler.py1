@@ -24,10 +24,17 @@
 @v 単 'chr(39)'
 @v 双 'chr(34)'
 @v ド '"$"'
+@v 棒 '"_"'
+
+# Validation
+@v 英 'isalpha'
+@v 数 'isnumeric'
 
 # Messages
 @v 説 '"Usage: py1_compiler.py <source.py1>"'
 @v 誤 '"Error: Key must be 1 char: "'
+@v 禁 '"Error: Raw quotes forbidden in body: "'
+@v 罰 '"Error: Long word forbidden in body: "'
 @v モ '"r"'
 @v 権 '"utf-8"'
 @v 号 'encoding'
@@ -53,6 +60,9 @@
 @v 出 'out'
 @v 今 'k_idx'
 @v 警 'err_msg'
+@v カ 'char_idx'
+@v 字 'char'
+@v 積 'acc'
 
 $
 
@@ -80,19 +90,18 @@ $
  線 = 線.削()
  
  も 線.始(冠):
-  # Split by space, max 2 splits
   部 = 線.裂(空, 2)
   も 寸(部) > 2:
    鍵 = 部[1]
    値 = 部[2]
 
-   # 【追加機能】Validation: Key MUST be 1 char
+   # Validation: Key must be 1 char
    も 寸(鍵) > 1:
     警 = 誤 + 鍵
     表(警)
     系.終(1)
    
-   # Strip quotes safely (Exclusive logic)
+   # Strip quotes
    も 値.始(単):
     値 = 値.削(単)
    他:
@@ -117,7 +126,44 @@ $
   も 線.削() == ド:
    0
   他:
-   # Apply macros
+   # --- ULTRA STRICT VALIDATION ---
+   
+   # 1. No Raw Quotes
+   も 単 入 線:
+    警 = 禁 + 線
+    表(警)
+    系.終(1)
+   も 双 入 線:
+    警 = 禁 + 線
+    表(警)
+    系.終(1)
+
+   # 2. No Long Words (Alphabetic sequences > 1)
+   積 = 0
+   カ = 0
+   循 カ < 寸(線):
+    字 = 線[カ]
+    
+    # Check if char is alphabet or underscore
+    も 字.英():
+     積 = 積 + 1
+    他:
+     # Underscore check (simple way since no 'or' macro)
+     も 字 == 棒:
+      積 = 積 + 1
+     他:
+      # Reset on non-alpha (numbers, spaces, symbols)
+      積 = 0
+    
+    # Trigger Error
+    も 積 > 1:
+     警 = 罰 + 線
+     表(警)
+     系.終(1)
+
+    カ = カ + 1
+
+   # --- MACRO REPLACEMENT ---
    出 = 線
    今 = 0
    循 今 < 寸(並):
