@@ -559,7 +559,7 @@ jobs:
       run: nasm -v
         # 【追加】最新の厳格な compiler_x64.py1 を作成する
     
-        # 19.5 Create compiler_x64.py1 (Fix: Handle LEA)
+        # 19.5 Create compiler_x64.py1 (Fix: Add JMP support)
     - name: 19.5 Create compiler_x64.py1
       run: |
         cat <<'EOF' > compiler_x64.py1
@@ -597,6 +597,7 @@ jobs:
         @v 札 '"LABEL"'
         @v 較 '"CMP"'
         @v 零 '"JZ"'
+        @v 飛 '"JMP"'  # New: JMP Opcode
         @v 加 '"ADD"'
         @v 押 '"PUSH"'
 
@@ -616,6 +617,7 @@ jobs:
         @v 足 '"add "'
         @v 比 '"cmp "'
         @v 跳 '"je "'
+        @v 舞 '"jmp "' # New: jmp string
         @v 喚 '"call "'
         @v 注 '"; "'
         @v 釘 '":"'
@@ -681,13 +683,10 @@ jobs:
           先 = 部[1]
           元 = 部[2]
           出 = 幕 + 転 + 先 + 点 + 元
-
-         # 【修正】Handle LEA: lea dst, [mem_base + src]
          或 技 == 取:
           先 = 部[1]
           元 = 部[2]
           出 = 幕 + 汲 + 先 + 点 + 処 + 元 + 端
-
          或 技 == 加:
           先 = 部[1]
           元 = 部[2]
@@ -699,6 +698,13 @@ jobs:
          或 技 == 零:
           先 = 部[1]
           出 = 幕 + 跳 + 先
+         
+         # 【追加】JMP Logic
+         或 技 == 飛:
+          先 = 部[1]
+          # jmp label
+          出 = 幕 + 舞 + 先
+
          或 技 == 書:
           先 = 部[1]
           元 = 部[2]
