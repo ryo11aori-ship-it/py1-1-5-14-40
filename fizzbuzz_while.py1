@@ -1,21 +1,51 @@
-@v P 'print'
+# Strict FizzBuzz Logic
+# No raw strings, no keywords in body.
+
+# Keywords & Functions
+@v 表 'print'
+@v 字 'str'
 @v 循 'while'
 @v も 'if'
+@v 或 'elif'
 @v 他 'else'
+@v 剰 '%'
+@v 等 '=='
+@v 足 '+'
+@v 小 '<'
+
+# Values & Literals
+@v 壱 '1'
+@v 佰 '101'
+@v 零 '0'
+@v 三 '3'
+@v 五 '5'
+@v 拾 '15'
+@v 泡 '"Fizz"'
+@v 響 '"Buzz"'
+@v 数 'i'
 
 $
-# FizzBuzz using while loop
-n = 1
-循 n < 16:
- i = n
- も i % 15 == 0:
-  P("FizzBuzz")
+
+数 = 壱
+
+# while i < 101:
+循 数 小 佰:
+ 
+ # if i % 15 == 0:
+ も 数 剰 拾 等 零:
+  表(泡 足 響)
+ 
+ # elif i % 3 == 0:
+ 或 数 剰 三 等 零:
+  表(泡)
+ 
+ # elif i % 5 == 0:
+ 或 数 剰 五 等 零:
+  表(響)
+ 
+ # else:
  他:
-  も i % 3 == 0:
-   P("Fizz")
-  他:
-   も i % 5 == 0:
-    P("Buzz")
-   他:
-    P(i)
- n = n + 1
+  表(数)
+ 
+ # i = i + 1
+ 数 = 数 足 壱
