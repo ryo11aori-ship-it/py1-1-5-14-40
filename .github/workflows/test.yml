@@ -1098,10 +1098,11 @@ jobs:
     # ---------------------------------------------------
 
         # 28. Update Native Compiler (Simple & Flat - No helper functions)
-    - name: 28. Update Native Compiler (Simple)
+        # 28. Update Native Compiler (Add 'SETS' opcode for Stack Arguments)
+    - name: 28. Update Native Compiler (With Stack Helper)
       run: |
         cat <<EOF > compiler_native.py1
-        # Native x64 Compiler (Simple Flat Model)
+        # Native x64 Compiler with File I/O Support
         @v 表 'print'
         @v 寸 'len'
         @v 追 'append'
@@ -1138,8 +1139,9 @@ jobs:
         @v 飛 '"J"+"M"+"P"'
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
+        @v 積 '"S"+"E"+"T"+"S"'
 
-        # Header: Allocate plenty of stack (256 bytes) and align
+        # Header: Allocate 256 bytes for stack/shadow space
         @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 8\n  and rsp, -16\n  sub rsp, 256\n"'
         
         @v 尾 '"  add rsp, 256\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
@@ -1151,6 +1153,7 @@ jobs:
         @v 基 '"byte [mem_base + "'
         @v 閉 '"]"'
         @v 影 '"qword [rsp + 32]"'
+        @v 枠 '"qword [rsp + "'
 
         @v 転 '"mov "'
         @v 汲 '"lea "'
@@ -1252,16 +1255,16 @@ jobs:
           元 = 部[2]
           も 元 == 大:
            元 = 小
-          出 =幕 + 転 + 基 + 先 + 閉 + 点 + 元
+          出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
          
+         或 技 == 積:
+          先 = 部[1]
+          元 = 部[2]
+          # mov qword [rsp + OFFSET], VAL
+          出 = 幕 + 転 + 枠 + 先 + 閉 + 点 + 元
+
          或 技 == 押:
           元 = 部[1]
-          # PUSH emulation: Store into shadow space (rsp+32) for next call
-          # This assumes we only PUSH the 5th argument (and beyond) just before CALL
-          # For simplicity, we just support 'PUSH 0' style
-          # But wait, native PUSH instruction pushes to stack top, which messes up RSP alignment!
-          # We should use MOV [RSP+32], ... instead.
-          # compiler_native.py1 handles 'PUSH' by 'mov qword [rsp + 32], src'
           出 = 幕 + 転 + 影 + 点 + 元
          
          或 技 == 呼:
@@ -1278,13 +1281,11 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create Cat Source (Simple Hello World - No complex calls)
-        # 29. Create Cat Source (Fix: Remove comments from @v block)
-        # 29. Create Cat Source (Clean Native Hello World - No undefined symbols)
+    # 29. Create Cat Source (Full Implementation)
     - name: 29. Create Cat Source
       run: |
         cat <<EOF > cat_spec.py1
-        # Native Hello World Test
+        # Native Cat Command (Reads fizzbuzz_native.asm)
         @v 表 'print'
         @v 追 'append'
         @v 字 'str'
@@ -1293,8 +1294,7 @@ jobs:
         @v 置 '"M"+"O"+"V"'
         @v 取 '"L"+"E"+"A"'
         @v 呼 '"C"+"A"+"L"+"L"'
-        @v 連 '"L"+"O"+"A"+"D"'
-        @v 得 '"G"+"E"+"T"'
+        @v 積 '"S"+"E"+"T"+"S"'
         @v 書 '"W"+"R"+"I"+"T"+"E"'
         @v 札 '"L"+"A"+"B"+"E"+"L"'
         @v 比 '"C"+"M"+"P"'
@@ -1316,52 +1316,125 @@ jobs:
         @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
         @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
         @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
+        @v 開 '"C"+"r"+"e"+"a"+"t"+"e"+"F"+"i"+"l"+"e"+"A"'
+        @v 読 '"R"+"e"+"a"+"d"+"F"+"i"+"l"+"e"'
+        @v 寸 '"G"+"e"+"t"+"F"+"i"+"l"+"e"+"S"+"i"+"z"+"e"'
+        @v 閉 '"C"+"l"+"o"+"s"+"e"+"H"+"a"+"n"+"d"+"l"+"e"'
 
         @v 壺 '"1"+"0"+"0"'
+        @v 地 '"5"+"0"+"0"'
         @v 無 '"0"'
         @v 負 '"-"+"1"'
         @v 空 '" "'
         @v 陰 '"-"+"1"+"1"'
-
-        # H
-        @v 譜 '"7"+"2"'
-        # i
-        @v 伊 '"1"+"0"+"5"'
-        # newline
-        @v 改 '"1"+"0"'
+        @v 〆 '"0"'
         
+        # Read Flag: 0x80000000
+        @v 権 '"2"+"1"+"4"+"7"+"4"+"8"+"3"+"6"+"4"+"8"'
+
         @v コ 'codes'
 
         $
         コ = []
 
-        # Prepare "Hi\n" at address 100
-        コ.追(書 + 空 + 壺 + 空 + 譜)
-        コ.追(書 + 空 + 字(101) + 空 + 伊)
-        コ.追(書 + 空 + 字(102) + 空 + 改)
+        # --- Prepare Filename "fizzbuzz_native.asm" at 100 ---
+        # f i z z b u z z _ n a t i v e . a s m \0
+        コ.追(書 + 空 + 壺 + 空 + 字(102))
+        コ.追(書 + 空 + 字(101) + 空 + 字(105))
+        コ.追(書 + 空 + 字(102) + 空 + 字(122))
+        コ.追(書 + 空 + 字(103) + 空 + 字(122))
+        コ.追(書 + 空 + 字(104) + 空 + 字(98))
+        コ.追(書 + 空 + 字(105) + 空 + 字(117))
+        コ.追(書 + 空 + 字(106) + 空 + 字(122))
+        コ.追(書 + 空 + 字(107) + 空 + 字(122))
+        コ.追(書 + 空 + 字(108) + 空 + 字(95))
+        コ.追(書 + 空 + 字(109) + 空 + 字(110))
+        コ.追(書 + 空 + 字(110) + 空 + 字(97))
+        コ.追(書 + 空 + 字(111) + 空 + 字(116))
+        コ.追(書 + 空 + 字(112) + 空 + 字(105))
+        コ.追(書 + 空 + 字(113) + 空 + 字(118))
+        コ.追(書 + 空 + 字(114) + 空 + 字(101))
+        コ.追(書 + 空 + 字(115) + 空 + 字(46))
+        コ.追(書 + 空 + 字(116) + 空 + 字(97))
+        コ.追(書 + 空 + 字(117) + 空 + 字(115))
+        コ.追(書 + 空 + 字(118) + 空 + 字(109))
+        コ.追(書 + 空 + 字(119) + 空 + 〆)
 
-        # Get StdOut Handle
-        コ.追(置 + 空 + 繰 + 空 + 陰)
-        コ.追(呼 + 空 + 出)
+        # --- Open File ---
+        # RCX = Filename Address
+        コ.追(取 + 空 + 繰 + 空 + 壺)
+        # RDX = GENERIC_READ (0x80000000)
+        コ.追(置 + 空 + タ + 空 + 権)
+        # R8 = FILE_SHARE_READ (1)
+        コ.追(置 + 空 + 蜂 + 空 + 字(1))
+        # R9 = Security (0)
+        コ.追(置 + 空 + 苦 + 空 + 無)
+        # Stack Args using 'SETS' (mov [rsp+offset], val)
+        # [RSP+32] = OPEN_EXISTING (3)
+        コ.追(積 + 空 + 字(32) + 空 + 字(3))
+        # [RSP+40] = ATTR_NORMAL (128)
+        コ.追(積 + 空 + 字(40) + 空 + 字(128))
+        # [RSP+48] = Template (0)
+        コ.追(積 + 空 + 字(48) + 空 + 無)
+        # Call CreateFileA
+        コ.追(呼 + 空 + 開)
+        # Save Handle to RBX
         コ.追(置 + 空 + 壱 + 空 + 蓄)
 
-        # WriteFile(StdOut, Buffer, Size, &BytesWritten, NULL)
+        # Check if valid (Handle != -1). Skip for now.
+
+        # --- Get File Size ---
+        # RCX = Handle
         コ.追(置 + 空 + 繰 + 空 + 壱)
-        コ.追(取 + 空 + タ + 空 + 壺)
-        コ.追(置 + 空 + 蜂 + 空 + 字(3))
-        コ.追(取 + 空 + 苦 + 空 + 字(200))
+        # RDX = NULL
+        コ.追(置 + 空 + タ + 空 + 無)
+        コ.追(呼 + 空 + 寸)
+        # Save Size to R12
+        コ.追(置 + 空 + 弐 + 空 + 蓄)
+
+        # --- Read File ---
+        # RCX = Handle
+        コ.追(置 + 空 + 繰 + 空 + 壱)
+        # RDX = Buffer Address (500)
+        コ.追(取 + 空 + タ + 空 + 地)
+        # R8 = Size (R12)
+        コ.追(置 + 空 + 蜂 + 空 + 弐)
+        # R9 = &BytesRead (Use 100 as scratch)
+        コ.追(取 + 空 + 苦 + 空 + 壺)
+        # [RSP+32] = NULL
+        コ.追(押 + 空 + 無)
+        コ.追(呼 + 空 + 読)
+
+        # --- Get StdOut Handle ---
+        コ.追(置 + 空 + 繰 + 空 + 陰)
+        コ.追(呼 + 空 + 出)
+        コ.追(置 + 空 + 肆 + 空 + 蓄) # Save StdOut to R13
+
+        # --- Write to StdOut ---
+        # RCX = StdOut
+        コ.追(置 + 空 + 繰 + 空 + 肆)
+        # RDX = Buffer Address (500)
+        コ.追(取 + 空 + タ + 空 + 地)
+        # R8 = Size (R12)
+        コ.追(置 + 空 + 蜂 + 空 + 弐)
+        # R9 = &BytesWritten (Use 100 as scratch)
+        コ.追(取 + 空 + 苦 + 空 + 壺)
+        # [RSP+32] = NULL
         コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 記)
 
-        # Exit
+        # --- Close Handle ---
+        コ.追(置 + 空 + 繰 + 空 + 壱)
+        コ.追(呼 + 空 + 閉)
+
+        # --- Exit ---
         コ.追(置 + 空 + 繰 + 空 + 無)
         コ.追(呼 + 空 + 終)
 
         表(結(コ))
         EOF
 
-        # Generate ASM (DEBUG enabled)
-        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py || (cat cat_ir_gen.py && exit 1)
+        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py
         python cat_ir_gen.py > cat.ir
         python compiler_native.py cat.ir > cat_native.asm
 
@@ -1375,8 +1448,9 @@ jobs:
         echo "--- Linking Cat ---"
         link.exe cat_native.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:cat.exe
         
-        echo "--- Running Cat (Displaying source asm) ---"
+        echo "--- Running Cat ---"
         cat.exe
+
 
 
 
