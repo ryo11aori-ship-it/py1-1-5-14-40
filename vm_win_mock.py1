@@ -18,6 +18,8 @@
 @v 実 'exec'
 @v 字 'chr'
 @v 数 'isnumeric'
+# 【修正】Method names MUST be 1-char macros
+@v 拾 'get'
 
 # Modules
 @v 系 'sys'
@@ -68,7 +70,7 @@
 @v 元 'src'
 @v 値 'val'
 
-# 【修正】Strict 1-char vars
+# Strict 1-char vars
 @v 所 'addr'
 @v 基 'buf_addr'
 @v 幅 'length'
@@ -85,6 +87,22 @@
 @v ラ '"WriteFile"'
 @v 逝 '"ExitProcess"'
 
+# String Literals (Hidden in Macros)
+@v 説 '"Usage: vm_win_mock.py <win.ir>"'
+@v 題 '"MockWin: "'
+@v 間 '" "'
+@v モ '"r"'
+@v 権 '"utf-8"'
+@v 号 'encoding'
+
+# Register Names & Literals
+@v 蓄 '"RAX"'
+@v 繰 '"RCX"'
+@v タ '"RDX"'
+@v 蜂 '"R8"'
+@v 旗 '"ZF"'
+@v 空 '""'
+
 $
 
 実(込)
@@ -93,24 +111,25 @@ $
 術 偽(名, レ, メ):
  # GetStdHandle -> return 1
  も 名 == ハ:
-  レ["RAX"] = 1
+  レ[蓄] = 1
  
  # WriteFile
  或 名 == ラ:
-  基 = レ["RDX"]
-  幅 = レ["R8"]
-  器 = ""
+  基 = レ[タ]
+  幅 = レ[蜂]
+  器 = 空
   カ = 0
   循 カ < 幅:
-   符 = メ.get(基 + カ, 0)
+   # mem.get() -> メ.拾()
+   符 = メ.拾(基 + カ, 0)
    器 = 器 + 字(符)
    カ = カ + 1
-  表("MockWin: " + 器.削())
-  レ["RAX"] = 1
+  表(題 + 器.削())
+  レ[蓄] = 1
  
  # ExitProcess
  或 名 == 逝:
-  果 = レ["RCX"]
+  果 = レ[繰]
   系.終(0)
 
 # --- VM Logic ---
@@ -125,7 +144,8 @@ $
  順 = 0
  循 順 < 寸(コ):
   線 = コ[順]
-  部 = 線.裂(" ")
+  # split(" ") -> 裂(間)
+  部 = 線.裂(間)
   も 部[0] == 札:
    辞[部[1]] = 順
   順 = 順 + 1
@@ -133,7 +153,7 @@ $
  # 2. Execution Loop
  循 指 < 寸(コ):
   線 = コ[指]
-  部 = 線.裂(" ")
+  部 = 線.裂(間)
   技 = 部[0]
   
   # Opcode Dispatch
@@ -148,7 +168,6 @@ $
   
   # CALL_API
   或 技 == 呼:
-   # Pass Regs and Mem to Mock API
    偽(部[1], レ, メ)
   
   # MOV dst src
@@ -173,7 +192,8 @@ $
   或 技 == 比:
    先 = 部[1]
    元 = 部[2]
-   甲 = レ.get(先, 0)
+   # regs.get() -> レ.拾()
+   甲 = レ.拾(先, 0)
    も 元 入 レ:
     乙 = レ[元]
    他:
@@ -181,20 +201,22 @@ $
    
    # Simple flags
    も 甲 == 乙:
-    レ["ZF"] = 1
+    レ[旗] = 1
    他:
-    レ["ZF"] = 0
+    レ[旗] = 0
   
   # JZ label
   或 技 == 零:
-   も レ.get("ZF", 0) == 1:
+   # regs.get() -> レ.拾()
+   も レ.拾(旗, 0) == 1:
     指 = 辞[部[1]]
   
   # ADD dst val
   或 技 == 加:
    先 = 部[1]
    元 = 部[2]
-   甲 = レ.get(先, 0)
+   # regs.get() -> レ.拾()
+   甲 = レ.拾(先, 0)
    も 元.数():
     乙 = 整(元)
    他:
@@ -210,12 +232,11 @@ $
 # --- Main ---
 外 = 系.係
 も 寸(外) < 2:
- 表("Usage: vm_win_mock.py <win.ir>")
+ 表(説)
  系.終(1)
 
 径 = 外[1]
-# open(path, "r", encoding="utf-8")
-本 = 開(径, "r", encoding="utf-8").読()
+本 = 開(径, モ, 号=権).読()
 生 = 本.行()
 コ = []
 
