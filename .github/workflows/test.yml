@@ -1271,7 +1271,7 @@ jobs:
         # Re-compile the native compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create 'cat' Source (Reads 'fizzbuzz_native.asm' and prints it)
+        # 29. Create 'cat' Source (Strict 1-char variables)
     - name: 29. Create Cat Source
       run: |
         cat <<EOF > cat_spec.py1
@@ -1294,13 +1294,14 @@ jobs:
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
 
-        @v 壱 '"R"+"B"+"X"' # File Handle
-        @v 弐 '"R"+"1"+"2"' # File Size
+        @v 壱 '"R"+"B"+"X"'
+        @v 弐 '"R"+"1"+"2"'
         @v 繰 '"R"+"C"+"X"'
         @v タ '"R"+"D"+"X"'
         @v 蜂 '"R"+"8"'
         @v 苦 '"R"+"9"'
         @v 蓄 '"R"+"A"+"X"'
+        @v 肆 '"R"+"1"+"3"'
 
         @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
         @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
@@ -1313,15 +1314,16 @@ jobs:
         @v 寸 '"G"+"e"+"t"+"F"+"i"+"l"+"e"+"S"+"i"+"z"+"e"'
         @v 閉 '"C"+"l"+"o"+"s"+"e"+"H"+"a"+"n"+"d"+"l"+"e"'
 
-        # Target Filename
-        @v 名 '"f"+"i"+"z"+"z"+"b"+"u"+"z"+"z"+"_"+"n"+"a"+"t"+"i"+"v"+"e"+"."+"a"+"s"+"m"'
+        # Target Filename (fizzbuzz_native.asm)
+        # We will write this char by char
         
-        # Buffers
-        @v 壺 '"1"+"0"+"0"' # Filename Buffer (100)
-        @v 読込 '"2"+"0"+"0"' # Read Buffer (200+)
-        @v 零値 '"0"'
-        @v 終値 '"-"+"1"'
+        # Buffers & Consts (Renamed to 1-char)
+        @v 壺 '"1"+"0"+"0"' # Filename Buffer
+        @v 地 '"2"+"0"+"0"' # Read Buffer (was 読込)
+        @v 無 '"0"'         # Zero (was 零値)
+        @v 負 '"-"+"1"'     # Minus 1 (was 終値)
         @v 空 '" "'
+        @v 〆 '"0"'         # Null terminator (was 終端)
 
         # Char codes
         @v 譜 '"1"+"0"+"2"' # f
@@ -1337,14 +1339,15 @@ jobs:
         @v 絵 '"1"+"0"+"1"' # e
         @v ド '"4"+"6"'     # .
         @v 須 '"1"+"1"+"5"' # s
-        @v 無 '"1"+"0"+"9"' # m
-        @v 終端 '"0"'
+        @v 矛 '"1"+"0"+"9"' # m (renamed from 無 to avoid conflict)
+        
+        # Note: '無' is 0, '矛' is 'm' (109)
 
         $
         コ = []
 
         # --- Init ---
-        # Prepare Filename at address 100
+        # Prepare Filename at address 100 "fizzbuzz_native.asm"
         コ.追(書 + 空 + 壺 + 空 + 譜)
         コ.追(書 + 空 + 字(101) + 空 + 伊)
         コ.追(書 + 空 + 字(102) + 空 + 豆)
@@ -1363,49 +1366,49 @@ jobs:
         コ.追(書 + 空 + 字(115) + 空 + ド)
         コ.追(書 + 空 + 字(116) + 空 + 阿)
         コ.追(書 + 空 + 字(117) + 空 + 須)
-        コ.追(書 + 空 + 字(118) + 空 + 無)
-        コ.追(書 + 空 + 字(119) + 空 + 終端)
+        コ.追(書 + 空 + 字(118) + 空 + 矛)
+        コ.追(書 + 空 + 字(119) + 空 + 〆)
 
         # Get StdOut Handle
+        # HANDLE GetStdHandle(DWORD nStdHandle)
+        # STD_OUTPUT_HANDLE = -11
+        @v 陰 '"-"+"1"+"1"'
         コ.追(置 + 空 + 繰 + 空 + 陰)
         コ.追(呼 + 空 + 出)
-        コ.追(置 + 空 + 壱 + 空 + 蓄) # RBX = StdOut (Actually need to save this?)
-        # Wait, we need RBX for FileHandle. Save StdOut to R13
-        @v 肆 '"R"+"1"+"3"'
+        
+        # Save StdOut Handle to R13 (肆)
         コ.追(置 + 空 + 肆 + 空 + 蓄) 
 
         # Open File
-        # RCX = Filename Addr (100)
+        # _sys_open(RCX=FilenameAddr)
         コ.追(置 + 空 + 繰 + 空 + 壺)
         コ.追(取 + 空 + 繰 + 空 + 壺) # LEA
         コ.追(呼 + 空 + 開)           # CALL _sys_open
         コ.追(置 + 空 + 壱 + 空 + 蓄) # RBX = File Handle
 
-        # Check if Valid (Handle != -1)
-        # Skipped for simplicity, assuming success
-
         # Get File Size
+        # GetFileSize(Handle, NULL)
         コ.追(置 + 空 + 繰 + 空 + 壱)
-        コ.追(置 + 空 + タ + 空 + 零値)
+        コ.追(置 + 空 + タ + 空 + 無)
         コ.追(呼 + 空 + 寸)
         コ.追(置 + 空 + 弐 + 空 + 蓄) # R12 = Size
 
         # Read File
         # ReadFile(Handle, Buffer, Size, &BytesRead, NULL)
         コ.追(置 + 空 + 繰 + 空 + 壱)   # Handle
-        コ.追(取 + 空 + タ + 空 + 読込) # Buffer (200)
+        コ.追(取 + 空 + タ + 空 + 地)   # Buffer (200)
         コ.追(置 + 空 + 蜂 + 空 + 弐)   # Size
         コ.追(取 + 空 + 苦 + 空 + 壺)   # BytesRead (Reuse 100 as scratch)
-        コ.追(押 + 空 + 零値)           # Overlapped = NULL
+        コ.追(押 + 空 + 無)             # Overlapped = NULL
         コ.追(呼 + 空 + 読)
 
         # Write to StdOut
         # WriteFile(StdOut, Buffer, Size, &BytesWritten, NULL)
-        コ.追(置 + 空 + 繰 + 空 + 肆)   # StdOut
-        コ.追(取 + 空 + タ + 空 + 読込) # Buffer
+        コ.追(置 + 空 + 繰 + 空 + 肆)   # StdOut (Saved in R13)
+        コ.追(取 + 空 + タ + 空 + 地)   # Buffer
         コ.追(置 + 空 + 蜂 + 空 + 弐)   # Size
         コ.追(取 + 空 + 苦 + 空 + 壺)   # Scratch
-        コ.追(押 + 空 + 零値)
+        コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 記)
 
         # Close Handle
@@ -1413,7 +1416,7 @@ jobs:
         コ.追(呼 + 空 + 閉)
 
         # Exit
-        コ.追(置 + 空 + 繰 + 空 + 零値)
+        コ.追(置 + 空 + 繰 + 空 + 無)
         コ.追(呼 + 空 + 終)
 
         表(結(コ))
@@ -1438,6 +1441,7 @@ jobs:
         
         echo "--- Running Cat (Displaying source asm) ---"
         cat.exe
+
 
 
 
