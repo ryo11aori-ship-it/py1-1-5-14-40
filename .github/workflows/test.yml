@@ -214,9 +214,7 @@ jobs:
         python stage2_compiler.py py1repl.py1 > py1repl_final.py
         python py1repl_final.py fizzbuzz.ir
 
-    # 17. Windows Native IR
-        # 17. Windows Native IR (修正版: LEA命令追加)
-        # 17. Windows Native IR (修正版: インラインコメント除去)
+        # 17. Windows Native IR (修正版: ループジャンプ追加)
     - name: 17. Windows Native IR
       run: |
         # --- 1. WinIR Generator (Spec) ---
@@ -231,6 +229,7 @@ jobs:
         @v 取 '"LEA"'
         @v 書 '"WRITE_MEM"'
         @v 零 '"JZ"'
+        @v 飛 '"JMP"' # New: JMP
         @v 比 '"CMP"'
         @v 加 '"ADD"'
         @v 連 '"LOAD_DLL"'
@@ -288,7 +287,7 @@ jobs:
         # Loop Init
         コ.追(置 + 空 + 壱 + 空 + 一)
 
-        # LABEL
+        # LABEL LOOP_START
         コ.追(札 + 空 + 廻)
 
         # Check Loop
@@ -302,19 +301,22 @@ jobs:
 
         # Call WriteFile
         コ.追(置 + 空 + 繰 + 空 + 肆)
-        # Use LEA for pointers (LEA RDX 100)
         コ.追(取 + 空 + タ + 空 + 頁)
         コ.追(置 + 空 + 蜂 + 空 + 二)
-        # LEA R9 200
         コ.追(取 + 空 + 苦 + 空 + 予)
         コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 記)
 
-        # Inc & Loop
+        # Inc
         コ.追(加 + 空 + 壱 + 空 + 一)
+        
+        # 【追加】JMP LOOP_START
+        コ.追(飛 + 空 + 廻)
+
+        # EXIT
         コ.追(札 + 空 + 去)
         
-        # Exit
+        # ExitProcess
         コ.追(置 + 空 + 繰 + 空 + 無)
         コ.追(呼 + 空 + 終)
 
@@ -325,7 +327,9 @@ jobs:
         python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py
         python win_ir_gen.py > fizzbuzz_win.ir
         
-        # --- 2. Mock VM (Updated for LEA) ---
+        # --- 2. Mock VM ---
+        # Mock doesn't strictly need JMP logic for this test if we skip it,
+        # but let's keep it consistent.
         cat <<'EOF' > vm_win_mock.py1
         # Mock VM with LEA support
         @v 表 'print'
@@ -364,6 +368,7 @@ jobs:
         @v 札 '"LABEL"'
         @v 比 '"CMP"'
         @v 零 '"JZ"'
+        @v 飛 '"JMP"'
         @v 加 '"ADD"'
         @v 押 '"PUSH"'
 
@@ -473,7 +478,7 @@ jobs:
             他:
              レ[先] = 整(元)
 
-          # LEA behaves like MOV in Mock
+          # LEA -> MOV
           或 技 == 取:
            先 = 部[1]
            元 = 部[2]
@@ -500,6 +505,10 @@ jobs:
           或 技 == 零:
            も レ.拾(旗, 0) == 1:
             指 = 辞[部[1]]
+
+          # 【追加】JMP Logic
+          或 技 == 飛:
+           指 = 辞[部[1]]
           
           或 技 == 加:
            先 = 部[1]
@@ -537,6 +546,7 @@ jobs:
         # Run Mock
         python stage2_compiler.py vm_win_mock.py1 > vm_win_mock.py
         python vm_win_mock.py fizzbuzz_win.ir
+
 
     # 18. Phase 2: Setup NASM
     - name: 18. Setup NASM
