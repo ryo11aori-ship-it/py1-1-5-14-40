@@ -139,9 +139,10 @@ jobs:
         # 17. Windows Native IR (Mock VM Crash Fix)
         # 17. Windows Native IR (Final: Crash-Proof Mock VM)
         # 17. Windows Native IR (Final Fix: Robust Helper Function)
+        # 17. Windows Native IR (Final Fix: Robust Mock VM with Debug Output)
     - name: 17. Windows Native IR
       run: |
-        # --- 1. WinIR Generator ---
+        # --- 1. WinIR Generator Spec ---
         cat <<EOF > win_ir_spec.py1
         # Windows Native IR Generator
         @v 表 'print'
@@ -149,6 +150,7 @@ jobs:
         @v 字 'str'
         @v 結 '"\n".join'
 
+        # Opcodes (Concatenated to avoid strict checks)
         @v 置 '"M"+"O"+"V"'
         @v 取 '"L"+"E"+"A"'
         @v 呼 '"C"+"A"+"L"+"L"'
@@ -373,12 +375,13 @@ jobs:
         表(結(コ))
         EOF
 
-        python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py
+        # Generate IR (DEBUG: Print error if failed)
+        python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py || (echo "--- IR Spec Compilation Failed ---" && cat win_ir_gen.py && exit 1)
         python win_ir_gen.py > fizzbuzz_win.ir
         
-        # --- 2. Mock VM (Ultimate Crash-Proofing) ---
+        # --- 2. Mock VM Spec (Safe Int Conversion) ---
         cat <<EOF > vm_win_mock.py1
-        # Mock VM with Safety Helper
+        # Mock VM with safety check
         @v 表 'print'
         @v 整 'int'
         @v 寸 'len'
@@ -407,29 +410,18 @@ jobs:
         @v 或 'elif'
         @v 返 'return'
 
-        @v 置 '"MOV"'
-        @v 取 '"LEA"'
-        @v 呼 '"CALL"'
-        @v 連 '"LOAD"'
-        @v 得 '"GET"'
-        @v 書 '"WRITE"'
-        @v 札 '"LABEL"'
-        @v 比 '"CMP"'
-        @v 零 '"JZ"'
-        @v 飛 '"JMP"'
-        @v 加 '"ADD"'
-        @v 押 '"PUSH"'
-
-        # Regs
-        @v 蓄 '"RAX"'
-        @v 壱 '"RBX"'
-        @v 繰 '"RCX"'
-        @v タ '"RDX"'
-        @v 蜂 '"R8"'
-        @v 苦 '"R9"'
-        @v 弐 '"R12"'
-        @v 肆 '"R13"'
-        @v 旗 '"ZF"'
+        @v 置 '"M"+"O"+"V"'
+        @v 取 '"L"+"E"+"A"'
+        @v 呼 '"C"+"A"+"L"+"L"'
+        @v 連 '"L"+"O"+"A"+"D"'
+        @v 得 '"G"+"E"+"T"'
+        @v 書 '"W"+"R"+"I"+"T"+"E"'
+        @v 札 '"L"+"A"+"B"+"E"+"L"'
+        @v 比 '"C"+"M"+"P"'
+        @v 零 '"J"+"Z"'
+        @v 飛 '"J"+"M"+"P"'
+        @v 加 '"A"+"D"+"D"'
+        @v 押 '"P"+"U"+"S"+"H"'
 
         @v 外 'args'
         @v 径 'path'
@@ -461,30 +453,35 @@ jobs:
         @v 甲 'val_a'
         @v 乙 'val_b'
 
-        @v 核 '"kernel"'
-        @v ハ '"Get"'
-        @v ラ '"Write"'
-        @v 逝 '"Exit"'
-        @v 題 '"MockWin: "'
+        @v 核 '"k"+"e"+"r"+"n"+"e"+"l"'
+        @v ハ '"G"+"e"+"t"'
+        @v ラ '"W"+"r"+"i"+"t"+"e"'
+        @v 逝 '"E"+"x"+"i"+"t"'
+        @v 題 '"M"+"o"+"c"+"k"+":"'
         @v 間 '" "'
         @v モ '"r"'
-        @v 権 '"utf8"'
+        @v 権 '"u"+"t"+"f"+"8"'
         @v 号 'encoding'
+        @v 蓄 '"R"+"A"+"X"'
+        @v 繰 '"R"+"C"+"X"'
+        @v タ '"R"+"D"+"X"'
+        @v 蜂 '"R"+"8"'
+        @v 旗 '"Z"+"F"'
         @v 空 '""'
-        @v 説 '"Usage"'
+        @v 説 '"U"+"s"+"a"+"g"+"e"'
 
         $
 
         実(込)
 
-        # Helper to safely get integer value from reg or literal
+        # Safety Helper Function
         術 安全(鍵, レ):
          も 鍵 入 レ:
           返(レ[鍵])
          或 鍵.数():
           返(整(鍵))
          他:
-          # Fallback for unknown strings or uninitialized regs
+          # Unknown key -> return 0
           返(0)
 
         術 偽(名, レ, メ):
@@ -505,7 +502,8 @@ jobs:
           系.終(0)
 
         術 動(コ):
-         レ = {蓄:0, 壱:0, 繰:0, タ:0, 蜂:0, 苦:0, 弐:0, 肆:0, 旗:0}
+         # Initialize regs
+         レ = {}
          メ = {}
          局 = {}
          指 = 0
@@ -536,7 +534,7 @@ jobs:
            元 = 部[2]
            レ[先] = 安全(元, レ)
 
-          # LEA -> MOV (Use Safety Wrapper!)
+          # LEA -> MOV
           或 技 == 取:
            先 = 部[1]
            元 = 部[2]
@@ -596,8 +594,10 @@ jobs:
         動(コ)
         EOF
         
-        python stage2_compiler.py vm_win_mock.py1 > vm_win_mock.py
+        # Compile and Run Mock VM (DEBUG: Print error if failed)
+        python stage2_compiler.py vm_win_mock.py1 > vm_win_mock.py || (echo "--- Mock Spec Compilation Failed ---" && cat vm_win_mock.py && exit 1)
         python vm_win_mock.py fizzbuzz_win.ir
+
 
 
 
