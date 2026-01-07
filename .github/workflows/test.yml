@@ -612,7 +612,7 @@ jobs:
     - name: 19. Check NASM
       run: nasm -v
 
-        # 19.5 Create compiler_x64.py1 (Fix: Explicit Operand Sizes)
+        # 19.5 Create compiler_x64.py1 (Fix: Map RAX to AL for byte writes)
     - name: 19.5 Create compiler_x64.py1
       run: |
         cat <<EOF > compiler_x64.py1
@@ -676,6 +676,10 @@ jobs:
         @v 釘 '":"'
         @v 処 '"[mem_base + "'
         @v 端 '"]"'
+
+        # Register mapping for byte operations
+        @v 大蓄 '"R"+"A"+"X"'
+        @v 小蓄 '"al"'
 
         @v 説 '"Usage: compiler_x64.py <win.ir>"'
         @v モ '"r"'
@@ -756,13 +760,14 @@ jobs:
           先 = 部[1]
           出 = 幕 + 舞 + 先
 
-         # WRITE_MEM: Force BYTE size for immediate values
          或 技 == 書:
           先 = 部[1]
           元 = 部[2]
+          # Fix: If writing RAX to byte memory, use al
+          も 元 == 大蓄:
+           元 = 小蓄
           出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
          
-         # PUSH (Shadow Space): qword
          或 技 == 押:
           元 = 部[1]
           出 = 幕 + 転 + 影 + 点 + 元
@@ -778,6 +783,7 @@ jobs:
 
         表(尾)
         EOF
+
 
 
 
