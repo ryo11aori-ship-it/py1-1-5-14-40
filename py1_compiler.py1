@@ -25,8 +25,9 @@
 @v 双 'chr(34)'
 @v ド '"$"'
 
-# Messages and encoding
+# Messages
 @v 説 '"Usage: py1_compiler.py <source.py1>"'
+@v 誤 '"Error: Key must be 1 char: "'
 @v モ '"r"'
 @v 権 '"utf-8"'
 @v 号 'encoding'
@@ -51,6 +52,7 @@
 @v 並 'keys'
 @v 出 'out'
 @v 今 'k_idx'
+@v 警 'err_msg'
 
 $
 
@@ -65,7 +67,6 @@ $
 
 # Read Source File
 径 = 外[1]
-# open(path, "r", encoding="utf-8")
 本 = 開(径, モ, 号=権).読()
 生 = 本.行()
 
@@ -84,9 +85,14 @@ $
   も 寸(部) > 2:
    鍵 = 部[1]
    値 = 部[2]
+
+   # 【追加機能】Validation: Key MUST be 1 char
+   も 寸(鍵) > 1:
+    警 = 誤 + 鍵
+    表(警)
+    系.終(1)
    
    # Strip quotes safely (Exclusive logic)
-   # Only strip the outer layer!
    も 値.始(単):
     値 = 値.削(単)
    他:
