@@ -1093,7 +1093,7 @@ jobs:
     # Phase C: Native File I/O (The "cat" Command)
     # ---------------------------------------------------
 
-    # 28. Update Native Compiler with File I/O Support
+        # 28. Update Native Compiler (Fix: Stack Alignment & Shadow Space)
     - name: 28. Update Native Compiler (Add File I/O)
       run: |
         cat <<EOF > compiler_native.py1
@@ -1135,12 +1135,10 @@ jobs:
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
 
-        # Header: Add File APIs and wrapper for CreateFile (7 args)
-        # _sys_open: Wrapper to handle stack arguments for CreateFileA
-        # RCX = Filename
-        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 88\n  jmp main_logic\n\n_sys_open:\n  ; CreateFileA(Name, GENERIC_READ, SHARE_READ, NULL, OPEN_EXISTING, ATTR_NORMAL, NULL)\n  mov rdx, 0x80000000\n  mov r8, 1\n  xor r9, r9\n  mov qword [rsp+32], 3\n  mov qword [rsp+40], 128\n  mov qword [rsp+48], 0\n  call CreateFileA\n  ret\n\nmain_logic:\n"'
+        # Header: Ensure 16-byte alignment and sufficient shadow space
+        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 8\n  and rsp, -16\n  sub rsp, 120\n  jmp main_logic\n\n_sys_open:\n  ; CreateFileA wrapper\n  mov rdx, 0x80000000\n  mov r8, 1\n  xor r9, r9\n  mov qword [rsp+32], 3\n  mov qword [rsp+40], 128\n  mov qword [rsp+48], 0\n  call CreateFileA\n  ret\n\nmain_logic:\n"'
         
-        @v 尾 '"  add rsp, 88\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
+        @v 尾 '"  add rsp, 120\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
 
         @v 改 '"\n"'
         @v 空 '" "'
@@ -1270,6 +1268,7 @@ jobs:
 
         # Re-compile the native compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
+
 
       # 29. Create 'cat' Source (Strict 1-char variables)
       # 29. Create 'cat' Source (Strict Formatting Fix)
