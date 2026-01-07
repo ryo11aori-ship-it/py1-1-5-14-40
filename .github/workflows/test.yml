@@ -1280,96 +1280,92 @@ jobs:
         # 29. Create 'cat' Source (Fix: Use chr(10) instead of \n to avoid SyntaxError)
         # 29. Create Simple Native I/O Test (Hello World)
     - name: 29. Create Cat Source (Debug: Simple Hello)
-      run: |
-        cat <<EOF > cat_spec.py1
-        # Native Hello World Test
-        @v 表 'print'
-        @v 追 'append'
-        @v 字 'str'
-        @v 結 'chr(10).join'
-        @v 置 '"M"+"O"+"V"'
-        @v 取 '"L"+"E"+"A"'
-        @v 呼 '"C"+"A"+"L"+"L"'
-        @v 連 '"L"+"O"+"A"+"D"'
-        @v 得 '"G"+"E"+"T"'
-        @v 書 '"W"+"R"+"I"+"T"+"E"'
-        @v 札 '"L"+"A"+"B"+"E"+"L"'
-        @v 比 '"C"+"M"+"P"'
-        @v 零 '"J"+"Z"'
-        @v 飛 '"J"+"M"+"P"'
-        @v 加 '"A"+"D"+"D"'
-        @v 押 '"P"+"U"+"S"+"H"'
-        @v 壱 '"R"+"B"+"X"'
-        @v 弐 '"R"+"1"+"2"'
-        @v 繰 '"R"+"C"+"X"'
-        @v タ '"R"+"D"+"X"'
-        @v 蜂 '"R"+"8"'
-        @v 苦 '"R"+"9"'
-        @v 蓄 '"R"+"A"+"X"'
-        @v 肆 '"R"+"1"+"3"'
-        @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
-        @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
-        @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
-        @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
-        @v 壺 '"1"+"0"+"0"'
-        @v 無 '"0"'
-        @v 負 '"-"+"1"'
-        @v 空 '" "'
-        @v 陰 '"-"+"1"+"1"'
-        @v 譜 '"7"+"2"' # H
-        @v 伊 '"1"+"0"+"5"' # i
-        @v 終 '"1"+"0"' # \n
-        @v コ 'codes'
+  run: |
+    cat <<EOF > cat_spec.py1
+    # Native Hello World Test
+    @v 表 'print'
+    @v 追 'append'
+    @v 字 'str'
+    @v 結 'chr(10).join'
+    @v 置 '"M"+"O"+"V"'
+    @v 取 '"L"+"E"+"A"'
+    @v 呼 '"C"+"A"+"L"+"L"'
+    @v 連 '"L"+"O"+"A"+"D"'
+    @v 得 '"G"+"E"+"T"'
+    @v 書 '"W"+"R"+"I"+"T"+"E"'
+    @v 札 '"L"+"A"+"B"+"E"+"L"'
+    @v 比 '"C"+"M"+"P"'
+    @v 零 '"J"+"Z"'
+    @v 飛 '"J"+"M"+"P"'
+    @v 加 '"A"+"D"+"D"'
+    @v 押 '"P"+"U"+"S"+"H"'
+    @v 壱 '"R"+"B"+"X"'
+    @v 弐 '"R"+"1"+"2"'
+    @v 繰 '"R"+"C"+"X"'
+    @v タ '"R"+"D"+"X"'
+    @v 蜂 '"R"+"8"'
+    @v 苦 '"R"+"9"'
+    @v 蓄 '"R"+"A"+"X"'
+    @v 肆 '"R"+"1"+"3"'
+    @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
+    @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
+    @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
+    @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
+    @v 壺 '"1"+"0"+"0"'
+    @v 無 '"0"'
+    @v 負 '"-"+"1"'
+    @v 空 '" "'
+    @v 陰 '"-"+"1"+"1"'
+    @v 譜 '"7"+"2"' # H
+    @v 伊 '"1"+"0"+"5"' # i
+    @v 終 '"1"+"0"' # \n
+    @v コ 'codes'
 
-        $
-        コ = []
-        # --- Init ---
-        # Prepare "Hi\n" at address 100
-        コ.追(書 + 空 + 壺 + 空 + 譜)
-        コ.追(書 + 空 + 字(101) + 空 + 伊)
-        コ.追(書 + 空 + 字(102) + 空 + 終)
+    $
+    コ = []
 
-        # Get StdOut Handle
-        コ.追(置 + 空 + 繰 + 空 + 陰)
-        コ.追(呼 + 空 + 出)
-        コ.追(置 + 空 + 壱 + 空 + 蓄) # RBX = StdOut
+    # Prepare "Hi\n" at address 100
+    コ.追(書 + 空 + 壺 + 空 + 譜)
+    コ.追(書 + 空 + 字(101) + 空 + 伊)
+    コ.追(書 + 空 + 字(102) + 空 + 終)
 
-        # Write to StdOut
-        # WriteFile(StdOut, Buffer, Size, &BytesWritten, NULL)
-        コ.追(置 + 空 + 繰 + 空 + 壱)   # StdOut
-        コ.追(取 + 空 + タ + 空 + 壺)   # Buffer (100)
-        コ.追(置 + 空 + 蜂 + 空 + 字(3)) # Size (3 bytes)
-        コ.追(取 + 空 + 苦 + 空 + 字(200)) # Scratch
-        コ.追(押 + 空 + 無)
-        コ.追(呼 + 空 + 記)
+    # Get StdOut Handle
+    コ.追(置 + 空 + 繰 + 空 + 陰)
+    コ.追(呼 + 空 + 出)
+    コ.追(置 + 空 + 壱 + 空 + 蓄)
 
-        # Exit
-        コ.追(置 + 空 + 繰 + 空 + 無)
-        コ.追(呼 + 空 + 終) # ExitProcess
-        表(結(コ))
-        EOF
+    # WriteFile(StdOut, Buffer, Size, &BytesWritten, NULL)
+    コ.追(置 + 空 + 繰 + 空 + 壱)
+    コ.追(取 + 空 + タ + 空 + 壺)
+    コ.追(置 + 空 + 蜂 + 空 + 字(3))
+    コ.追(取 + 空 + 苦 + 空 + 字(200))
+    コ.追(押 + 空 + 無)
+    コ.追(呼 + 空 + 記)
 
-        # Generate ASM
-        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py
-        python cat_ir_gen.py > cat.ir
-        python compiler_native.py cat.ir > cat_native.asm
+    # Exit
+    コ.追(置 + 空 + 繰 + 空 + 無)
+    コ.追(呼 + 空 + 終)
 
+    表(結(コ))
+    EOF
 
+    # Generate IR & ASM
+    python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py
+    python cat_ir_gen.py > cat.ir
+    python compiler_native.py cat.ir > cat_native.asm
 
 
-    # 30. Build & Run Cat (CMD Shell)
-    - name: 30. Build & Run Cat (CMD Shell)
-      shell: cmd
-      run: |
-        echo "--- Assembling Cat ---"
-        nasm -f win64 cat_native.asm -o cat_native.obj
-        
-        echo "--- Linking Cat ---"
-        link.exe cat_native.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:cat.exe
-        
-        echo "--- Running Cat (Displaying source asm) ---"
-        cat.exe
+- name: 30. Build & Run Cat (CMD Shell)
+  shell: cmd
+  run: |
+    echo "--- Assembling Cat ---"
+    nasm -f win64 cat_native.asm -o cat_native.obj
 
+    echo "--- Linking Cat ---"
+    link.exe cat_native.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:cat.exe
+
+    echo "--- Running Cat ---"
+    cat.exe
 
 
 
