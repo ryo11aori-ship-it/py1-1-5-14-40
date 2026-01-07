@@ -1280,6 +1280,7 @@ jobs:
         # 29. Create 'cat' Source (Fix: Use chr(10) instead of \n to avoid SyntaxError)
         # 29. Create Simple Native I/O Test (Hello World)
         # 29. Create Cat Source (Debug: Simple Native Hello World)
+        # 29. Create Cat Source (Fix: Variable name collision '終')
     - name: 29. Create Cat Source (Debug: Simple Hello)
       run: |
         cat <<EOF > cat_spec.py1
@@ -1314,6 +1315,7 @@ jobs:
         @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
         @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
         @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
+        # ExitProcess
         @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
 
         @v 壺 '"1"+"0"+"0"'
@@ -1326,8 +1328,8 @@ jobs:
         @v 譜 '"7"+"2"'
         # i
         @v 伊 '"1"+"0"+"5"'
-        # newline
-        @v 〆 '"1"+"0"'
+        # newline (Renamed from 終 to 改 to avoid collision)
+        @v 改 '"1"+"0"'
         
         @v コ 'codes'
 
@@ -1337,7 +1339,7 @@ jobs:
         # Prepare "Hi\n" at address 100
         コ.追(書 + 空 + 壺 + 空 + 譜)
         コ.追(書 + 空 + 字(101) + 空 + 伊)
-        コ.追(書 + 空 + 字(102) + 空 + 〆)
+        コ.追(書 + 空 + 字(102) + 空 + 改)
 
         # Get StdOut Handle
         コ.追(置 + 空 + 繰 + 空 + 陰)
