@@ -1058,8 +1058,9 @@ jobs:
         表(尾)
         EOF
 
-    # 26. Build Pure Native EXE (No GCC)
+      # 26. Build Pure Native EXE (No GCC) - Run in CMD to use MSVC Linker
     - name: 26. Build Pure Native EXE (No GCC)
+      shell: cmd
       run: |
         echo "--- Compiling Native Compiler ---"
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
@@ -1071,11 +1072,11 @@ jobs:
         nasm -f win64 fizzbuzz_native.asm -o fizzbuzz_native.obj
         
         echo "--- Linking with MSVC Linker (Pure Kernel32) ---"
-        # Link directly against kernel32.lib without CRT
         link.exe fizzbuzz_native.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:fizzbuzz_native.exe
         
         echo "--- Running Pure Native EXE ---"
-        ./fizzbuzz_native.exe
+        fizzbuzz_native.exe
+
 
     # 27. Upload Native Artifacts
     - name: 27. Upload Native Artifacts
