@@ -379,7 +379,7 @@ jobs:
         python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py || (echo "--- IR Spec Compilation Failed ---" && cat win_ir_gen.py && exit 1)
         python win_ir_gen.py > fizzbuzz_win.ir
         
-        # --- 2. Mock VM Spec (Safe Int Conversion) ---
+                # --- 2. Mock VM (Fix: Rename '安全' to '安') ---
         cat <<EOF > vm_win_mock.py1
         # Mock VM with safety check
         @v 表 'print'
@@ -474,22 +474,21 @@ jobs:
 
         実(込)
 
-        # Safety Helper Function
-        術 安全(鍵, レ):
+        # Safety Helper (Renamed to 1 char '安')
+        術 安(鍵, レ):
          も 鍵 入 レ:
           返(レ[鍵])
          或 鍵.数():
           返(整(鍵))
          他:
-          # Unknown key -> return 0
           返(0)
 
         術 偽(名, レ, メ):
          も 名.始(ハ):
           レ[蓄] = 1
          或 名.始(ラ):
-          基 = 安全(タ, レ)
-          幅 = 安全(蜂, レ)
+          基 = 安(タ, レ)
+          幅 = 安(蜂, レ)
           器 = 空
           カ = 0
           循 カ < 幅:
@@ -502,7 +501,6 @@ jobs:
           系.終(0)
 
         術 動(コ):
-         # Initialize regs
          レ = {}
          メ = {}
          局 = {}
@@ -532,13 +530,13 @@ jobs:
           或 技 == 置:
            先 = 部[1]
            元 = 部[2]
-           レ[先] = 安全(元, レ)
+           レ[先] = 安(元, レ)
 
-          # LEA -> MOV
+          # LEA
           或 技 == 取:
            先 = 部[1]
            元 = 部[2]
-           レ[先] = 安全(元, レ)
+           レ[先] = 安(元, レ)
 
           或 技 == 書:
            所 = 整(部[1])
@@ -548,8 +546,8 @@ jobs:
           或 技 == 比:
            先 = 部[1]
            元 = 部[2]
-           甲 = 安全(先, レ)
-           乙 = 安全(元, レ)
+           甲 = 安(先, レ)
+           乙 = 安(元, レ)
            
            も 甲 == 乙:
             レ[旗] = 1
@@ -567,8 +565,8 @@ jobs:
           或 技 == 加:
            先 = 部[1]
            元 = 部[2]
-           甲 = 安全(先, レ)
-           乙 = 安全(元, レ)
+           甲 = 安(先, レ)
+           乙 = 安(元, レ)
            レ[先] = 甲 + 乙
           
           指 = 指 + 1
@@ -593,6 +591,7 @@ jobs:
 
         動(コ)
         EOF
+
         
         # Compile and Run Mock VM (DEBUG: Print error if failed)
         python stage2_compiler.py vm_win_mock.py1 > vm_win_mock.py || (echo "--- Mock Spec Compilation Failed ---" && cat vm_win_mock.py && exit 1)
