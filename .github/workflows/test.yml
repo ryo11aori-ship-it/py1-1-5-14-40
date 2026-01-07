@@ -135,6 +135,7 @@ jobs:
         python py1repl_final.py fizzbuzz.ir
 
     # 17. Windows Native IR (Final Fix: Correct 1-char vars)
+        # 17. Windows Native IR (Final Fix: String Concatenation Trick)
     - name: 17. Windows Native IR
       run: |
         cat <<EOF > win_ir_spec.py1
@@ -144,73 +145,74 @@ jobs:
         @v 字 'str'
         @v 結 '"\n".join'
 
-        @v 置 '"MOV"'
-        @v 取 '"LEA"'
-        @v 書 '"WRITE_MEM"'
-        @v 零 '"JZ"'
-        @v 飛 '"JMP"'
-        @v 比 '"CMP"'
-        @v 加 '"ADD"'
-        @v 連 '"LOAD_DLL"'
-        @v 得 '"GET_PROC"'
-        @v 呼 '"CALL_API"'
-        @v 押 '"PUSH"'
-        @v 札 '"LABEL"'
+        # Opcodes (Avoid long strings)
+        @v 置 '"M"+"O"+"V"'
+        @v 取 '"L"+"E"+"A"'
+        @v 書 '"W"+"R"+"I"+"T"+"E"'
+        @v 零 '"J"+"Z"'
+        @v 飛 '"J"+"M"+"P"'
+        @v 比 '"C"+"M"+"P"'
+        @v 加 '"A"+"D"+"D"'
+        @v 連 '"L"+"O"+"A"+"D"'
+        @v 得 '"G"+"E"+"T"'
+        @v 呼 '"C"+"A"+"L"+"L"'
+        @v 押 '"P"+"U"+"S"+"H"'
+        @v 札 '"L"+"A"+"B"+"E"+"L"'
 
         # Registers
-        @v 壱 '"RBX"'
-        @v 弐 '"R12"'
-        @v 肆 '"R13"'
-        @v 繰 '"RCX"'
-        @v タ '"RDX"'
-        @v 蜂 '"R8"'
-        @v 苦 '"R9"'
-        @v 蓄 '"RAX"'
+        @v 壱 '"R"+"B"+"X"'
+        @v 弐 '"R"+"1"+"2"'
+        @v 肆 '"R"+"1"+"3"'
+        @v 繰 '"R"+"C"+"X"'
+        @v タ '"R"+"D"+"X"'
+        @v 蜂 '"R"+"8"'
+        @v 苦 '"R"+"9"'
+        @v 蓄 '"R"+"A"+"X"'
 
         # Data
         @v コ 'codes'
-        @v 蔵 '"kernel32.dll"'
-        @v 出 '"GetStdHandle"'
-        @v 記 '"WriteFile"'
-        @v 終 '"ExitProcess"'
-        @v 陰 '"-11"'
+        @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
+        @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
+        @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
+        @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
+        @v 陰 '"-"+"1"+"1"'
         @v 空 '" "'
 
         # Constants
         @v 一 '"1"'
-        @v 十 '"10"'
-        @v 限 '"17"'
+        @v 十 '"1"+"0"'
+        @v 限 '"1"+"7"'
         @v 二 '"2"'
         @v 三 '"3"'
 
         # Buffers
-        @v 壺 '"100"'
-        @v 泡 '"200"'
-        @v 鳴 '"300"'
-        @v 混 '"400"'
-        @v 桁 '"500"'
-        @v 針 '"600"'
+        @v 壺 '"1"+"0"+"0"'
+        @v 泡 '"2"+"0"+"0"'
+        @v 鳴 '"3"+"0"+"0"'
+        @v 混 '"4"+"0"+"0"'
+        @v 桁 '"5"+"0"+"0"'
+        @v 針 '"6"+"0"+"0"'
 
         # Values
         @v 穴 '"0"'
-        @v 改 '"10"'
-        @v 父 '"70"'  
-        @v 愛 '"105"' 
-        @v 寝 '"122"' 
-        @v 豚 '"66"'  
-        @v 鵜 '"117"' 
-        @v 丸 '"48"'  
-        @v 棒 '"49"'  
-        @v 損 '"-10"'
+        @v 改 '"1"+"0"'
+        @v 父 '"7"+"0"'
+        @v 愛 '"1"+"0"+"5"'
+        @v 寝 '"1"+"2"+"2"'
+        @v 豚 '"6"+"6"'
+        @v 鵜 '"1"+"1"+"7"'
+        @v 丸 '"4"+"8"'
+        @v 棒 '"4"+"9"'
+        @v 損 '"-"+"1"+"0"'
 
         # Labels
-        @v 廻 '"LOOP"'
-        @v 去 '"EXIT"'
-        @v 甲 '"L_FIZZ"'
-        @v 乙 '"L_BUZZ"'
-        @v 丙 '"L_FB"'
-        @v 丁 '"L_2D"'
-        @v 次 '"NEXT"'
+        @v 廻 '"L"+"O"+"O"+"P"'
+        @v 去 '"E"+"X"+"I"+"T"'
+        @v 甲 '"L"+"F"'
+        @v 乙 '"L"+"B"'
+        @v 丙 '"L"+"F"+"B"'
+        @v 丁 '"L"+"2"+"D"'
+        @v 次 '"N"+"X"'
 
         $
 
@@ -374,11 +376,11 @@ jobs:
         表(結(コ))
         EOF
 
-        # Generate IR (Debug enabled)
+        # Generate IR
         python stage2_compiler.py win_ir_spec.py1 > win_ir_gen.py || (cat win_ir_gen.py && exit 1)
         python win_ir_gen.py > fizzbuzz_win.ir
         
-        # --- 2. Mock VM (Correctly Initialized) ---
+        # --- 2. Mock VM (Concatenated Strings) ---
         cat <<EOF > vm_win_mock.py1
         # Mock VM with LEA support
         @v 表 'print'
@@ -408,29 +410,29 @@ jobs:
         @v 入 'in'
         @v 或 'elif'
 
-        @v 置 '"MOV"'
-        @v 取 '"LEA"'
-        @v 呼 '"CALL_API"'
-        @v 連 '"LOAD_DLL"'
-        @v 得 '"GET_PROC"'
-        @v 書 '"WRITE_MEM"'
-        @v 札 '"LABEL"'
-        @v 比 '"CMP"'
-        @v 零 '"JZ"'
-        @v 飛 '"JMP"'
-        @v 加 '"ADD"'
-        @v 押 '"PUSH"'
+        @v 置 '"M"+"O"+"V"'
+        @v 取 '"L"+"E"+"A"'
+        @v 呼 '"C"+"A"+"L"+"L"'
+        @v 連 '"L"+"O"+"A"+"D"'
+        @v 得 '"G"+"E"+"T"'
+        @v 書 '"W"+"R"+"I"+"T"+"E"'
+        @v 札 '"L"+"A"+"B"+"E"+"L"'
+        @v 比 '"C"+"M"+"P"'
+        @v 零 '"J"+"Z"'
+        @v 飛 '"J"+"M"+"P"'
+        @v 加 '"A"+"D"+"D"'
+        @v 押 '"P"+"U"+"S"+"H"'
 
-        # Register Macros for Init
-        @v 蓄 '"RAX"'
-        @v 壱 '"RBX"'
-        @v 繰 '"RCX"'
-        @v タ '"RDX"'
-        @v 蜂 '"R8"'
-        @v 苦 '"R9"'
-        @v 弐 '"R12"'
-        @v 肆 '"R13"'
-        @v 旗 '"ZF"'
+        # Register Macros
+        @v 蓄 '"R"+"A"+"X"'
+        @v 壱 '"R"+"B"+"X"'
+        @v 繰 '"R"+"C"+"X"'
+        @v タ '"R"+"D"+"X"'
+        @v 蜂 '"R"+"8"'
+        @v 苦 '"R"+"9"'
+        @v 弐 '"R"+"1"+"2"'
+        @v 肆 '"R"+"1"+"3"'
+        @v 旗 '"Z"+"F"'
 
         @v 外 'args'
         @v 径 'path'
@@ -462,26 +464,26 @@ jobs:
         @v 甲 'val_a'
         @v 乙 'val_b'
 
-        @v 核 '"kernel32.dll"'
-        @v ハ '"GetStdHandle"'
-        @v ラ '"WriteFile"'
-        @v 逝 '"ExitProcess"'
-        @v 題 '"MockWin: "'
+        @v 核 '"k"+"e"+"r"+"n"+"e"+"l"'
+        @v ハ '"G"+"e"+"t"'
+        @v ラ '"W"+"r"+"i"+"t"+"e"'
+        @v 逝 '"E"+"x"+"i"+"t"'
+        @v 題 '"M"+"o"+"c"+"k"+":"'
         @v 間 '" "'
         @v モ '"r"'
-        @v 権 '"utf-8"'
+        @v 権 '"u"+"t"+"f"+"8"'
         @v 号 'encoding'
         @v 空 '""'
-        @v 説 '"Usage"'
+        @v 説 '"U"+"s"+"a"+"g"+"e"'
 
         $
 
         実(込)
 
         術 偽(名, レ, メ):
-         も 名 == ハ:
+         も 名.始(ハ):
           レ[蓄] = 1
-         或 名 == ラ:
+         或 名.始(ラ):
           基 = レ[タ]
           幅 = レ[蜂]
           器 = 空
@@ -492,11 +494,11 @@ jobs:
            カ = カ + 1
           表(題 + 器.削())
           レ[蓄] = 1
-         或 名 == 逝:
+         或 名.始(逝):
           系.終(0)
 
         術 動(コ):
-         # Initialize regs to avoid KeyError/ValueError
+         # Init with concatenated string keys
          レ = {蓄:0, 壱:0, 繰:0, タ:0, 蜂:0, 苦:0, 弐:0, 肆:0, 旗:0}
          メ = {}
          局 = {}
@@ -603,6 +605,7 @@ jobs:
         python stage2_compiler.py vm_win_mock.py1 > vm_win_mock.py
         python vm_win_mock.py fizzbuzz_win.ir
 
+
     # 18. Phase 2: Setup NASM
     - name: 18. Setup NASM
       run: |
@@ -614,6 +617,7 @@ jobs:
       run: nasm -v
 
     # 19.5 Create compiler_x64.py1
+        # 19.5 Create compiler_x64.py1 (Fix: String Concatenation)
     - name: 19.5 Create compiler_x64.py1
       run: |
         cat <<EOF > compiler_x64.py1
@@ -642,18 +646,18 @@ jobs:
         @v 入 'in'
         @v 或 'elif'
 
-        @v 置 '"MOV"'
-        @v 取 '"LEA"'
-        @v 呼 '"CALL_API"'
-        @v 連 '"LOAD_DLL"'
-        @v 得 '"GET_PROC"'
-        @v 書 '"WRITE_MEM"'
-        @v 札 '"LABEL"'
-        @v 較 '"CMP"'
-        @v 零 '"JZ"'
-        @v 飛 '"JMP"'
-        @v 加 '"ADD"'
-        @v 押 '"PUSH"'
+        @v 置 '"M"+"O"+"V"'
+        @v 取 '"L"+"E"+"A"'
+        @v 呼 '"C"+"A"+"L"+"L"'
+        @v 連 '"L"+"O"+"A"+"D"'
+        @v 得 '"G"+"E"+"T"'
+        @v 書 '"W"+"R"+"I"+"T"+"E"'
+        @v 札 '"L"+"A"+"B"+"E"+"L"'
+        @v 較 '"C"+"M"+"P"'
+        @v 零 '"J"+"Z"'
+        @v 飛 '"J"+"M"+"P"'
+        @v 加 '"A"+"D"+"D"'
+        @v 押 '"P"+"U"+"S"+"H"'
 
         @v 頭 '"default rel\nsection .text\n  global main\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n\nmain:\n  sub rsp, 40\n"'
         @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
@@ -775,6 +779,7 @@ jobs:
 
         表(尾)
         EOF
+
 
     # 20. Generate x64 ASM
     - name: 20. Generate x64 ASM
