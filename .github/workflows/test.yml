@@ -1309,9 +1309,11 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
+        # 29. Create "Compiler V0" (High-Level to Native IR)
     - name: 29. Create Compiler V0
       run: |
-        cat <<'EOF' > compiler_v0.py1
+        cat <<EOF > compiler_v0.py1
+        # V0 Compiler: Compiles 'print(N)' to Native IR
         @v 表 'print'
         @v 追 'append'
         @v 字 'str'
@@ -1323,9 +1325,9 @@ jobs:
         @v 読 'read'
         @v 始 'startswith'
         @v 終 'exit'
+        @v 実 'exec'
         @v 整 'int'
         @v 換 'replace'
-        @v 実 'exec'
 
         @v 系 'sys'
         @v 係 'argv'
@@ -1337,56 +1339,121 @@ jobs:
         @v 或 'elif'
 
         @v 空 '" "'
-        @v 括 '"("'
-        @v 閉 '"")"'
-        @v 命 '"p"+"r"+"i"+"n"+"t"'
+        @v 括弧 '"("'
+        @v 閉じ '")"'
+        @v 命令 '"p"+"r"+"i"+"n"+"t"'
         @v モ '"r"'
         @v 権 '"u"+"t"+"f"+"8"'
         @v 号 'encoding'
-        @v 積 '"PUSH "'
+        @v 壱 '"R"+"B"+"X"'
+        @v 弐 '"R"+"1"+"2"'
+        @v 蓄 '"R"+"A"+"X"'
+        @v 繰 '"R"+"C"+"X"'
+        @v タ '"R"+"D"+"X"'
+        
+        # Opcodes
+        @v 置 '"M"+"O"+"V"'
         @v 呼 '"C"+"A"+"L"+"L"'
         @v 改 '"\n"'
+        
+        @v コ 'codes'
+        @v 外 'args'
+        @v 径 'path'
+        @v 本 'body'
+        @v 生 'lines'
+        @v 順 'i'
+        @v 線 'line'
+        @v 値 'val'
+        @v 函 'lib'
 
-        @v 印 '"print_int"'
-        @v 青 '"ExitProcess"'
-
-        @v 井 '"#"'
-        @v 寸 'len'
-        @v 訊 'input'
+        # Library Strings (Fixed Logic: Input in R12)
+        @v Ｌ１ '"LABEL print_int"'
+        @v Ｌ２ '"PUSH R12"'       # Save input value
+        @v Ｌ３ '"MOV R12 -11"'    # Set arg for GetStdHandle
+        @v Ｌ４ '"CALL GetStdHandle"'
+        @v Ｌ５ '"MOV RBX RAX"'    # RBX = Handle
+        @v Ｌ６ '"POP RAX"'        # RAX = Input value (Restored)
+        @v Ｌ７ '"MOV RCX 10"'     # Divisor
+        @v Ｌ８ '"MOV R12 0"'      # Digit Counter
+        @v Ｌ９ '"PUSH 0"'         # Sentinel? No, just alignment/dummy
+        @v ＬＡ '"LABEL L_DIV"'
+        @v ＬＢ '"DIV RCX"'
+        @v ＬＣ '"ADD RDX 48"'     # To ASCII
+        @v ＬＤ '"PUSH RDX"'
+        @v ＬＥ '"ADD R12 1"'
+        @v ＬＦ '"CMP RAX 0"'
+        @v ＬＧ '"JZ L_PRT"'
+        @v ＬＨ '"JMP L_DIV"'
+        @v ＬＩ '"LABEL L_PRT"'
+        @v ＬＪ '"MOV RCX RBX"'    # Handle
+        @v ＬＫ '"CMP R12 0"'
+        @v ＬＬ '"JZ L_END"'
+        @v ＬＭ '"POP RAX"'
+        @v ＬＮ '"MOV WRITE 500 RAX"'
+        @v ＬＯ '"LEA RDX 500"'
+        @v ＬＰ '"MOV R8 1"'
+        @v ＬＱ '"LEA R9 600"'
+        @v ＬＲ '"SETS 32 0"'
+        @v ＬＳ '"CALL WriteFile"'
+        @v ＬＴ '"ADD R12 -1"'
+        @v ＬＵ '"JMP L_PRT"'
+        @v ＬＶ '"LABEL L_END"'
+        @v ＬＷ '"RET"'
 
         $
         実(込)
+        
+        # Build library
+        函 = Ｌ１ + 改 + Ｌ２ + 改 + Ｌ３ + 改 + Ｌ４ + 改
+        函 = 函 + Ｌ５ + 改 + Ｌ６ + 改 + Ｌ７ + 改 + Ｌ８ + 改
+        函 = 函 + Ｌ９ + 改 + ＬＡ + 改 + ＬＢ + 改 + ＬＣ + 改
+        函 = 函 + ＬＤ + 改 + ＬＥ + 改 + ＬＦ + 改 + ＬＧ + 改
+        函 = 函 + ＬＨ + 改 + ＬＩ + 改 + ＬＪ + 改 + ＬＫ + 改
+        函 = 函 + ＬＬ + 改 + ＬＭ + 改 + ＬＮ + 改 + ＬＯ + 改
+        函 = 函 + ＬＰ + 改 + ＬＱ + 改 + ＬＲ + 改 + ＬＳ + 改
+        函 = 函 + ＬＴ + 改 + ＬＵ + 改 + ＬＶ + 改 + ＬＷ
 
         外 = 系.係
-        も 寸(外) < 2:
-         表(説)
-         系.終(1)
-
         径 = 外[1]
         本 = 開(径, モ, 号=権).読()
         生 = 本.行()
         コ = []
 
+        # Init
+        コ.追(置 + 空 + 弐 + 空 + 字(0))
+        
         順 = 0
         循 順 < 寸(生):
          線 = 生[順]
          線 = 線.削()
-         も 寸(線) > 0:
-          も 線.始(命):
-           値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
-           # Append IR: PUSH <値>
-           コ.追(積 + 値)
-           # Call runtime print_int (macro 印)
-           コ.追(呼 + 空 + 印)
+         
+         # Parse: print(123)
+         も 線.始(命令):
+          値 = 線.換(命令, 空).換(括弧, 空).換(閉じ, 空).削()
+          # Pass arg in R12
+          コ.追(置 + 空 + 弐 + 空 + 値) 
+          # Call print_int
+          コ.追(呼 + 空 + 字(1))
+         
          順 = 順 + 1
 
-        # emit Exit call at end
-        コ.追(呼 + 空 + 青)
+        # Emit Exit
+        コ.追(置 + 空 + 繰 + 空 + 字(0))
+        コ.追(呼 + 空 + 字(2))
 
+        # Replace placeholders
         本 = 結(コ)
+        本 = 本.換(字(1), "print_int")
+        本 = 本.換(字(2), "ExitProcess")
+        
         表(本)
+        表(函)
         EOF
 
+        # Compile Compiler V0
+        python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
+
+    # 30. Compile and Run High-Level Source
     - name: 30. Build & Run Calculator
       shell: cmd
       run: |
@@ -1394,7 +1461,7 @@ jobs:
         echo print(12345) > calc.py1
         
         echo "--- Compile High-Level to IR ---"
-        python compiler_v0.py1 calc.py1 > calc.ir
+        python compiler_v0.py calc.py1 > calc.ir
         type calc.ir
         
         echo "--- Compile IR to ASM ---"
@@ -1406,6 +1473,7 @@ jobs:
         
         echo "--- Run ---"
         calc.exe
+
 
 
 
