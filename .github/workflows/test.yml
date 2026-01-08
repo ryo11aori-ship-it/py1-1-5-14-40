@@ -1178,7 +1178,7 @@ jobs:
         @v 釘 '":"'
         @v 処 '"[mem_base + "'
         @v 端 '"]"'
-        @v 清 '"xor rdx, rdx"' # Clear RDX before DIV
+        @v 清 '"xor rdx, rdx"'
 
         @v 大 '"R"+"A"+"X"'
         @v 小 '"a"+"l"'
