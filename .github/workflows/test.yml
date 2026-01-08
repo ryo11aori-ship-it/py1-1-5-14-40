@@ -1309,7 +1309,7 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-        # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Spec
+            # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Spec
     - name: 29. Create Compiler V0
       run: |
         cat <<EOF > compiler_v0.py1
@@ -1445,6 +1445,26 @@ jobs:
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
 
 
+     # 30. Compile and Run High-Level Source
+    - name: 30. Build & Run Calculator
+      shell: cmd
+      run: |
+        echo "--- Create Source File ---"
+        echo print(12345) > calc.py1
+        
+        echo "--- Compile High-Level to IR ---"
+        python compiler_v0.py calc.py1 > calc.ir
+        type calc.ir
+        
+        echo "--- Compile IR to ASM ---"
+        python compiler_native.py calc.ir > calc_native.asm
+        
+        echo "--- Assemble & Link ---"
+        nasm -f win64 calc_native.asm -o calc.obj
+        link.exe calc.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:calc.exe
+        
+        echo "--- Run ---"
+        calc.exe
 
 
 
