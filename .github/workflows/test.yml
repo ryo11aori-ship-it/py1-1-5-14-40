@@ -1104,9 +1104,11 @@ jobs:
         # 28. Update Native Compiler (Fix: Syntax Error caused by comment)
         # 28. Update Native Compiler (Fix: Syntax Error caused by comment)
         # 28. Update Native Compiler (Add RPUSH for real stack operations)
+        # 28. Update Native Compiler (With Math & Real Stack Ops)
     - name: 28. Update Native Compiler (Math Support)
       run: |
-        cat <<EOF > compiler_native.py1
+        # Use quoted 'EOF' to prevent backslash expansion
+        cat <<'EOF' > compiler_native.py1
         # Native x64 Compiler (With Math & Stack Ops)
         @v 表 'print'
         @v 寸 'len'
@@ -1146,7 +1148,7 @@ jobs:
         @v 押 '"P"+"U"+"S"+"H"'
         @v 積 '"S"+"E"+"T"+"S"'
         
-        # New Ops for Math
+        # New Ops for Math & Real Stack
         @v 引 '"S"+"U"+"B"'
         @v 掛 '"M"+"U"+"L"'
         @v 割 '"D"+"I"+"V"'
@@ -1174,7 +1176,7 @@ jobs:
         @v 分 '"div "'
         @v 異 '"xor "'
         @v 戻 '"pop "'
-        @v 込 '"push "'
+        @v 真 '"push "'
         
         @v 比 '"cmp "'
         @v 跳 '"je "'
@@ -1184,8 +1186,6 @@ jobs:
         @v 釘 '":"'
         @v 処 '"[mem_base + "'
         @v 端 '"]"'
-        
-        # FIXED: Removed comment to avoid syntax error
         @v 清 '"xor rdx, rdx"'
 
         @v 大 '"R"+"A"+"X"'
@@ -1212,6 +1212,7 @@ jobs:
         実(込)
         外 = 系.係
         も 寸(外) < 2:
+         表(無)
          系.終(1)
 
         径 = 外[1]
@@ -1304,7 +1305,7 @@ jobs:
          
          或 技 == 投:
           元 = 部[1]
-          出 = 幕 + 込 + 元
+          出 = 幕 + 真 + 元
          
          或 技 == 呼:
           先 = 部[1]
@@ -1318,12 +1319,14 @@ jobs:
         表(尾)
         EOF
 
+        # Compile Native Compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Library Logic
+    # 29. Create "Compiler V0" (High-Level to Native IR)
     - name: 29. Create Compiler V0
       run: |
-        cat <<EOF > compiler_v0.py1
+        # Use quoted 'EOF' to protect strings
+        cat <<'EOF' > compiler_v0.py1
         # V0 Compiler: Compiles 'print(N)' to Native IR
         @v 表 'print'
         @v 追 'append'
@@ -1374,19 +1377,24 @@ jobs:
         @v 順 'i'
         @v 線 'line'
         @v 値 'val'
+        
+        @v 印 '"print_int"'
+        @v 青 '"ExitProcess"'
 
-        # Library Strings (Using RPUSH for real stack operations)
+        # Library Strings (Use Kanji to avoid conflicts)
         @v イ '"LABEL print_int"'
+        @v ロ '"RPUSH RAX"'       # Save input (RPUSH = Real PUSH)
         @v ハ '"MOV R12 -11"'
         @v ニ '"CALL GetStdHandle"'
         @v ホ '"MOV RBX RAX"'
-        @v ヘ '"MOV RAX R12"'     # Move Value(R12) back to RAX
+        @v ヘ '"POP RAX"'         # Restore input
         @v ト '"MOV RCX 10"'
-        @v チ '"MOV R12 0"'       # Reset R12 as Counter
+        @v チ '"MOV R12 0"'
+        @v リ '"RPUSH 0"'         # Real PUSH 0 (Alignment/Sentinel)
         @v ヌ '"LABEL L_DIV"'
         @v ル '"DIV RCX"'
         @v ヲ '"ADD RDX 48"'
-        @v ワ '"RPUSH RDX"'       # Real Push
+        @v ワ '"RPUSH RDX"'       # Real PUSH Digit
         @v カ '"ADD R12 1"'
         @v ヨ '"CMP RAX 0"'
         @v タ '"JZ L_PRT"'
@@ -1416,7 +1424,7 @@ jobs:
         生 = 本.行()
         コ = []
 
-        # Init
+        # Init (Dummy instruction to start)
         コ.追(置 + 空 + 弐 + 空 + 字(0))
         
         順 = 0
@@ -1427,41 +1435,31 @@ jobs:
          # Parse: print(123)
          も 線.始(命):
           値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
-          # Pass arg in R12 (because lib moves -11 to R12, we must fix this logic)
-          # Actually, lib does:
-          # MOV R12 -11 -> Overwrites our input!
-          # FIXED LOGIC below:
-          # Compiler emits:
-          # MOV RAX, 12345
-          # CALL print_int
-          # Lib Logic:
-          # PUSH RAX (Save Input) -> RPUSH RAX
-          # MOV R12 -11 ...
-          # ...
-          # POP RAX (Restore Input)
-          
-          # Implementation:
+          # MOV RAX, Value (Use RAX as input logic now)
           コ.追(置 + 空 + 蓄 + 空 + 値) 
-          コ.追(呼 + 空 + "print_int")
+          # CALL print_int (Use var '印')
+          コ.追(呼 + 空 + 印)
          
          順 = 順 + 1
 
         # Emit Exit
         コ.追(置 + 空 + 繰 + 空 + 字(0))
-        コ.追(呼 + 空 + "ExitProcess")
+        # CALL ExitProcess (Use var '青')
+        コ.追(呼 + 空 + 青)
 
         # Output Main Logic
         表(結(コ))
         
         # Output Library Routine
         表(イ)
-        表("  RPUSH RAX") # Save Input
+        表(ロ)
         表(ハ)
         表(ニ)
         表(ホ)
-        表("  POP RAX")   # Restore Input
+        表(ヘ)
         表(ト)
         表(チ)
+        表(リ)
         表(ヌ)
         表(ル)
         表(ヲ)
@@ -1499,6 +1497,8 @@ jobs:
         
         echo "--- Compile High-Level to IR ---"
         python compiler_v0.py calc.py1 > calc.ir
+        
+        echo "--- DEBUG: Check IR ---"
         type calc.ir
         
         echo "--- Compile IR to ASM ---"
@@ -1510,6 +1510,7 @@ jobs:
         
         echo "--- Run ---"
         calc.exe
+
 
 
 
