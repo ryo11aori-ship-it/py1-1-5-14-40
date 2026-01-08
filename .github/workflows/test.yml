@@ -1313,10 +1313,14 @@ jobs:
         # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Lib Logic
         # 29. Create Compiler V0
         # 29. Create Compiler V0 (fixed: no raw quotes in body)
+        # 29. Create Compiler V0 (fixed: no raw quotes in body, no ASCII single-letter macros)
     - name: 29. Create Compiler V0
       run: |
         cat <<'EOF' > compiler_v0.py1
-        # V0 Compiler: Compiles 'print(N)' to Native IR
+        # V0 Compiler: Compiles 'print(N)' to simple IR (PUSH N; CALL print_int)
+        # Rules respected: no raw quotes in body; all identifiers in body are single non-ASCII characters.
+
+        # --- Macros (definition lines may contain quotes) ---
         @v 表 'print'
         @v 追 'append'
         @v 字 'str'
@@ -1334,7 +1338,7 @@ jobs:
 
         @v 系 'sys'
         @v 係 'argv'
-        @v 込 '"import sys"'   # allowed in macro defs
+        @v 込 '"import sys"'
         @v も 'if'
         @v 他 'else'
         @v 循 'while'
@@ -1344,108 +1348,62 @@ jobs:
         @v 空 '" "'
         @v 括 '"("'
         @v 閉 '"")"'
-        @v 命 '"p"+"r"+"i"+"n"+"t"'
+        @v 命 '"p"+"r"+"i"+"n"+"t"'   # macro name for 'print' keyword in source
         @v モ '"r"'
         @v 権 '"u"+"t"+"f"+"8"'
         @v 号 'encoding'
 
-        # single-char macros for placeholders and registers (no quotes in body)
-        @v A '"LABEL print_int"'
-        @v B '"PUSH R12"'
-        @v C '"MOV R12 -11"'
-        @v D '"CALL GetStdHandle"'
-        @v E '"MOV RBX RAX"'
-        @v F '"POP RAX"'
-        @v G '"MOV RCX 10"'
-        @v H '"MOV R12 0"'
-        @v I '"PUSH 0"'
-        @v J '"LABEL L_DIV"'
-        @v K '"DIV RCX"'
-        @v L '"ADD RDX 48"'
-        @v M '"PUSH RDX"'
-        @v N '"ADD R12 1"'
-        @v O '"CMP RAX 0"'
-        @v P '"JZ L_PRT"'
-        @v Q '"JMP L_DIV"'
-        @v R '"LABEL L_PRT"'
-        @v S '"MOV RCX RBX"'
-        @v T '"CMP R12 0"'
-        @v U '"JZ L_END"'
-        @v V '"POP RAX"'
-        @v W '"MOV WRITE 500 RAX"'
-        @v X '"LEA RDX 500"'
-        @v Y '"MOV R8 1"'
-        @v Z '"LEA R9 600"'
-        @v p '"print_int"'
-        @v e '"ExitProcess"'
-        @v r '"RET"'
-
-        # register names used inside body must be macros (no raw quoted literals)
-        @v g '"R12"'
-        @v h '"RAX"'
-
-        # Opcodes (macros)
-        @v 置 '"M"+"O"+"V"'
+        # --- Single-char macros for IR pieces and placeholders (allowed to contain quoted ascii) ---
+        @v 積 '"PUSH "'       # note trailing space included in macro
         @v 呼 '"C"+"A"+"L"+"L"'
         @v 改 '"\n"'
 
-        @v コ 'codes'
-        @v 外 'args'
-        @v 径 'path'
-        @v 本 'body'
-        @v 生 'lines'
-        @v 順 'i'
-        @v 線 'line'
-        @v 値 'val'
-        @v 函 'lib'
+        # placeholders for runtime symbols (single-char keys, non-ASCII)
+        @v 印 '"print_int"'
+        @v 終点 '"ExitProcess"'
+
+        # --- Convenience macros used only in definitions ---
+        @v 井 '"#"'   # comment char (kept as macro to avoid usage in body)
+
+        # --- Local names used in body must be single characters (non-ASCII)
+        @v 寸 'len'
+        @v 訊 'input'
 
         $
         実(込)
 
-        # Build library (use single-char macro pieces) — all macros only
-        函 = A + 改 + B + 改 + C + 改 + D + 改
-        函 = 函 + E + 改 + F + 改 + G + 改 + H + 改
-        函 = 函 + I + 改 + J + 改 + K + 改 + L + 改
-        函 = 函 + M + 改 + N + 改 + O + 改 + P + 改
-        函 = 函 + Q + 改 + R + 改 + S + 改 + T + 改
-        函 = 函 + U + 改 + V + 改 + W + 改 + X + 改
-        函 = 函 + Y + 改 + Z + 改 + r + 改
-
+        # --- Body: use one-character local names only ---
         外 = 系.係
+        も 寸(外) < 2:
+         表(説)
+         系.終(1)
+
         径 = 外[1]
         本 = 開(径, モ, 号=権).読()
         生 = 本.行()
         コ = []
 
-        # Init — use macro g for R12, and 字(0) is a function call (allowed)
-        コ.追(置 + 空 + g + 空 + 字(0))
-
         順 = 0
         循 順 < 寸(生):
          線 = 生[順]
          線 = 線.削()
-
-         # Parse: print(123)
-         も 線.始(命令):
-          値 = 線.換(命令, 空).換(括, 空).換(閉, 空).削()
-          # Pass arg into R12 (macro g)
-          コ.追(置 + 空 + g + 空 + 値)
-          # Call print_int via macro p
-          コ.追(呼 + 空 + p)
-
+         も 寸(線) > 0:
+          も 線.始(命):
+           値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
+           # Append IR: PUSH <値>
+           コ.追(積 + 値)
+           # Call runtime print_int (macro 印)
+           コ.追(呼 + 空 + 印)
          順 = 順 + 1
 
-        # Emit Exit (use macro h for RAX, e for ExitProcess)
-        コ.追(置 + 空 + h + 空 + 字(0))
-        コ.追(呼 + 空 + e)
+        # emit Exit call at end
+        コ.追(呼 + 空 + 終点)
 
-        # Emit final IR and lib
         本 = 結(コ)
         表(本)
-        表(函)
         EOF
 
-        # compile with stage2_compiler (debug on failure)
+        # compile with stage2_compiler (debug on failure: show generated file head)
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py || (echo "--- compiler_v0 generation failed ---" && sed -n '1,200p' compiler_v0.py && exit 1)
      # 30. Compile and Run High-Level Source
     - name: 30. Build & Run Calculator
