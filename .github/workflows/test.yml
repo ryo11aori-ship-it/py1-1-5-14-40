@@ -1282,6 +1282,7 @@ jobs:
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
         # 29. Create REPL Source (Interactive Shell)
+        # 29. Create REPL Source (Strict 1-char variables)
     - name: 29. Create REPL Source
       run: |
         cat <<EOF > repl_spec.py1
@@ -1290,8 +1291,6 @@ jobs:
         @v 追 'append'
         @v 字 'str'
         @v 結 'chr(10).join'
-
-        # Opcodes
         @v 置 '"M"+"O"+"V"'
         @v 取 '"L"+"E"+"A"'
         @v 呼 '"C"+"A"+"L"+"L"'
@@ -1302,139 +1301,92 @@ jobs:
         @v 飛 '"J"+"M"+"P"'
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
-
-        # Registers
-        @v 壱 '"R"+"B"+"X"' # Handle: StdOut
-        @v 弐 '"R"+"1"+"2"' # Handle: StdIn
+        @v 壱 '"R"+"B"+"X"'
+        @v 弐 '"R"+"1"+"2"'
         @v 繰 '"R"+"C"+"X"'
         @v タ '"R"+"D"+"X"'
         @v 蜂 '"R"+"8"'
         @v 苦 '"R"+"9"'
         @v 蓄 '"R"+"A"+"X"'
-        @v 肆 '"R"+"1"+"3"' # Read Count Value
-
-        # APIs
         @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
         @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
         @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
         @v 読 '"R"+"e"+"a"+"d"+"F"+"i"+"l"+"e"'
         @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
-
-        # Memory Addresses
-        @v 壺 '"1"+"0"+"0"' # Prompt String "> "
-        @v 入 '"2"+"0"+"0"' # Input Buffer
-        @v 数 '"3"+"0"+"0"' # Read Count Buffer
-        @v 返 '"4"+"0"+"0"' # Output Prefix "py1: "
-        
-        # Accessors for Memory Values (Direct NASM Syntax)
-        # [mem_base + 300] -> Read Count Value
-        @v 値 '"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"3"+"0"+"0"+"]"'
-        
-        # [mem_base + 200] -> First char of input
+        @v 壺 '"1"+"0"+"0"'
+        @v 入 '"2"+"0"+"0"'
+        @v 数 '"3"+"0"+"0"'
+        @v 答 '"4"+"0"+"0"'
+        @v 量 '"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"3"+"0"+"0"+"]"'
         @v 頭 '"b"+"y"+"t"+"e"+" "+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"0"+"]"'
-        @v 次 '"b"+"y"+"t"+"e"+" "+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"1"+"]"'
-        @v 参 '"b"+"y"+"t"+"e"+" "+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"2"+"]"'
-        @v 四 '"b"+"y"+"t"+"e"+" "+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"3"+"]"'
-
-        # Constants
         @v 無 '"0"'
-        @v 負 '"-"+"1"'
-        @v 入力 '"-"+"1"+"0"' # STD_INPUT_HANDLE
-        @v 出力 '"-"+"1"+"1"' # STD_OUTPUT_HANDLE
+        @v 聴 '"-"+"1"+"0"'
+        @v 視 '"-"+"1"+"1"'
         @v 空 '" "'
         @v 〆 '"0"'
-
-        # Labels
         @v 廻 '"L"+"O"+"O"+"P"'
         @v 去 '"E"+"X"+"I"+"T"'
-
+        @v 仮 '"T"+"M"+"P"'
         @v コ 'codes'
-
         $
         コ = []
-
         # --- Init Strings ---
-        # Prompt: "> " (3E 20)
+        # Prompt: "> "
         コ.追(書 + 空 + 壺 + 空 + 字(62))
         コ.追(書 + 空 + 字(101) + 空 + 字(32))
-
-        # Prefix: "=> " (3D 3E 20)
-        コ.追(書 + 空 + 返 + 空 + 字(61))
+        # Prefix: "=> "
+        コ.追(書 + 空 + 答 + 空 + 字(61))
         コ.追(書 + 空 + 字(401) + 空 + 字(62))
         コ.追(書 + 空 + 字(402) + 空 + 字(32))
-
         # --- Get Handles ---
         # StdOut -> RBX
-        コ.追(置 + 空 + 繰 + 空 + 出力)
+        コ.追(置 + 空 + 繰 + 空 + 視)
         コ.追(呼 + 空 + 出)
         コ.追(置 + 空 + 壱 + 空 + 蓄)
-
         # StdIn -> R12
-        コ.追(置 + 空 + 繰 + 空 + 入力)
+        コ.追(置 + 空 + 繰 + 空 + 聴)
         コ.追(呼 + 空 + 出)
         コ.追(置 + 空 + 弐 + 空 + 蓄)
-
         # --- REPL Loop ---
         コ.追(札 + 空 + 廻)
-
         # 1. Print Prompt "> "
-        コ.追(置 + 空 + 繰 + 空 + 壱)   # StdOut
-        コ.追(取 + 空 + タ + 空 + 壺)   # Buffer
-        コ.追(置 + 空 + 蜂 + 空 + 字(2)) # Len 2
-        コ.追(取 + 空 + 苦 + 空 + 数)   # Scratch
+        コ.追(置 + 空 + 繰 + 空 + 壱)
+        コ.追(取 + 空 + タ + 空 + 壺)
+        コ.追(置 + 空 + 蜂 + 空 + 字(2))
+        コ.追(取 + 空 + 苦 + 空 + 数)
         コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 記)
-
-        # 2. Read Input (Wait for Enter)
-        # ReadFile(StdIn, Buffer, 100, &ReadCount, NULL)
-        コ.追(置 + 空 + 繰 + 空 + 弐)   # StdIn
-        コ.追(取 + 空 + タ + 空 + 入)   # Input Buffer (200)
-        コ.追(置 + 空 + 蜂 + 空 + 字(100)) # Max 100 bytes
-        コ.追(取 + 空 + 苦 + 空 + 数)   # Address to store ReadCount (300)
+        # 2. Read Input
+        コ.追(置 + 空 + 繰 + 空 + 弐)
+        コ.追(取 + 空 + タ + 空 + 入)
+        コ.追(置 + 空 + 蜂 + 空 + 字(100))
+        コ.追(取 + 空 + 苦 + 空 + 数)
         コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 読)
-
-        # 3. Check "exit" command
-        # e (101), x (120), i (105), t (116)
-        コ.追(比 + 空 + 頭 + 空 + 字(101)) # 'e'
-        コ.追(零 + 空 + 参) # Check next if match, but simple CMP/JNZ chain
-        # Note: Compiler is simple, let's just check length or first char for now.
-        # Let's check if first char is 'q' (113) for quit to keep it simple first.
-        コ.追(比 + 空 + 頭 + 空 + 字(113)) # 'q'
+        # 3. Check "q" for exit (q=113)
+        コ.追(比 + 空 + 頭 + 空 + 字(113))
         コ.追(零 + 空 + 去)
-
         # 4. Echo Back "=> " + Input
         # Print Prefix
         コ.追(置 + 空 + 繰 + 空 + 壱)
-        コ.追(取 + 空 + タ + 空 + 返)
+        コ.追(取 + 空 + タ + 空 + 答)
         コ.追(置 + 空 + 蜂 + 空 + 字(3))
-        コ.追(取 + 空 + 苦 + 空 + 壺) # reuse scratch
-        コ.追(押 + 空 + 無)
-        コ.追(呼 + 空 + 記)
-
-        # Print Input Buffer
-        # Load actual bytes read from [mem_base + 300] into R8
-        コ.追(置 + 空 + 蜂 + 空 + 値)
-        
-        コ.追(置 + 空 + 繰 + 空 + 壱)   # StdOut
-        コ.追(取 + 空 + タ + 空 + 入)   # Input Buffer
-        # R8 is already set above
         コ.追(取 + 空 + 苦 + 空 + 壺)
         コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 記)
-
+        # Print Input Buffer (Length from [mem_base+300])
+        コ.追(置 + 空 + 蜂 + 空 + 量)
+        コ.追(置 + 空 + 繰 + 空 + 壱)
+        コ.追(取 + 空 + タ + 空 + 入)
+        コ.追(取 + 空 + 苦 + 空 + 壺)
+        コ.追(押 + 空 + 無)
+        コ.追(呼 + 空 + 記)
         # Loop
         コ.追(飛 + 空 + 廻)
-
         # --- Exit ---
-        コ.追(札 + 空 + 参) # Dummy label for CMP fail flow (not used yet)
-        コ.追(飛 + 空 + 廻) # If not 'q', go back to echo (Simplified logic)
-
-        # Real Exit
         コ.追(札 + 空 + 去)
         コ.追(置 + 空 + 繰 + 空 + 無)
         コ.追(呼 + 空 + 終)
-
         表(結(コ))
         EOF
 
@@ -1455,6 +1407,7 @@ jobs:
         
         echo "--- Running REPL (Input Test) ---"
         echo q | repl.exe
+
 
 
 
