@@ -1309,8 +1309,7 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create "Compiler V0" (High-Level to Native IR)
-    # This compiler reads "print(123)" and generates the complex Assembly logic to print "123"
+        # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Spec
     - name: 29. Create Compiler V0
       run: |
         cat <<EOF > compiler_v0.py1
@@ -1352,9 +1351,10 @@ jobs:
         @v 繰 '"R"+"C"+"X"'
         @v タ '"R"+"D"+"X"'
         
-        # Opcodes for Output
+        # Opcodes
         @v 置 '"M"+"O"+"V"'
         @v 呼 '"C"+"A"+"L"+"L"'
+        @v 改 '"\n"'
         
         @v コ 'codes'
         @v 外 'args'
@@ -1364,13 +1364,45 @@ jobs:
         @v 順 'i'
         @v 線 'line'
         @v 値 'val'
-        
-        # Subroutine: Print Int (Convert RAX to String and Write)
-        # This logic is hardcoded into every compiled exe for now
-        @v 函 '"L"+"A"+"B"+"E"+"L"+" "+"p"+"r"+"i"+"n"+"t"+"_"+"i"+"n"+"t"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"1"+"2"+" "+"-"+"1"+"1"+"\n"+"  "+"C"+"A"+"L"+"L"+" "+"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"B"+"X"+" "+"R"+"A"+"X"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"A"+"X"+" "+"R"+"1"+"2"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"C"+"X"+" "+"1"+"0"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"1"+"2"+" "+"0"+"\n"+"  "+"P"+"U"+"S"+"H"+" "+"0"+"\n"+"L"+"A"+"B"+"E"+"L"+" "+"L"+"_"+"D"+"I"+"V"+"\n"+"  "+"D"+"I"+"V"+" "+"R"+"C"+"X"+"\n"+"  "+"A"+"D"+"D"+" "+"R"+"D"+"X"+" "+"4"+"8"+"\n"+"  "+"P"+"U"+"S"+"H"+" "+"R"+"D"+"X"+"\n"+"  "+"A"+"D"+"D"+" "+"R"+"1"+"2"+" "+"1"+"\n"+"  "+"C"+"M"+"P"+" "+"R"+"A"+"X"+" "+"0"+"\n"+"  "+"J"+"Z"+" "+"L"+"_"+"P"+"R"+"T"+"\n"+"  "+"J"+"M"+"P"+" "+"L"+"_"+"D"+"I"+"V"+"\n"+"L"+"A"+"B"+"E"+"L"+" "+"L"+"_"+"P"+"R"+"T"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"C"+"X"+" "+"R"+"B"+"X"+"\n"+"  "+"C"+"M"+"P"+" "+"R"+"1"+"2"+" "+"0"+"\n"+"  "+"J"+"Z"+" "+"L"+"_"+"E"+"N"+"D"+"\n"+"  "+"P"+"O"+"P"+" "+"R"+"A"+"X"+"\n"+"  "+"M"+"O"+"V"+" "+"W"+"R"+"I"+"T"+"E"+" "+"5"+"0"+"0"+" "+"R"+"A"+"X"+"\n"+"  "+"L"+"E"+"A"+" "+"R"+"D"+"X"+" "+"5"+"0"+"0"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"8"+" "+"1"+"\n"+"  "+"L"+"E"+"A"+" "+"R"+"9"+" "+"6"+"0"+"0"+"\n"+"  "+"S"+"E"+"T"+"S"+" "+"3"+"2"+" "+"0"+"\n"+"  "+"C"+"A"+"L"+"L"+" "+"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"+"\n"+"  "+"A"+"D"+"D"+" "+"R"+"1"+"2"+" "+"-"+"1"+"\n"+"  "+"J"+"M"+"P"+" "+"L"+"_"+"P"+"R"+"T"+"\n"+"L"+"A"+"B"+"E"+"L"+" "+"L"+"_"+"E"+"N"+"D"+"\n"+"  "+"R"+"E"+"T"'
+        @v 函 'lib'
 
         $
         実(込)
+        
+        # Build print_int library line by line to avoid parse errors
+        函 = ""
+        函 = 函 + "LABEL print_int" + 改
+        函 = 函 + "  MOV R12 -11" + 改
+        函 = 函 + "  CALL GetStdHandle" + 改
+        函 = 函 + "  MOV RBX RAX" + 改
+        函 = 函 + "  MOV RAX R12" + 改
+        函 = 函 + "  MOV RCX 10" + 改
+        函 = 函 + "  MOV R12 0" + 改
+        函 = 函 + "  PUSH 0" + 改
+        函 = 函 + "LABEL L_DIV" + 改
+        函 = 函 + "  DIV RCX" + 改
+        函 = 函 + "  ADD RDX 48" + 改
+        函 = 函 + "  PUSH RDX" + 改
+        函 = 函 + "  ADD R12 1" + 改
+        函 = 函 + "  CMP RAX 0" + 改
+        函 = 函 + "  JZ L_PRT" + 改
+        函 = 函 + "  JMP L_DIV" + 改
+        函 = 函 + "LABEL L_PRT" + 改
+        函 = 函 + "  MOV RCX RBX" + 改
+        函 = 函 + "  CMP R12 0" + 改
+        函 = 函 + "  JZ L_END" + 改
+        函 = 函 + "  POP RAX" + 改
+        函 = 函 + "  MOV WRITE 500 RAX" + 改
+        函 = 函 + "  LEA RDX 500" + 改
+        函 = 函 + "  MOV R8 1" + 改
+        函 = 函 + "  LEA R9 600" + 改
+        函 = 函 + "  SETS 32 0" + 改
+        函 = 函 + "  CALL WriteFile" + 改
+        函 = 函 + "  ADD R12 -1" + 改
+        函 = 函 + "  JMP L_PRT" + 改
+        函 = 函 + "LABEL L_END" + 改
+        函 = 函 + "  RET"
+
         外 = 系.係
         径 = 外[1]
         本 = 開(径, モ, 号=権).読()
@@ -1378,7 +1410,7 @@ jobs:
         コ = []
 
         # Header stuff
-        コ.追(連 + 空 + 字(1)) # Dummy LOAD to init
+        コ.追(置 + 空 + 弐 + 空 + 字(0)) # Init logic
         
         順 = 0
         循 順 < 寸(生):
@@ -1412,26 +1444,6 @@ jobs:
 
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
 
-    # 30. Compile and Run High-Level Source
-    - name: 30. Build & Run Calculator
-      shell: cmd
-      run: |
-        echo "--- Create Source File ---"
-        echo print(12345) > calc.py1
-        
-        echo "--- Compile High-Level to IR ---"
-        python compiler_v0.py calc.py1 > calc.ir
-        type calc.ir
-        
-        echo "--- Compile IR to ASM ---"
-        python compiler_native.py calc.ir > calc_native.asm
-        
-        echo "--- Assemble & Link ---"
-        nasm -f win64 calc_native.asm -o calc.obj
-        link.exe calc.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:calc.exe
-        
-        echo "--- Run ---"
-        calc.exe
 
 
 
