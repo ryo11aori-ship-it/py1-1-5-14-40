@@ -1360,7 +1360,7 @@ jobs:
 
         # placeholders for runtime symbols (single-char keys, non-ASCII)
         @v 印 '"print_int"'
-        @v 終点 '"ExitProcess"'
+        @v 青 '"ExitProcess"'
 
         # --- Convenience macros used only in definitions ---
         @v 井 '"#"'   # comment char (kept as macro to avoid usage in body)
@@ -1397,7 +1397,7 @@ jobs:
          順 = 順 + 1
 
         # emit Exit call at end
-        コ.追(呼 + 空 + 終点)
+        コ.追(呼 + 空 + 青)
 
         本 = 結(コ)
         表(本)
