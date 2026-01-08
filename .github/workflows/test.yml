@@ -1394,7 +1394,7 @@ jobs:
         echo print(12345) > calc.py1
         
         echo "--- Compile High-Level to IR ---"
-        python compiler_v0.py calc.py1 > calc.ir
+        python compiler_v0.py1 calc.py1 > calc.ir
         type calc.ir
         
         echo "--- Compile IR to ASM ---"
