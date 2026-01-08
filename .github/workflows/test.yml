@@ -1322,8 +1322,7 @@ jobs:
         # Compile Native Compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create Compiler V0 (High-Level to Native IR)
-        # 29. Create "Compiler V0" (High-Level to Native IR)
+    # 29. Create "Compiler V0" (High-Level to Native IR)
     - name: 29. Create Compiler V0
       run: |
         # Use quoted 'EOF' to protect strings
@@ -1385,15 +1384,11 @@ jobs:
 
         # Library Strings (Use Kanji to avoid conflicts)
         @v イ '"LABEL print_int"'
-        # 修正: PUSHを使わずR15(不揮発レジスタ)に退避してスタックアライメントを維持
-        @v ロ '"MOV R15 RAX"'
-        # 修正: 第一引数はR12ではなくRCXを使用 (Windows x64 ABI)
-        @v ハ '"MOV RCX -11"'
+        @v ロ '"RPUSH RAX"'
+        @v ハ '"MOV R12 -11"'
         @v ニ '"CALL GetStdHandle"'
         @v ホ '"MOV RBX RAX"'
-        # 修正: R15から復帰
-        @v ヘ '"MOV RAX R15"'
-        
+        @v ヘ '"POP RAX"'
         @v ト '"MOV RCX 10"'
         @v チ '"MOV R12 0"'
         @v リ '"RPUSH 0"'
@@ -1424,7 +1419,8 @@ jobs:
         $
         実(込)
         
-        径 = 外[1] if len(外) > 1 else 終
+        外 = 系.係
+        径 = 外[1]
         本 = 開(径, モ, 号=権).読()
         生 = 本.行()
         コ = []
