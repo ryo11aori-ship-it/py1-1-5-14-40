@@ -1322,7 +1322,7 @@ jobs:
         # Compile Native Compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create "Compiler V0" (High-Level to Native IR)
+        # 29. Create Compiler V0 (High-Level to Native IR)
     - name: 29. Create Compiler V0
       run: |
         # Use quoted 'EOF' to protect strings
@@ -1415,6 +1415,10 @@ jobs:
         @v マ '"JMP L_PRT"'
         @v ケ '"LABEL L_END"'
         @v フ '"RET"'
+        
+        # Stack Adjustment (Shadow Space & Alignment)
+        @v 囲 '"SUB RSP 40"'
+        @v 免 '"ADD RSP 40"'
 
         $
         実(込)
@@ -1453,11 +1457,16 @@ jobs:
         
         # Output Library Routine
         表(イ)
-        表(ロ)
+        表(ロ) # RPUSH RAX
+        
+        # Fix: Create Shadow Space for GetStdHandle
+        表(囲) # SUB RSP 40
         表(ハ)
-        表(ニ)
+        表(ニ) # CALL GetStdHandle
+        表(免) # ADD RSP 40
+        
         表(ホ)
-        表(ヘ)
+        表(ヘ) # POP RAX
         表(ト)
         表(チ)
         表(リ)
@@ -1475,11 +1484,16 @@ jobs:
         表(ナ)
         表(ラ)
         表(ム)
+        
+        # Fix: Create Shadow Space for WriteFile
+        表(囲) # SUB RSP 40
         表(ウ)
         表(ヰ)
         表(ノ)
         表(オ)
-        表(ク)
+        表(ク) # CALL WriteFile
+        表(免) # ADD RSP 40
+        
         表(ヤ)
         表(マ)
         表(ケ)
