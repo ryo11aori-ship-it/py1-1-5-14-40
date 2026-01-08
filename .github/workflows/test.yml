@@ -1383,12 +1383,13 @@ jobs:
         @v 青 '"ExitProcess"'
 
         # Library Strings (Use Kanji to avoid conflicts)
+                # Library Strings (Use Kanji to avoid conflicts)
         @v イ '"LABEL print_int"'
-        @v ロ '"RPUSH RAX"'
-        @v ハ '"MOV R12 -11"'
+        @v ロ '"MOV R15 RAX"'
+        @v ハ '"MOV RCX -11"'
         @v ニ '"CALL GetStdHandle"'
         @v ホ '"MOV RBX RAX"'
-        @v ヘ '"POP RAX"'
+        @v ヘ '"MOV RAX R15"'
         @v ト '"MOV RCX 10"'
         @v チ '"MOV R12 0"'
         @v リ '"RPUSH 0"'
