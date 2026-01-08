@@ -1405,7 +1405,7 @@ jobs:
         @v ネ '"CMP R12 0"'
         @v ナ '"JZ L_END"'
         @v ラ '"POP RAX"'
-        @v ム '"MOV WRITE 500 RAX"'
+        @v ム '"WRITE 500 RAX 1"'
         @v ウ '"LEA RDX 500"'
         @v ヰ '"MOV R8 1"'
         @v ノ '"LEA R9 600"'
