@@ -664,8 +664,7 @@ jobs:
         @v 幕 '"  "'
         @v 基 '"byte [mem_base + "'
         @v 閉 '"]"'
-        @v 影 '"qword [rsp + r12*8 + 32]"'
-        @v 返 '"qword [rsp + r12*8 + 24]"'
+        @v 影 '"qword [rsp + 32]"'
 
         @v 転 '"mov "'
         @v 汲 '"lea "'
@@ -768,32 +767,15 @@ jobs:
           # Map RAX to AL for byte write
           も 元 == 大:
            元 = 小
-          # size default 1 if omitted
-          サイズ = '1'
-          も 寸(部) > 3:
-           サイズ = 部[3]
-          も サイズ == '1':
-           出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
-          他:
-           出 = 幕 + 転 + 'qword ' + 処 + 先 + 端 + 点 + 元
+          出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
          
          或 技 == 押:
           元 = 部[1]
-          # RPUSH => mov qword [rsp + r12*8 + 32], <reg>
           出 = 幕 + 転 + 影 + 点 + 元
          
-         或 技 == 押:  # duplicated key guard (keeps behavior consistent)
-          元 = 部[1]
-          出 = 幕 + 転 + 影 + 点 + 元
-
          或 技 == 呼:
           先 = 部[1]
           出 = 幕 + 喚 + 先
-
-         或 技 == 抜:
-          先 = 部[1]
-          # POP => mov <dst>, qword [rsp + r12*8 + 24]
-          出 = 幕 + 転 + 先 + 点 + 返
 
          も 寸(出) > 0:
           表(出)
@@ -957,8 +939,7 @@ jobs:
         @v 幕 '"  "'
         @v 基 '"byte [mem_base + "'
         @v 閉 '"]"'
-        @v 影 '"qword [rsp + r12*8 + 32]"'
-        @v 返 '"qword [rsp + r12*8 + 24]"'
+        @v 影 '"qword [rsp + 32]"'
 
         @v 転 '"mov "'
         @v 汲 '"lea "'
@@ -1058,24 +1039,13 @@ jobs:
          或 技 == 書:
           先 = 部[1]
           元 = 部[2]
-          # size handling: default 1
-          サイズ = '1'
-          も 寸(部) > 3:
-           サイズ = 部[3]
-          も サイズ == '1':
-           も 元 == 大:
-            元 = 小
-           出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
-          他:
-           出 = 幕 + 転 + 'qword ' + 処 + 先 + 端 + 点 + 元
+          も 元 == 大:
+           元 = 小
+          出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
          
          或 技 == 押:
           元 = 部[1]
           出 = 幕 + 転 + 影 + 点 + 元
-         
-         或 技 == 抜:
-          先 = 部[1]
-          出 = 幕 + 転 + 先 + 点 + 返
          
          或 技 == 呼:
           先 = 部[1]
@@ -1195,8 +1165,7 @@ jobs:
         @v 幕 '"  "'
         @v 基 '"byte [mem_base + "'
         @v 閉 '"]"'
-        @v 影 '"qword [rsp + r12*8 + 32]"'
-        @v 返 '"qword [rsp + r12*8 + 24]"'
+        @v 影 '"qword [rsp + 32]"'
         @v 枠 '"qword [rsp + "'
 
         @v 転 '"mov "'
@@ -1301,7 +1270,7 @@ jobs:
          或 技 == 排:
           先 = 部[1]
           元 = 部[2]
-          Out = 幕 + 異 + 先 + 点 + 元
+          出 = 幕 + 異 + 先 + 点 + 元
 
          或 技 == 較:
           先 = 部[1]
@@ -1319,14 +1288,7 @@ jobs:
           元 = 部[2]
           も 元 == 大:
            元 = 小
-          # size handling
-          サイズ = '1'
-          も 寸(部) > 3:
-           サイズ = 部[3]
-          も サイズ == '1':
-           出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
-          他:
-           出 = 幕 + 転 + 枠 + 先 + 閉 + 点 + 元
+          出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
          
          或 技 == 積:
           先 = 部[1]
@@ -1364,7 +1326,7 @@ jobs:
     - name: 29. Create Compiler V0
       run: |
         # Use quoted 'EOF' to protect strings
-        cat <<EOF > compiler_v0.py1
+        cat <<'EOF' > compiler_v0.py1
         # V0 Compiler: Compiles 'print(N)' to Native IR
         @v 表 'print'
         @v 寸 'len'
@@ -1447,8 +1409,7 @@ jobs:
         @v ウ '"LEA RDX 500"'
         @v ヰ '"MOV R8 1"'
         @v ノ '"LEA R9 600"'
-        # Replace dangerous SETS with explicit zero + WRITE init to mem_base+600 (written ptr)
-        @v オ '"MOV RAX 0\nWRITE 600 RAX 8"'
+        @v オ '"SETS 32 0"'
         @v ク '"CALL WriteFile"'
         @v ヤ '"ADD R12 -1"'
         @v マ '"JMP L_PRT"'
@@ -1517,7 +1478,7 @@ jobs:
         表(ウ)
         表(ヰ)
         表(ノ)
-        表(オ)   # now emits MOV RAX 0 + WRITE 600 RAX 8
+        表(オ)
         表(ク)
         表(ヤ)
         表(マ)
@@ -1550,3 +1511,16 @@ jobs:
         
         echo "--- Run ---"
         calc.exe
+
+
+
+
+
+
+
+
+
+
+
+
+
