@@ -1309,18 +1309,9 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-                # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Lib Logic
-        # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Lib Logic
-        # 29. Create Compiler V0
-        # 29. Create Compiler V0 (fixed: no raw quotes in body)
-        # 29. Create Compiler V0 (fixed: no raw quotes in body, no ASCII single-letter macros)
     - name: 29. Create Compiler V0
       run: |
         cat <<'EOF' > compiler_v0.py1
-        # V0 Compiler: Compiles 'print(N)' to simple IR (PUSH N; CALL print_int)
-        # Rules respected: no raw quotes in body; all identifiers in body are single non-ASCII characters.
-
-        # --- Macros (definition lines may contain quotes) ---
         @v 表 'print'
         @v 追 'append'
         @v 字 'str'
@@ -1348,31 +1339,24 @@ jobs:
         @v 空 '" "'
         @v 括 '"("'
         @v 閉 '"")"'
-        @v 命 '"p"+"r"+"i"+"n"+"t"'   # macro name for 'print' keyword in source
+        @v 命 '"p"+"r"+"i"+"n"+"t"'
         @v モ '"r"'
         @v 権 '"u"+"t"+"f"+"8"'
         @v 号 'encoding'
-
-        # --- Single-char macros for IR pieces and placeholders (allowed to contain quoted ascii) ---
-        @v 積 '"PUSH "'       # note trailing space included in macro
+        @v 積 '"PUSH "'
         @v 呼 '"C"+"A"+"L"+"L"'
         @v 改 '"\n"'
 
-        # placeholders for runtime symbols (single-char keys, non-ASCII)
         @v 印 '"print_int"'
         @v 青 '"ExitProcess"'
 
-        # --- Convenience macros used only in definitions ---
-        @v 井 '"#"'   # comment char (kept as macro to avoid usage in body)
-
-        # --- Local names used in body must be single characters (non-ASCII)
+        @v 井 '"#"'
         @v 寸 'len'
         @v 訊 'input'
 
         $
         実(込)
 
-        # --- Body: use one-character local names only ---
         外 = 系.係
         も 寸(外) < 2:
          表(説)
@@ -1403,9 +1387,6 @@ jobs:
         表(本)
         EOF
 
-        # compile with stage2_compiler (debug on failure: show generated file head)
-        python stage2_compiler.py compiler_v0.py1 > compiler_v0.py || (echo "--- compiler_v0 generation failed ---" && sed -n '1,200p' compiler_v0.py && exit 1)
-     # 30. Compile and Run High-Level Source
     - name: 30. Build & Run Calculator
       shell: cmd
       run: |
