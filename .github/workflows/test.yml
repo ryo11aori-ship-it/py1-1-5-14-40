@@ -1312,6 +1312,7 @@ jobs:
                 # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Lib Logic
         # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Lib Logic
         # 29. Create Compiler V0
+        # 29. Create Compiler V0 (fixed: no raw quotes in body)
     - name: 29. Create Compiler V0
       run: |
         cat <<'EOF' > compiler_v0.py1
@@ -1333,7 +1334,7 @@ jobs:
 
         @v 系 'sys'
         @v 係 'argv'
-        @v 込 '"import sys"'
+        @v 込 '"import sys"'   # allowed in macro defs
         @v も 'if'
         @v 他 'else'
         @v 循 'while'
@@ -1348,7 +1349,7 @@ jobs:
         @v 権 '"u"+"t"+"f"+"8"'
         @v 号 'encoding'
 
-        # Registers / placeholders (single-char macro keys)
+        # single-char macros for placeholders and registers (no quotes in body)
         @v A '"LABEL print_int"'
         @v B '"PUSH R12"'
         @v C '"MOV R12 -11"'
@@ -1379,7 +1380,11 @@ jobs:
         @v e '"ExitProcess"'
         @v r '"RET"'
 
-        # Opcodes
+        # register names used inside body must be macros (no raw quoted literals)
+        @v g '"R12"'
+        @v h '"RAX"'
+
+        # Opcodes (macros)
         @v 置 '"M"+"O"+"V"'
         @v 呼 '"C"+"A"+"L"+"L"'
         @v 改 '"\n"'
@@ -1396,8 +1401,8 @@ jobs:
 
         $
         実(込)
-        
-        # Build library (use single-char macro pieces)
+
+        # Build library (use single-char macro pieces) — all macros only
         函 = A + 改 + B + 改 + C + 改 + D + 改
         函 = 函 + E + 改 + F + 改 + G + 改 + H + 改
         函 = 函 + I + 改 + J + 改 + K + 改 + L + 改
@@ -1412,26 +1417,26 @@ jobs:
         生 = 本.行()
         コ = []
 
-        # Init
-        コ.追(置 + 空 + "R12" + 空 + 字(0))
-        
+        # Init — use macro g for R12, and 字(0) is a function call (allowed)
+        コ.追(置 + 空 + g + 空 + 字(0))
+
         順 = 0
         循 順 < 寸(生):
          線 = 生[順]
          線 = 線.削()
-         
+
          # Parse: print(123)
          も 線.始(命令):
           値 = 線.換(命令, 空).換(括, 空).換(閉, 空).削()
-          # Pass arg in R12
-          コ.追(置 + 空 + "R12" + 空 + 値) 
-          # Call print_int (use single-char macro p)
+          # Pass arg into R12 (macro g)
+          コ.追(置 + 空 + g + 空 + 値)
+          # Call print_int via macro p
           コ.追(呼 + 空 + p)
-         
+
          順 = 順 + 1
 
-        # Emit Exit
-        コ.追(置 + 空 + "RAX" + 空 + 字(0))
+        # Emit Exit (use macro h for RAX, e for ExitProcess)
+        コ.追(置 + 空 + h + 空 + 字(0))
         コ.追(呼 + 空 + e)
 
         # Emit final IR and lib
@@ -1440,9 +1445,8 @@ jobs:
         表(函)
         EOF
 
-        # compile with stage2_compiler
+        # compile with stage2_compiler (debug on failure)
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py || (echo "--- compiler_v0 generation failed ---" && sed -n '1,200p' compiler_v0.py && exit 1)
-
      # 30. Compile and Run High-Level Source
     - name: 30. Build & Run Calculator
       shell: cmd
