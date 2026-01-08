@@ -1100,6 +1100,7 @@ jobs:
         # 28. Update Native Compiler (Simple & Flat - No helper functions)
         # 28. Update Native Compiler (Add 'SETS' opcode for Stack Arguments)
         # 28. Update Native Compiler (Add Math Ops for Calculator)
+        # 28. Update Native Compiler (Fix: Syntax Error caused by comment)
     - name: 28. Update Native Compiler (Math Support)
       run: |
         cat <<EOF > compiler_native.py1
@@ -1178,6 +1179,8 @@ jobs:
         @v 釘 '":"'
         @v 処 '"[mem_base + "'
         @v 端 '"]"'
+        
+        # FIXED: Removed comment to avoid syntax error
         @v 清 '"xor rdx, rdx"'
 
         @v 大 '"R"+"A"+"X"'
@@ -1253,7 +1256,6 @@ jobs:
           元 = 部[2]
           出 = 幕 + 倍 + 先 + 点 + 元
          
-         # DIV in x64 divides RDX:RAX by operand. We must clear RDX.
          或 技 == 割:
           元 = 部[1]
           表(幕 + 清)
@@ -1309,7 +1311,7 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create "Compiler V0" (High-Level to Native IR) - Simplified Output Logic
+    # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Strategy
     - name: 29. Create Compiler V0
       run: |
         cat <<EOF > compiler_v0.py1
@@ -1352,6 +1354,7 @@ jobs:
         # Opcodes
         @v 置 '"M"+"O"+"V"'
         @v 呼 '"C"+"A"+"L"+"L"'
+        @v 改 '"\n"'
         
         @v コ 'codes'
         @v 外 'args'
@@ -1362,40 +1365,6 @@ jobs:
         @v 線 'line'
         @v 値 'val'
 
-        # Library Strings (Use 1-char vars A-Z, a-e to comply with Stage2)
-        @v A '"LABEL print_int"'
-        @v B '"PUSH R12"'
-        @v C '"MOV R12 -11"'
-        @v D '"CALL GetStdHandle"'
-        @v E '"MOV RBX RAX"'
-        @v F '"POP RAX"'
-        @v G '"MOV RCX 10"'
-        @v H '"MOV R12 0"'
-        @v I '"PUSH 0"'
-        @v J '"LABEL L_DIV"'
-        @v K '"DIV RCX"'
-        @v L '"ADD RDX 48"'
-        @v M '"PUSH RDX"'
-        @v N '"ADD R12 1"'
-        @v O '"CMP RAX 0"'
-        @v P '"JZ L_PRT"'
-        @v Q '"JMP L_DIV"'
-        @v R '"LABEL L_PRT"'
-        @v S '"MOV RCX RBX"'
-        @v T '"CMP R12 0"'
-        @v U '"JZ L_END"'
-        @v V '"POP RAX"'
-        @v W '"MOV WRITE 500 RAX"'
-        @v X '"LEA RDX 500"'
-        @v Y '"MOV R8 1"'
-        @v Z '"LEA R9 600"'
-        @v a '"SETS 32 0"'
-        @v b '"CALL WriteFile"'
-        @v c '"ADD R12 -1"'
-        @v d '"JMP L_PRT"'
-        @v e '"LABEL L_END"'
-        @v f '"RET"'
-
         $
         実(込)
         
@@ -1405,7 +1374,7 @@ jobs:
         生 = 本.行()
         コ = []
 
-        # Init (Dummy instruction to start)
+        # Init (Dummy)
         コ.追(置 + 空 + 弐 + 空 + 字(0))
         
         順 = 0
@@ -1416,61 +1385,57 @@ jobs:
          # Parse: print(123)
          も 線.始(命):
           値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
-          # Pass arg in R12 (Wait, actually logic assumes PUSH/POP logic in lib)
-          # A: LABEL print_int
-          # B: PUSH R12  <-- Pushes whatever is in R12
-          # So we MUST set R12 before calling.
+          # Code Gen:
+          # MOV R12, <val>
+          # CALL print_int
           コ.追(置 + 空 + 弐 + 空 + 値) 
-          コ.追(呼 + 空 + 字(1))
+          コ.追(呼 + 空 + "print_int")
          
          順 = 順 + 1
 
         # Emit Exit
         コ.追(置 + 空 + 繰 + 空 + 字(0))
-        コ.追(呼 + 空 + 字(2))
+        コ.追(呼 + 空 + "ExitProcess")
 
-        # Replace placeholders
-        本 = 結(コ)
-        本 = 本.換(字(1), "print_int")
-        本 = 本.換(字(2), "ExitProcess")
+        # Output Main Logic
+        表(結(コ))
         
-        表(本)
-        
-        # Append Library (Direct Print)
-        表(A)
-        表(B)
-        表(C)
-        表(D)
-        表(E)
-        表(F)
-        表(G)
-        表(H)
-        表(I)
-        表(J)
-        表(K)
-        表(L)
-        表(M)
-        表(N)
-        表(O)
-        表(P)
-        表(Q)
-        表(R)
-        表(S)
-        表(T)
-        表(U)
-        表(V)
-        表(W)
-        表(X)
-        表(Y)
-        表(Z)
-        表(a)
-        表(b)
-        表(c)
-        表(d)
-        表(e)
-        表(f)
+        # Output Library (Directly printing strings to avoid variable issues)
+        表("LABEL print_int")
+        表("  PUSH R12")       # Save R12
+        表("  MOV R12 -11")    # StdOut Handle ID
+        表("  CALL GetStdHandle")
+        表("  MOV RBX RAX")    # Save Handle to RBX
+        表("  POP RAX")        # Restore Value to RAX (was in R12)
+        表("  MOV RCX 10")
+        表("  MOV R12 0")
+        表("  PUSH 0")
+        表("LABEL L_DIV")
+        表("  DIV RCX")
+        表("  ADD RDX 48")
+        表("  PUSH RDX")
+        表("  ADD R12 1")
+        表("  CMP RAX 0")
+        表("  JZ L_PRT")
+        表("  JMP L_DIV")
+        表("LABEL L_PRT")
+        表("  MOV RCX RBX")
+        表("  CMP R12 0")
+        表("  JZ L_END")
+        表("  POP RAX")
+        表("  MOV WRITE 500 RAX")
+        表("  LEA RDX 500")
+        表("  MOV R8 1")
+        表("  LEA R9 600")
+        表("  SETS 32 0")
+        表("  CALL WriteFile")
+        表("  ADD R12 -1")
+        表("  JMP L_PRT")
+        表("LABEL L_END")
+        表("  RET")
         EOF
 
+        # Compile Compiler V0
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
 
     # 30. Compile and Run High-Level Source
