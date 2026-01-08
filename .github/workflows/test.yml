@@ -1099,10 +1099,11 @@ jobs:
 
         # 28. Update Native Compiler (Simple & Flat - No helper functions)
         # 28. Update Native Compiler (Add 'SETS' opcode for Stack Arguments)
-    - name: 28. Update Native Compiler (With Stack Helper)
+        # 28. Update Native Compiler (Add Math Ops for Calculator)
+    - name: 28. Update Native Compiler (Math Support)
       run: |
         cat <<EOF > compiler_native.py1
-        # Native x64 Compiler with File I/O Support
+        # Native x64 Compiler (With Math & Stack Ops)
         @v 表 'print'
         @v 寸 'len'
         @v 追 'append'
@@ -1140,11 +1141,16 @@ jobs:
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
         @v 積 '"S"+"E"+"T"+"S"'
-
-        # Header: Allocate 256 bytes for stack/shadow space
-        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n  extern CreateFileA\n  extern ReadFile\n  extern GetFileSize\n  extern CloseHandle\n\nstart:\n  sub rsp, 8\n  and rsp, -16\n  sub rsp, 256\n"'
         
-        @v 尾 '"  add rsp, 256\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
+        # New Ops for Math
+        @v 引 '"S"+"U"+"B"'
+        @v 掛 '"M"+"U"+"L"'
+        @v 割 '"D"+"I"+"V"'
+        @v 排 '"X"+"O"+"R"'
+        @v 抜 '"P"+"O"+"P"'
+
+        @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n\nstart:\n  sub rsp, 40\n"'
+        @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
 
         @v 改 '"\n"'
         @v 空 '" "'
@@ -1158,6 +1164,12 @@ jobs:
         @v 転 '"mov "'
         @v 汲 '"lea "'
         @v 足 '"add "'
+        @v 減 '"sub "'
+        @v 倍 '"imul "'
+        @v 分 '"div "'
+        @v 異 '"xor "'
+        @v 戻 '"pop "'
+        
         @v 比 '"cmp "'
         @v 跳 '"je "'
         @v 舞 '"jmp "'
@@ -1166,12 +1178,10 @@ jobs:
         @v 釘 '":"'
         @v 処 '"[mem_base + "'
         @v 端 '"]"'
+        @v 清 '"xor rdx, rdx"' # Clear RDX before DIV
 
-        # Register mapping
         @v 大 '"R"+"A"+"X"'
         @v 小 '"a"+"l"'
-
-        @v 説 '"Usage: compiler_native.py <win.ir>"'
         @v モ '"r"'
         @v 権 '"utf-8"'
         @v 号 'encoding'
@@ -1191,12 +1201,9 @@ jobs:
         @v 出 'out'
 
         $
-
         実(込)
-
         外 = 系.係
         も 寸(外) < 2:
-         表(説)
          系.終(1)
 
         径 = 外[1]
@@ -1215,7 +1222,6 @@ jobs:
 
          も 寸(線) == 0:
           0
-         
          も 線.始(井):
           0
 
@@ -1238,6 +1244,26 @@ jobs:
           先 = 部[1]
           元 = 部[2]
           出 = 幕 + 足 + 先 + 点 + 元
+         或 技 == 引:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 減 + 先 + 点 + 元
+         或 技 == 掛:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 倍 + 先 + 点 + 元
+         
+         # DIV in x64 divides RDX:RAX by operand. We must clear RDX.
+         或 技 == 割:
+          元 = 部[1]
+          表(幕 + 清)
+          出 = 幕 + 分 + 元
+
+         或 技 == 排:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 異 + 先 + 点 + 元
+
          或 技 == 較:
           先 = 部[1]
           元 = 部[2]
@@ -1245,7 +1271,6 @@ jobs:
          或 技 == 零:
           先 = 部[1]
           出 = 幕 + 跳 + 先
-         
          或 技 == 飛:
           先 = 部[1]
           出 = 幕 + 舞 + 先
@@ -1260,12 +1285,15 @@ jobs:
          或 技 == 積:
           先 = 部[1]
           元 = 部[2]
-          # mov qword [rsp + OFFSET], VAL
           出 = 幕 + 転 + 枠 + 先 + 閉 + 点 + 元
 
          或 技 == 押:
           元 = 部[1]
           出 = 幕 + 転 + 影 + 点 + 元
+         
+         或 技 == 抜:
+          元 = 部[1]
+          出 = 幕 + 戻 + 元
          
          或 技 == 呼:
           先 = 部[1]
@@ -1281,137 +1309,129 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-        # 29. Create REPL Source (Interactive Shell)
-        # 29. Create REPL Source (Strict 1-char variables)
-        # 29. Create REPL Source (Fix: Remove space in 'byte[...]')
-    - name: 29. Create REPL Source
+    # 29. Create "Compiler V0" (High-Level to Native IR)
+    # This compiler reads "print(123)" and generates the complex Assembly logic to print "123"
+    - name: 29. Create Compiler V0
       run: |
-        cat <<EOF > repl_spec.py1
-        # Native REPL (Read-Eval-Print Loop) Shell
+        cat <<EOF > compiler_v0.py1
+        # V0 Compiler: Compiles 'print(N)' to Native IR
         @v 表 'print'
         @v 追 'append'
         @v 字 'str'
         @v 結 'chr(10).join'
-        @v 置 '"M"+"O"+"V"'
-        @v 取 '"L"+"E"+"A"'
-        @v 呼 '"C"+"A"+"L"+"L"'
-        @v 書 '"W"+"R"+"I"+"T"+"E"'
-        @v 札 '"L"+"A"+"B"+"E"+"L"'
-        @v 比 '"C"+"M"+"P"'
-        @v 零 '"J"+"Z"'
-        @v 飛 '"J"+"M"+"P"'
-        @v 加 '"A"+"D"+"D"'
-        @v 押 '"P"+"U"+"S"+"H"'
+        @v 裂 'split'
+        @v 削 'strip'
+        @v 行 'splitlines'
+        @v 開 'open'
+        @v 読 'read'
+        @v 始 'startswith'
+        @v 終 'exit'
+        @v 実 'exec'
+        @v 整 'int'
+        @v 換 'replace'
+
+        @v 系 'sys'
+        @v 係 'argv'
+        @v 込 '"import sys"'
+        @v も 'if'
+        @v 他 'else'
+        @v 循 'while'
+        @v 入 'in'
+        @v 或 'elif'
+
+        @v 空 '" "'
+        @v 括弧 '"("'
+        @v 閉じ '")"'
+        @v 命令 '"p"+"r"+"i"+"n"+"t"'
+        @v モ '"r"'
+        @v 権 '"u"+"t"+"f"+"8"'
+        @v 号 'encoding'
         @v 壱 '"R"+"B"+"X"'
         @v 弐 '"R"+"1"+"2"'
+        @v 蓄 '"R"+"A"+"X"'
         @v 繰 '"R"+"C"+"X"'
         @v タ '"R"+"D"+"X"'
-        @v 蜂 '"R"+"8"'
-        @v 苦 '"R"+"9"'
-        @v 蓄 '"R"+"A"+"X"'
-        @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
-        @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
-        @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
-        @v 読 '"R"+"e"+"a"+"d"+"F"+"i"+"l"+"e"'
-        @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
-        @v 壺 '"1"+"0"+"0"'
-        @v 入 '"2"+"0"+"0"'
-        @v 数 '"3"+"0"+"0"'
-        @v 答 '"4"+"0"+"0"'
-        @v 量 '"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"3"+"0"+"0"+"]"'
         
-        # Fixed: Remove space to treat as single token
-        @v 頭 '"b"+"y"+"t"+"e"+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"0"+"]"'
+        # Opcodes for Output
+        @v 置 '"M"+"O"+"V"'
+        @v 呼 '"C"+"A"+"L"+"L"'
         
-        @v 無 '"0"'
-        @v 聴 '"-"+"1"+"0"'
-        @v 視 '"-"+"1"+"1"'
-        @v 空 '" "'
-        @v 〆 '"0"'
-        @v 廻 '"L"+"O"+"O"+"P"'
-        @v 去 '"E"+"X"+"I"+"T"'
         @v コ 'codes'
+        @v 外 'args'
+        @v 径 'path'
+        @v 本 'body'
+        @v 生 'lines'
+        @v 順 'i'
+        @v 線 'line'
+        @v 値 'val'
+        
+        # Subroutine: Print Int (Convert RAX to String and Write)
+        # This logic is hardcoded into every compiled exe for now
+        @v 函 '"L"+"A"+"B"+"E"+"L"+" "+"p"+"r"+"i"+"n"+"t"+"_"+"i"+"n"+"t"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"1"+"2"+" "+"-"+"1"+"1"+"\n"+"  "+"C"+"A"+"L"+"L"+" "+"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"B"+"X"+" "+"R"+"A"+"X"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"A"+"X"+" "+"R"+"1"+"2"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"C"+"X"+" "+"1"+"0"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"1"+"2"+" "+"0"+"\n"+"  "+"P"+"U"+"S"+"H"+" "+"0"+"\n"+"L"+"A"+"B"+"E"+"L"+" "+"L"+"_"+"D"+"I"+"V"+"\n"+"  "+"D"+"I"+"V"+" "+"R"+"C"+"X"+"\n"+"  "+"A"+"D"+"D"+" "+"R"+"D"+"X"+" "+"4"+"8"+"\n"+"  "+"P"+"U"+"S"+"H"+" "+"R"+"D"+"X"+"\n"+"  "+"A"+"D"+"D"+" "+"R"+"1"+"2"+" "+"1"+"\n"+"  "+"C"+"M"+"P"+" "+"R"+"A"+"X"+" "+"0"+"\n"+"  "+"J"+"Z"+" "+"L"+"_"+"P"+"R"+"T"+"\n"+"  "+"J"+"M"+"P"+" "+"L"+"_"+"D"+"I"+"V"+"\n"+"L"+"A"+"B"+"E"+"L"+" "+"L"+"_"+"P"+"R"+"T"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"C"+"X"+" "+"R"+"B"+"X"+"\n"+"  "+"C"+"M"+"P"+" "+"R"+"1"+"2"+" "+"0"+"\n"+"  "+"J"+"Z"+" "+"L"+"_"+"E"+"N"+"D"+"\n"+"  "+"P"+"O"+"P"+" "+"R"+"A"+"X"+"\n"+"  "+"M"+"O"+"V"+" "+"W"+"R"+"I"+"T"+"E"+" "+"5"+"0"+"0"+" "+"R"+"A"+"X"+"\n"+"  "+"L"+"E"+"A"+" "+"R"+"D"+"X"+" "+"5"+"0"+"0"+"\n"+"  "+"M"+"O"+"V"+" "+"R"+"8"+" "+"1"+"\n"+"  "+"L"+"E"+"A"+" "+"R"+"9"+" "+"6"+"0"+"0"+"\n"+"  "+"S"+"E"+"T"+"S"+" "+"3"+"2"+" "+"0"+"\n"+"  "+"C"+"A"+"L"+"L"+" "+"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"+"\n"+"  "+"A"+"D"+"D"+" "+"R"+"1"+"2"+" "+"-"+"1"+"\n"+"  "+"J"+"M"+"P"+" "+"L"+"_"+"P"+"R"+"T"+"\n"+"L"+"A"+"B"+"E"+"L"+" "+"L"+"_"+"E"+"N"+"D"+"\n"+"  "+"R"+"E"+"T"'
+
         $
+        実(込)
+        外 = 系.係
+        径 = 外[1]
+        本 = 開(径, モ, 号=権).読()
+        生 = 本.行()
         コ = []
-        # --- Init Strings ---
-        # Prompt: "> "
-        コ.追(書 + 空 + 壺 + 空 + 字(62))
-        コ.追(書 + 空 + 字(101) + 空 + 字(32))
-        # Prefix: "=> "
-        コ.追(書 + 空 + 答 + 空 + 字(61))
-        コ.追(書 + 空 + 字(401) + 空 + 字(62))
-        コ.追(書 + 空 + 字(402) + 空 + 字(32))
-        # --- Get Handles ---
-        # StdOut -> RBX
-        コ.追(置 + 空 + 繰 + 空 + 視)
-        コ.追(呼 + 空 + 出)
-        コ.追(置 + 空 + 壱 + 空 + 蓄)
-        # StdIn -> R12
-        コ.追(置 + 空 + 繰 + 空 + 聴)
-        コ.追(呼 + 空 + 出)
-        コ.追(置 + 空 + 弐 + 空 + 蓄)
-        # --- REPL Loop ---
-        コ.追(札 + 空 + 廻)
-        # 1. Print Prompt "> "
-        コ.追(置 + 空 + 繰 + 空 + 壱)
-        コ.追(取 + 空 + タ + 空 + 壺)
-        コ.追(置 + 空 + 蜂 + 空 + 字(2))
-        コ.追(取 + 空 + 苦 + 空 + 数)
-        コ.追(押 + 空 + 無)
-        コ.追(呼 + 空 + 記)
-        # 2. Read Input
-        コ.追(置 + 空 + 繰 + 空 + 弐)
-        コ.追(取 + 空 + タ + 空 + 入)
-        コ.追(置 + 空 + 蜂 + 空 + 字(100))
-        コ.追(取 + 空 + 苦 + 空 + 数)
-        コ.追(押 + 空 + 無)
-        コ.追(呼 + 空 + 読)
-        # 3. Check "q" for exit (q=113)
-        コ.追(比 + 空 + 頭 + 空 + 字(113))
-        コ.追(零 + 空 + 去)
-        # 4. Echo Back "=> " + Input
-        # Print Prefix
-        コ.追(置 + 空 + 繰 + 空 + 壱)
-        コ.追(取 + 空 + タ + 空 + 答)
-        コ.追(置 + 空 + 蜂 + 空 + 字(3))
-        コ.追(取 + 空 + 苦 + 空 + 壺)
-        コ.追(押 + 空 + 無)
-        コ.追(呼 + 空 + 記)
-        # Print Input Buffer (Length from [mem_base+300])
-        # Load length (32-bit from ReadFile) into R8
-        コ.追(置 + 空 + 蜂 + 空 + 量)
-        コ.追(置 + 空 + 繰 + 空 + 壱)
-        コ.追(取 + 空 + タ + 空 + 入)
-        コ.追(取 + 空 + 苦 + 空 + 壺)
-        コ.追(押 + 空 + 無)
-        コ.追(呼 + 空 + 記)
-        # Loop
-        コ.追(飛 + 空 + 廻)
-        # --- Exit ---
-        コ.追(札 + 空 + 去)
-        コ.追(置 + 空 + 繰 + 空 + 無)
-        コ.追(呼 + 空 + 終)
-        表(結(コ))
+
+        # Header stuff
+        コ.追(連 + 空 + 字(1)) # Dummy LOAD to init
+        
+        順 = 0
+        循 順 < 寸(生):
+         線 = 生[順]
+         線 = 線.削()
+         
+         # Parse: print(123)
+         も 線.始(命令):
+          値 = 線.換(命令, 空).換(括弧, 空).換(閉じ, 空).削()
+          # Emit: MOV RAX, 123
+          コ.追(置 + 空 + 蓄 + 空 + 値)
+          # Emit: SAVE R12 (Used by print_int loop)
+          コ.追(置 + 空 + 弐 + 空 + 蓄) 
+          # Emit: CALL print_int
+          コ.追(呼 + 空 + 字(1)) # 1 is placeholder for "print_int" label string
+         
+         順 = 順 + 1
+
+        # Emit Exit
+        コ.追(置 + 空 + 繰 + 空 + 字(0))
+        コ.追(呼 + 空 + 字(2)) # 2 is ExitProcess
+
+        # Replace placeholders and append Library
+        本 = 結(コ)
+        本 = 本.換(字(1), "print_int")
+        本 = 本.換(字(2), "ExitProcess")
+        
+        表(本)
+        表(函) # Append the print_int subroutine
         EOF
 
-        # Generate ASM
-        python compiler_gen3.py repl_spec.py1 > repl_ir_gen.py
-        python repl_ir_gen.py > repl.ir
-        python compiler_native.py repl.ir > repl_native.asm
+        python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
 
-
-    # 30. Build & Run REPL
-    - name: 30. Build & Run REPL
+    # 30. Compile and Run High-Level Source
+    - name: 30. Build & Run Calculator
       shell: cmd
       run: |
-        echo "--- Assembling REPL ---"
-        nasm -f win64 repl_native.asm -o repl.obj
+        echo "--- Create Source File ---"
+        echo print(12345) > calc.py1
         
-        echo "--- Linking REPL ---"
-        link.exe repl.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:repl.exe
+        echo "--- Compile High-Level to IR ---"
+        python compiler_v0.py calc.py1 > calc.ir
+        type calc.ir
         
-        echo "--- Running REPL (Input Test) ---"
-        echo q | repl.exe
+        echo "--- Compile IR to ASM ---"
+        python compiler_native.py calc.ir > calc_native.asm
+        
+        echo "--- Assemble & Link ---"
+        nasm -f win64 calc_native.asm -o calc.obj
+        link.exe calc.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:calc.exe
+        
+        echo "--- Run ---"
+        calc.exe
 
 
 
