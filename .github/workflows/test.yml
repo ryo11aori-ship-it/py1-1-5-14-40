@@ -1310,9 +1310,10 @@ jobs:
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
                 # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Lib Logic
+        # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Lib Logic
     - name: 29. Create Compiler V0
       run: |
-        cat <<EOF > compiler_v0.py1
+        cat <<'EOF' > compiler_v0.py1
         # V0 Compiler: Compiles 'print(N)' to Native IR
         @v 表 'print'
         @v 追 'append'
@@ -1339,21 +1340,48 @@ jobs:
         @v 或 'elif'
 
         @v 空 '" "'
-        @v 括弧 '"("'
-        @v 閉じ '")"'
-        @v 命令 '"p"+"r"+"i"+"n"+"t"'
+        @v 括 '"("'
+        @v 閉 '"")"'
+        @v 命 '"p"+"r"+"i"+"n"+"t"'
         @v モ '"r"'
         @v 権 '"u"+"t"+"f"+"8"'
         @v 号 'encoding'
-        @v 壱 '"R"+"B"+"X"'
-        @v 弐 '"R"+"1"+"2"'
-        @v 蓄 '"R"+"A"+"X"'
-        
+
+        # Registers / placeholders (single-char macro keys)
+        @v A '"LABEL print_int"'
+        @v B '"PUSH R12"'
+        @v C '"MOV R12 -11"'
+        @v D '"CALL GetStdHandle"'
+        @v E '"MOV RBX RAX"'
+        @v F '"POP RAX"'
+        @v G '"MOV RCX 10"'
+        @v H '"MOV R12 0"'
+        @v I '"PUSH 0"'
+        @v J '"LABEL L_DIV"'
+        @v K '"DIV RCX"'
+        @v L '"ADD RDX 48"'
+        @v M '"PUSH RDX"'
+        @v N '"ADD R12 1"'
+        @v O '"CMP RAX 0"'
+        @v P '"JZ L_PRT"'
+        @v Q '"JMP L_DIV"'
+        @v R '"LABEL L_PRT"'
+        @v S '"MOV RCX RBX"'
+        @v T '"CMP R12 0"'
+        @v U '"JZ L_END"'
+        @v V '"POP RAX"'
+        @v W '"MOV WRITE 500 RAX"'
+        @v X '"LEA RDX 500"'
+        @v Y '"MOV R8 1"'
+        @v Z '"LEA R9 600"'
+        @v p '"print_int"'
+        @v e '"ExitProcess"'
+
         # Opcodes
         @v 置 '"M"+"O"+"V"'
         @v 呼 '"C"+"A"+"L"+"L"'
         @v 改 '"\n"'
-        
+
         @v コ 'codes'
         @v 外 'args'
         @v 径 'path'
@@ -1364,52 +1392,17 @@ jobs:
         @v 値 'val'
         @v 函 'lib'
 
-        # Library Strings (Fixed Logic: Input in R12)
-        @v Ｌ１ '"LABEL print_int"'
-        @v Ｌ２ '"PUSH R12"'       # Save input value
-        @v Ｌ３ '"MOV R12 -11"'    # Set arg for GetStdHandle
-        @v Ｌ４ '"CALL GetStdHandle"'
-        @v Ｌ５ '"MOV RBX RAX"'    # RBX = Handle
-        @v Ｌ６ '"POP RAX"'        # RAX = Input value (Restored)
-        @v Ｌ７ '"MOV RCX 10"'     # Divisor
-        @v Ｌ８ '"MOV R12 0"'      # Digit Counter
-        @v Ｌ９ '"PUSH 0"'         # Sentinel? No, just alignment/dummy
-        @v ＬＡ '"LABEL L_DIV"'
-        @v ＬＢ '"DIV RCX"'
-        @v ＬＣ '"ADD RDX 48"'     # To ASCII
-        @v ＬＤ '"PUSH RDX"'
-        @v ＬＥ '"ADD R12 1"'
-        @v ＬＦ '"CMP RAX 0"'
-        @v ＬＧ '"JZ L_PRT"'
-        @v ＬＨ '"JMP L_DIV"'
-        @v ＬＩ '"LABEL L_PRT"'
-        @v ＬＪ '"MOV RCX RBX"'    # Handle
-        @v ＬＫ '"CMP R12 0"'
-        @v ＬＬ '"JZ L_END"'
-        @v ＬＭ '"POP RAX"'
-        @v ＬＮ '"MOV WRITE 500 RAX"'
-        @v ＬＯ '"LEA RDX 500"'
-        @v ＬＰ '"MOV R8 1"'
-        @v ＬＱ '"LEA R9 600"'
-        @v ＬＲ '"SETS 32 0"'
-        @v ＬＳ '"CALL WriteFile"'
-        @v ＬＴ '"ADD R12 -1"'
-        @v ＬＵ '"JMP L_PRT"'
-        @v ＬＶ '"LABEL L_END"'
-        @v ＬＷ '"RET"'
-
         $
         実(込)
         
-        # Build library
-        函 = Ｌ１ + 改 + Ｌ２ + 改 + Ｌ３ + 改 + Ｌ４ + 改
-        函 = 函 + Ｌ５ + 改 + Ｌ６ + 改 + Ｌ７ + 改 + Ｌ８ + 改
-        函 = 函 + Ｌ９ + 改 + ＬＡ + 改 + ＬＢ + 改 + ＬＣ + 改
-        函 = 函 + ＬＤ + 改 + ＬＥ + 改 + ＬＦ + 改 + ＬＧ + 改
-        函 = 函 + ＬＨ + 改 + ＬＩ + 改 + ＬＪ + 改 + ＬＫ + 改
-        函 = 函 + ＬＬ + 改 + ＬＭ + 改 + ＬＮ + 改 + ＬＯ + 改
-        函 = 函 + ＬＰ + 改 + ＬＱ + 改 + ＬＲ + 改 + ＬＳ + 改
-        函 = 函 + ＬＴ + 改 + ＬＵ + 改 + ＬＶ + 改 + ＬＷ
+        # Build library (use single-char macro pieces)
+        函 = A + 改 + B + 改 + C + 改 + D + 改
+        函 = 函 + E + 改 + F + 改 + G + 改 + H + 改
+        函 = 函 + I + 改 + J + 改 + K + 改 + L + 改
+        函 = 函 + M + 改 + N + 改 + O + 改 + P + 改
+        函 = 函 + Q + 改 + R + 改 + S + 改 + T + 改
+        函 = 函 + U + 改 + V + 改 + W + 改 + X + 改
+        函 = 函 + Y + 改 + Z + 改 + "RET" + 改
 
         外 = 系.係
         径 = 外[1]
@@ -1418,7 +1411,7 @@ jobs:
         コ = []
 
         # Init
-        コ.追(置 + 空 + 弐 + 空 + 字(0))
+        コ.追(置 + 空 + "R12" + 空 + 字(0))
         
         順 = 0
         循 順 < 寸(生):
@@ -1427,29 +1420,26 @@ jobs:
          
          # Parse: print(123)
          も 線.始(命令):
-          値 = 線.換(命令, 空).換(括弧, 空).換(閉じ, 空).削()
+          値 = 線.換(命令, 空).換(括, 空).換(閉, 空).削()
           # Pass arg in R12
-          コ.追(置 + 空 + 弐 + 空 + 値) 
-          # Call print_int
-          コ.追(呼 + 空 + 字(1))
+          コ.追(置 + 空 + "R12" + 空 + 値) 
+          # Call print_int (use single-char macro p)
+          コ.追(呼 + 空 + p)
          
          順 = 順 + 1
 
         # Emit Exit
-        コ.追(置 + 空 + 繰 + 空 + 字(0))
-        コ.追(呼 + 空 + 字(2))
+        コ.追(置 + 空 + "RAX" + 空 + 字(0))
+        コ.追(呼 + 空 + e)
 
-        # Replace placeholders
+        # Emit final IR and lib
         本 = 結(コ)
-        本 = 本.換(字(1), "print_int")
-        本 = 本.換(字(2), "ExitProcess")
-        
         表(本)
         表(函)
         EOF
 
-        python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
-
+        # compile with stage2_compiler
+        python stage2_compiler.py compiler_v0.py1 > compiler_v0.py || (echo "--- compiler_v0 generation failed ---" && cat compiler_v0.py && exit 1)
 
 
      # 30. Compile and Run High-Level Source
