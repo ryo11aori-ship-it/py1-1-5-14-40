@@ -1322,7 +1322,8 @@ jobs:
         # Compile Native Compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-        # 29. Create Compiler V0 (High-Level to Native IR)
+    # 29. Create Compiler V0 (High-Level to Native IR)
+        # 29. Create "Compiler V0" (High-Level to Native IR)
     - name: 29. Create Compiler V0
       run: |
         # Use quoted 'EOF' to protect strings
@@ -1383,13 +1384,16 @@ jobs:
         @v 青 '"ExitProcess"'
 
         # Library Strings (Use Kanji to avoid conflicts)
-                # Library Strings (Use Kanji to avoid conflicts)
         @v イ '"LABEL print_int"'
+        # 修正: PUSHを使わずR15(不揮発レジスタ)に退避してスタックアライメントを維持
         @v ロ '"MOV R15 RAX"'
+        # 修正: 第一引数はR12ではなくRCXを使用 (Windows x64 ABI)
         @v ハ '"MOV RCX -11"'
         @v ニ '"CALL GetStdHandle"'
         @v ホ '"MOV RBX RAX"'
+        # 修正: R15から復帰
         @v ヘ '"MOV RAX R15"'
+        
         @v ト '"MOV RCX 10"'
         @v チ '"MOV R12 0"'
         @v リ '"RPUSH 0"'
@@ -1416,19 +1420,15 @@ jobs:
         @v マ '"JMP L_PRT"'
         @v ケ '"LABEL L_END"'
         @v フ '"RET"'
-        
-        # Stack Adjustment (Shadow Space & Alignment)
-        @v 囲 '"SUB RSP 40"'
-        @v 免 '"ADD RSP 40"'
 
         $
         実(込)
         
         外 = 系.係
-        径 = 外[1]
+        径 = 外
         本 = 開(径, モ, 号=権).読()
         生 = 本.行()
-        コ = []
+        コ =
 
         # Init (Dummy instruction to start)
         コ.追(置 + 空 + 弐 + 空 + 字(0))
@@ -1458,16 +1458,11 @@ jobs:
         
         # Output Library Routine
         表(イ)
-        表(ロ) # RPUSH RAX
-        
-        # Fix: Create Shadow Space for GetStdHandle
-        表(囲) # SUB RSP 40
+        表(ロ)
         表(ハ)
-        表(ニ) # CALL GetStdHandle
-        表(免) # ADD RSP 40
-        
+        表(ニ)
         表(ホ)
-        表(ヘ) # POP RAX
+        表(ヘ)
         表(ト)
         表(チ)
         表(リ)
@@ -1485,16 +1480,11 @@ jobs:
         表(ナ)
         表(ラ)
         表(ム)
-        
-        # Fix: Create Shadow Space for WriteFile
-        表(囲) # SUB RSP 40
         表(ウ)
         表(ヰ)
         表(ノ)
         表(オ)
-        表(ク) # CALL WriteFile
-        表(免) # ADD RSP 40
-        
+        表(ク)
         表(ヤ)
         表(マ)
         表(ケ)
