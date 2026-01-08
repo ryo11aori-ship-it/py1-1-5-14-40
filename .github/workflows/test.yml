@@ -1309,9 +1309,7 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-      # 29. Create "Compiler V0" (High-Level to Native IR)
-        # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed 1-char vars
-        # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Spec
+    # 29. Create "Compiler V0" (High-Level to Native IR) - Simplified Output Logic
     - name: 29. Create Compiler V0
       run: |
         cat <<EOF > compiler_v0.py1
@@ -1354,8 +1352,6 @@ jobs:
         # Opcodes
         @v 置 '"M"+"O"+"V"'
         @v 呼 '"C"+"A"+"L"+"L"'
-        @v 改 '"\n"'
-        @v 無 '""'
         
         @v コ 'codes'
         @v 外 'args'
@@ -1365,7 +1361,6 @@ jobs:
         @v 順 'i'
         @v 線 'line'
         @v 値 'val'
-        @v 函 'lib'
 
         # Library Strings (Use 1-char vars A-Z, a-e to comply with Stage2)
         @v A '"LABEL print_int"'
@@ -1404,17 +1399,6 @@ jobs:
         $
         実(込)
         
-        # Build library
-        函 = 無
-        函 = 函 + A + 改 + B + 改 + C + 改 + D + 改
-        函 = 函 + E + 改 + F + 改 + G + 改 + H + 改
-        函 = 函 + I + 改 + J + 改 + K + 改 + L + 改
-        函 = 函 + M + 改 + N + 改 + O + 改 + P + 改
-        函 = 函 + Q + 改 + R + 改 + S + 改 + T + 改
-        函 = 函 + U + 改 + V + 改 + W + 改 + X + 改
-        函 = 函 + Y + 改 + Z + 改 + a + 改 + b + 改
-        函 = 函 + c + 改 + d + 改 + e + 改 + f
-
         外 = 系.係
         径 = 外[1]
         本 = 開(径, モ, 号=権).読()
@@ -1451,7 +1435,40 @@ jobs:
         本 = 本.換(字(2), "ExitProcess")
         
         表(本)
-        表(函)
+        
+        # Append Library (Direct Print)
+        表(A)
+        表(B)
+        表(C)
+        表(D)
+        表(E)
+        表(F)
+        表(G)
+        表(H)
+        表(I)
+        表(J)
+        表(K)
+        表(L)
+        表(M)
+        表(N)
+        表(O)
+        表(P)
+        表(Q)
+        表(R)
+        表(S)
+        表(T)
+        表(U)
+        表(V)
+        表(W)
+        表(X)
+        表(Y)
+        表(Z)
+        表(a)
+        表(b)
+        表(c)
+        表(d)
+        表(e)
+        表(f)
         EOF
 
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
