@@ -1311,6 +1311,7 @@ jobs:
 
                 # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Lib Logic
         # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Lib Logic
+        # 29. Create Compiler V0
     - name: 29. Create Compiler V0
       run: |
         cat <<'EOF' > compiler_v0.py1
@@ -1376,6 +1377,7 @@ jobs:
         @v Z '"LEA R9 600"'
         @v p '"print_int"'
         @v e '"ExitProcess"'
+        @v r '"RET"'
 
         # Opcodes
         @v 置 '"M"+"O"+"V"'
@@ -1402,7 +1404,7 @@ jobs:
         函 = 函 + M + 改 + N + 改 + O + 改 + P + 改
         函 = 函 + Q + 改 + R + 改 + S + 改 + T + 改
         函 = 函 + U + 改 + V + 改 + W + 改 + X + 改
-        函 = 函 + Y + 改 + Z + 改 + "RET" + 改
+        函 = 函 + Y + 改 + Z + 改 + r + 改
 
         外 = 系.係
         径 = 外[1]
@@ -1439,8 +1441,7 @@ jobs:
         EOF
 
         # compile with stage2_compiler
-        python stage2_compiler.py compiler_v0.py1 > compiler_v0.py || (echo "--- compiler_v0 generation failed ---" && cat compiler_v0.py && exit 1)
-
+        python stage2_compiler.py compiler_v0.py1 > compiler_v0.py || (echo "--- compiler_v0 generation failed ---" && sed -n '1,200p' compiler_v0.py && exit 1)
 
      # 30. Compile and Run High-Level Source
     - name: 30. Build & Run Calculator
