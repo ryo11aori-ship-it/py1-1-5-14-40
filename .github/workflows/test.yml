@@ -1311,6 +1311,7 @@ jobs:
 
       # 29. Create "Compiler V0" (High-Level to Native IR)
         # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed 1-char vars
+        # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Spec
     - name: 29. Create Compiler V0
       run: |
         cat <<EOF > compiler_v0.py1
@@ -1354,6 +1355,7 @@ jobs:
         @v 置 '"M"+"O"+"V"'
         @v 呼 '"C"+"A"+"L"+"L"'
         @v 改 '"\n"'
+        @v 無 '""'
         
         @v コ 'codes'
         @v 外 'args'
@@ -1403,7 +1405,8 @@ jobs:
         実(込)
         
         # Build library
-        函 = A + 改 + B + 改 + C + 改 + D + 改
+        函 = 無
+        函 = 函 + A + 改 + B + 改 + C + 改 + D + 改
         函 = 函 + E + 改 + F + 改 + G + 改 + H + 改
         函 = 函 + I + 改 + J + 改 + K + 改 + L + 改
         函 = 函 + M + 改 + N + 改 + O + 改 + P + 改
@@ -1418,7 +1421,7 @@ jobs:
         生 = 本.行()
         コ = []
 
-        # Init
+        # Init (Dummy instruction to start)
         コ.追(置 + 空 + 弐 + 空 + 字(0))
         
         順 = 0
@@ -1430,40 +1433,9 @@ jobs:
          も 線.始(命):
           値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
           # Pass arg in R12 (Wait, actually logic assumes PUSH/POP logic in lib)
-          # Let's verify lib logic again:
-          # B: PUSH R12 (Save caller's R12)
-          # ...
-          # F: POP RAX  (Pop the value we pushed before CALL?? NO!)
-          
-          # Mistake in logic tracing previously!
-          # F is "POP RAX". 
-          # If we assume "print_int" expects arg in a register, we should MOV it.
-          # The Library F line "POP RAX" expects something was PUSHed?
-          # Ah, B "PUSH R12" is pushing the saved R12.
-          # F "POP RAX" is popping... wait.
-          
-          # Let's fix the interface to be simple:
-          # Input: R12
-          # Side effect: Prints number
-          # Registers preserved: RBX, R12?
-          
-          # Let's rewrite Lib slightly to be cleaner:
-          # Entry: R12 has number
-          # 1. PUSH R12 (Save number temporarily? No, save original R12? No)
-          
-          # Let's assume compiler emits:
-          # MOV R12, 123
-          # CALL print_int
-          
-          # Lib Logic:
-          # PUSH R12 (Save input 123 to stack)
-          # MOV R12 -11 -> GetStdHandle -> RBX = Handle
-          # POP RAX (Restore 123 to RAX)
-          # ... proceed to divide RAX ...
-          
-          # YES. This matches the lib strings A-f above.
-          # So compiler must emit "MOV R12, <val>" then "CALL print_int"
-          
+          # A: LABEL print_int
+          # B: PUSH R12  <-- Pushes whatever is in R12
+          # So we MUST set R12 before calling.
           コ.追(置 + 空 + 弐 + 空 + 値) 
           コ.追(呼 + 空 + 字(1))
          
