@@ -1103,6 +1103,7 @@ jobs:
         # 28. Update Native Compiler (Add Math Ops for Calculator)
         # 28. Update Native Compiler (Fix: Syntax Error caused by comment)
         # 28. Update Native Compiler (Fix: Syntax Error caused by comment)
+        # 28. Update Native Compiler (Add RPUSH for real stack operations)
     - name: 28. Update Native Compiler (Math Support)
       run: |
         cat <<EOF > compiler_native.py1
@@ -1151,6 +1152,7 @@ jobs:
         @v 割 '"D"+"I"+"V"'
         @v 排 '"X"+"O"+"R"'
         @v 抜 '"P"+"O"+"P"'
+        @v 投 '"R"+"P"+"U"+"S"+"H"'
 
         @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n\nstart:\n  sub rsp, 40\n"'
         @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
@@ -1172,6 +1174,7 @@ jobs:
         @v 分 '"div "'
         @v 異 '"xor "'
         @v 戻 '"pop "'
+        @v 込 '"push "'
         
         @v 比 '"cmp "'
         @v 跳 '"je "'
@@ -1299,6 +1302,10 @@ jobs:
           元 = 部[1]
           出 = 幕 + 戻 + 元
          
+         或 技 == 投:
+          元 = 部[1]
+          出 = 幕 + 込 + 元
+         
          或 技 == 呼:
           先 = 部[1]
           出 = 幕 + 喚 + 先
@@ -1313,7 +1320,7 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-            # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed: Use Kanji to avoid conflict
+    # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Library Logic
     - name: 29. Create Compiler V0
       run: |
         cat <<EOF > compiler_v0.py1
@@ -1368,20 +1375,18 @@ jobs:
         @v 線 'line'
         @v 値 'val'
 
-        # Library Strings (Use Kanji to avoid destroying 'append', 'print' etc)
+        # Library Strings (Using RPUSH for real stack operations)
         @v イ '"LABEL print_int"'
-        @v ロ '"PUSH R12"'
         @v ハ '"MOV R12 -11"'
         @v ニ '"CALL GetStdHandle"'
         @v ホ '"MOV RBX RAX"'
-        @v ヘ '"POP RAX"'
+        @v ヘ '"MOV RAX R12"'     # Move Value(R12) back to RAX
         @v ト '"MOV RCX 10"'
-        @v チ '"MOV R12 0"'
-        @v リ '"PUSH 0"'
+        @v チ '"MOV R12 0"'       # Reset R12 as Counter
         @v ヌ '"LABEL L_DIV"'
         @v ル '"DIV RCX"'
         @v ヲ '"ADD RDX 48"'
-        @v ワ '"PUSH RDX"'
+        @v ワ '"RPUSH RDX"'       # Real Push
         @v カ '"ADD R12 1"'
         @v ヨ '"CMP RAX 0"'
         @v タ '"JZ L_PRT"'
@@ -1411,7 +1416,7 @@ jobs:
         生 = 本.行()
         コ = []
 
-        # Init (Dummy instruction to start)
+        # Init
         コ.追(置 + 空 + 弐 + 空 + 字(0))
         
         順 = 0
@@ -1422,9 +1427,21 @@ jobs:
          # Parse: print(123)
          も 線.始(命):
           値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
-          # Pass arg in R12. 
-          # Note: Our lib expects R12 to contain the value to be PUSHed.
-          コ.追(置 + 空 + 弐 + 空 + 値) 
+          # Pass arg in R12 (because lib moves -11 to R12, we must fix this logic)
+          # Actually, lib does:
+          # MOV R12 -11 -> Overwrites our input!
+          # FIXED LOGIC below:
+          # Compiler emits:
+          # MOV RAX, 12345
+          # CALL print_int
+          # Lib Logic:
+          # PUSH RAX (Save Input) -> RPUSH RAX
+          # MOV R12 -11 ...
+          # ...
+          # POP RAX (Restore Input)
+          
+          # Implementation:
+          コ.追(置 + 空 + 蓄 + 空 + 値) 
           コ.追(呼 + 空 + "print_int")
          
          順 = 順 + 1
@@ -1438,14 +1455,13 @@ jobs:
         
         # Output Library Routine
         表(イ)
-        表(ロ)
+        表("  RPUSH RAX") # Save Input
         表(ハ)
         表(ニ)
         表(ホ)
-        表(ヘ)
+        表("  POP RAX")   # Restore Input
         表(ト)
         表(チ)
-        表(リ)
         表(ヌ)
         表(ル)
         表(ヲ)
@@ -1474,7 +1490,6 @@ jobs:
         # Compile Compiler V0
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
 
-
     # 30. Compile and Run High-Level Source
     - name: 30. Build & Run Calculator
       shell: cmd
@@ -1495,6 +1510,7 @@ jobs:
         
         echo "--- Run ---"
         calc.exe
+
 
 
 
