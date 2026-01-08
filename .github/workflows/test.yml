@@ -1312,11 +1312,10 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create "Compiler V0" (High-Level to Native IR) - Fixed Strategy
+        # 29. Create "Compiler V0" (High-Level to Native IR) - User's Robust Logic + Lib
     - name: 29. Create Compiler V0
       run: |
         cat <<EOF > compiler_v0.py1
-        # V0 Compiler: Compiles 'print(N)' to Native IR
         @v 表 'print'
         @v 追 'append'
         @v 字 'str'
@@ -1348,95 +1347,122 @@ jobs:
         @v モ '"r"'
         @v 権 '"u"+"t"+"f"+"8"'
         @v 号 'encoding'
-        @v 壱 '"R"+"B"+"X"'
-        @v 弐 '"R"+"1"+"2"'
-        @v 蓄 '"R"+"A"+"X"'
-        
-        # Opcodes
-        @v 置 '"M"+"O"+"V"'
+        @v 積 '"P"+"U"+"S"+"H"'
         @v 呼 '"C"+"A"+"L"+"L"'
+        @v 置 '"M"+"O"+"V"'
         @v 改 '"\n"'
+
+        @v 印 '"print_int"'
+        @v 青 '"ExitProcess"'
+        @v 弐 '"R"+"1"+"2"'
+
+        @v 井 '"#"'
+        @v 寸 'len'
+        @v 訊 'input'
         
-        @v コ 'codes'
-        @v 外 'args'
-        @v 径 'path'
-        @v 本 'body'
-        @v 生 'lines'
-        @v 順 'i'
-        @v 線 'line'
-        @v 値 'val'
+        # Library Routine Lines (Defined carefully)
+        @v A '"LABEL print_int"'
+        @v B '"PUSH R12"'
+        @v C '"MOV R12 -11"'
+        @v D '"CALL GetStdHandle"'
+        @v E '"MOV RBX RAX"'
+        @v F '"POP RAX"'
+        @v G '"MOV RCX 10"'
+        @v H '"MOV R12 0"'
+        @v I '"PUSH 0"'
+        @v J '"LABEL L_DIV"'
+        @v K '"DIV RCX"'
+        @v L '"ADD RDX 48"'
+        @v M '"PUSH RDX"'
+        @v N '"ADD R12 1"'
+        @v O '"CMP RAX 0"'
+        @v P '"JZ L_PRT"'
+        @v Q '"JMP L_DIV"'
+        @v R '"LABEL L_PRT"'
+        @v S '"MOV RCX RBX"'
+        @v T '"CMP R12 0"'
+        @v U '"JZ L_END"'
+        @v V '"POP RAX"'
+        @v W '"MOV WRITE 500 RAX"'
+        @v X '"LEA RDX 500"'
+        @v Y '"MOV R8 1"'
+        @v Z '"LEA R9 600"'
+        @v a '"SETS 32 0"'
+        @v b '"CALL WriteFile"'
+        @v c '"ADD R12 -1"'
+        @v d '"JMP L_PRT"'
+        @v e '"LABEL L_END"'
+        @v f '"RET"'
 
         $
         実(込)
-        
+
         外 = 系.係
+        も 寸(外) < 2:
+         表(説)
+         系.終(1)
+
         径 = 外[1]
         本 = 開(径, モ, 号=権).読()
         生 = 本.行()
         コ = []
 
-        # Init (Dummy)
-        コ.追(置 + 空 + 弐 + 空 + 字(0))
-        
         順 = 0
         循 順 < 寸(生):
          線 = 生[順]
          線 = 線.削()
-         
-         # Parse: print(123)
-         も 線.始(命):
-          値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
-          # Code Gen:
-          # MOV R12, <val>
-          # CALL print_int
-          コ.追(置 + 空 + 弐 + 空 + 値) 
-          コ.追(呼 + 空 + "print_int")
-         
+         も 寸(線) > 0:
+          も 線.始(命):
+           値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
+           # MOV R12, Value
+           コ.追(置 + 空 + 弐 + 空 + 値)
+           # CALL print_int
+           コ.追(呼 + 空 + 印)
          順 = 順 + 1
 
-        # Emit Exit
-        コ.追(置 + 空 + 繰 + 空 + 字(0))
-        コ.追(呼 + 空 + "ExitProcess")
+        # emit Exit call at end
+        コ.追(置 + 空 + 弐 + 空 + 字(0))
+        コ.追(呼 + 空 + 青)
 
-        # Output Main Logic
-        表(結(コ))
+        本 = 結(コ)
+        表(本)
         
-        # Output Library (Directly printing strings to avoid variable issues)
-        表("LABEL print_int")
-        表("  PUSH R12")       # Save R12
-        表("  MOV R12 -11")    # StdOut Handle ID
-        表("  CALL GetStdHandle")
-        表("  MOV RBX RAX")    # Save Handle to RBX
-        表("  POP RAX")        # Restore Value to RAX (was in R12)
-        表("  MOV RCX 10")
-        表("  MOV R12 0")
-        表("  PUSH 0")
-        表("LABEL L_DIV")
-        表("  DIV RCX")
-        表("  ADD RDX 48")
-        表("  PUSH RDX")
-        表("  ADD R12 1")
-        表("  CMP RAX 0")
-        表("  JZ L_PRT")
-        表("  JMP L_DIV")
-        表("LABEL L_PRT")
-        表("  MOV RCX RBX")
-        表("  CMP R12 0")
-        表("  JZ L_END")
-        表("  POP RAX")
-        表("  MOV WRITE 500 RAX")
-        表("  LEA RDX 500")
-        表("  MOV R8 1")
-        表("  LEA R9 600")
-        表("  SETS 32 0")
-        表("  CALL WriteFile")
-        表("  ADD R12 -1")
-        表("  JMP L_PRT")
-        表("LABEL L_END")
-        表("  RET")
+        # Append Library Routine
+        表(A)
+        表(B)
+        表(C)
+        表(D)
+        表(E)
+        表(F)
+        表(G)
+        表(H)
+        表(I)
+        表(J)
+        表(K)
+        表(L)
+        表(M)
+        表(N)
+        表(O)
+        表(P)
+        表(Q)
+        表(R)
+        表(S)
+        表(T)
+        表(U)
+        表(V)
+        表(W)
+        表(X)
+        表(Y)
+        表(Z)
+        表(a)
+        表(b)
+        表(c)
+        表(d)
+        表(e)
+        表(f)
         EOF
-
-        # Compile Compiler V0
+        
+        # Compile
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
 
     # 30. Compile and Run High-Level Source
