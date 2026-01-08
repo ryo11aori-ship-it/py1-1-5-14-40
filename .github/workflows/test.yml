@@ -1329,6 +1329,7 @@ jobs:
         cat <<'EOF' > compiler_v0.py1
         # V0 Compiler: Compiles 'print(N)' to Native IR
         @v 表 'print'
+        @v 寸 'len'
         @v 追 'append'
         @v 字 'str'
         @v 結 'chr(10).join'
