@@ -1383,18 +1383,18 @@ jobs:
 
         # Library Strings (Use Kanji to avoid conflicts)
         @v イ '"LABEL print_int"'
-        @v ロ '"RPUSH RAX"'       # Save input (RPUSH = Real PUSH)
+        @v ロ '"RPUSH RAX"'
         @v ハ '"MOV R12 -11"'
         @v ニ '"CALL GetStdHandle"'
         @v ホ '"MOV RBX RAX"'
-        @v ヘ '"POP RAX"'         # Restore input
+        @v ヘ '"POP RAX"'
         @v ト '"MOV RCX 10"'
         @v チ '"MOV R12 0"'
-        @v リ '"RPUSH 0"'         # Real PUSH 0 (Alignment/Sentinel)
+        @v リ '"RPUSH 0"'
         @v ヌ '"LABEL L_DIV"'
         @v ル '"DIV RCX"'
         @v ヲ '"ADD RDX 48"'
-        @v ワ '"RPUSH RDX"'       # Real PUSH Digit
+        @v ワ '"RPUSH RDX"'
         @v カ '"ADD R12 1"'
         @v ヨ '"CMP RAX 0"'
         @v タ '"JZ L_PRT"'
