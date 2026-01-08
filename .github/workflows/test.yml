@@ -1281,20 +1281,20 @@ jobs:
 
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-    # 29. Create Cat Source (Full Implementation)
-    - name: 29. Create Cat Source
+        # 29. Create REPL Source (Interactive Shell)
+    - name: 29. Create REPL Source
       run: |
-        cat <<EOF > cat_spec.py1
-        # Native Cat Command (Reads fizzbuzz_native.asm)
+        cat <<EOF > repl_spec.py1
+        # Native REPL (Read-Eval-Print Loop) Shell
         @v 表 'print'
         @v 追 'append'
         @v 字 'str'
         @v 結 'chr(10).join'
 
+        # Opcodes
         @v 置 '"M"+"O"+"V"'
         @v 取 '"L"+"E"+"A"'
         @v 呼 '"C"+"A"+"L"+"L"'
-        @v 積 '"S"+"E"+"T"+"S"'
         @v 書 '"W"+"R"+"I"+"T"+"E"'
         @v 札 '"L"+"A"+"B"+"E"+"L"'
         @v 比 '"C"+"M"+"P"'
@@ -1303,180 +1303,159 @@ jobs:
         @v 加 '"A"+"D"+"D"'
         @v 押 '"P"+"U"+"S"+"H"'
 
-        @v 壱 '"R"+"B"+"X"'
-        @v 弐 '"R"+"1"+"2"'
+        # Registers
+        @v 壱 '"R"+"B"+"X"' # Handle: StdOut
+        @v 弐 '"R"+"1"+"2"' # Handle: StdIn
         @v 繰 '"R"+"C"+"X"'
         @v タ '"R"+"D"+"X"'
         @v 蜂 '"R"+"8"'
         @v 苦 '"R"+"9"'
         @v 蓄 '"R"+"A"+"X"'
-        @v 肆 '"R"+"1"+"3"'
+        @v 肆 '"R"+"1"+"3"' # Read Count Value
 
+        # APIs
         @v 蔵 '"k"+"e"+"r"+"n"+"e"+"l"+"3"+"2"+"."+"d"+"l"+"l"'
         @v 出 '"G"+"e"+"t"+"S"+"t"+"d"+"H"+"a"+"n"+"d"+"l"+"e"'
         @v 記 '"W"+"r"+"i"+"t"+"e"+"F"+"i"+"l"+"e"'
-        @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
-        @v 開 '"C"+"r"+"e"+"a"+"t"+"e"+"F"+"i"+"l"+"e"+"A"'
         @v 読 '"R"+"e"+"a"+"d"+"F"+"i"+"l"+"e"'
-        @v 寸 '"G"+"e"+"t"+"F"+"i"+"l"+"e"+"S"+"i"+"z"+"e"'
-        @v 閉 '"C"+"l"+"o"+"s"+"e"+"H"+"a"+"n"+"d"+"l"+"e"'
+        @v 終 '"E"+"x"+"i"+"t"+"P"+"r"+"o"+"c"+"e"+"s"+"s"'
 
-        @v 壺 '"1"+"0"+"0"'
-        @v 地 '"5"+"0"+"0"'
+        # Memory Addresses
+        @v 壺 '"1"+"0"+"0"' # Prompt String "> "
+        @v 入 '"2"+"0"+"0"' # Input Buffer
+        @v 数 '"3"+"0"+"0"' # Read Count Buffer
+        @v 返 '"4"+"0"+"0"' # Output Prefix "py1: "
+        
+        # Accessors for Memory Values (Direct NASM Syntax)
+        # [mem_base + 300] -> Read Count Value
+        @v 値 '"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"3"+"0"+"0"+"]"'
+        
+        # [mem_base + 200] -> First char of input
+        @v 頭 '"b"+"y"+"t"+"e"+" "+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"0"+"]"'
+        @v 次 '"b"+"y"+"t"+"e"+" "+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"1"+"]"'
+        @v 参 '"b"+"y"+"t"+"e"+" "+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"2"+"]"'
+        @v 四 '"b"+"y"+"t"+"e"+" "+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"3"+"]"'
+
+        # Constants
         @v 無 '"0"'
         @v 負 '"-"+"1"'
+        @v 入力 '"-"+"1"+"0"' # STD_INPUT_HANDLE
+        @v 出力 '"-"+"1"+"1"' # STD_OUTPUT_HANDLE
         @v 空 '" "'
-        @v 陰 '"-"+"1"+"1"'
         @v 〆 '"0"'
-        
-        # Read Flag: 0x80000000
-        @v 権 '"2"+"1"+"4"+"7"+"4"+"8"+"3"+"6"+"4"+"8"'
+
+        # Labels
+        @v 廻 '"L"+"O"+"O"+"P"'
+        @v 去 '"E"+"X"+"I"+"T"'
 
         @v コ 'codes'
 
         $
         コ = []
 
-        # --- Prepare Filename "fizzbuzz_native.asm" at 100 ---
-        # f i z z b u z z _ n a t i v e . a s m \0
-        コ.追(書 + 空 + 壺 + 空 + 字(102))
-        コ.追(書 + 空 + 字(101) + 空 + 字(105))
-        コ.追(書 + 空 + 字(102) + 空 + 字(122))
-        コ.追(書 + 空 + 字(103) + 空 + 字(122))
-        コ.追(書 + 空 + 字(104) + 空 + 字(98))
-        コ.追(書 + 空 + 字(105) + 空 + 字(117))
-        コ.追(書 + 空 + 字(106) + 空 + 字(122))
-        コ.追(書 + 空 + 字(107) + 空 + 字(122))
-        コ.追(書 + 空 + 字(108) + 空 + 字(95))
-        コ.追(書 + 空 + 字(109) + 空 + 字(110))
-        コ.追(書 + 空 + 字(110) + 空 + 字(97))
-        コ.追(書 + 空 + 字(111) + 空 + 字(116))
-        コ.追(書 + 空 + 字(112) + 空 + 字(105))
-        コ.追(書 + 空 + 字(113) + 空 + 字(118))
-        コ.追(書 + 空 + 字(114) + 空 + 字(101))
-        コ.追(書 + 空 + 字(115) + 空 + 字(46))
-        コ.追(書 + 空 + 字(116) + 空 + 字(97))
-        コ.追(書 + 空 + 字(117) + 空 + 字(115))
-        コ.追(書 + 空 + 字(118) + 空 + 字(109))
-        コ.追(書 + 空 + 字(119) + 空 + 〆)
+        # --- Init Strings ---
+        # Prompt: "> " (3E 20)
+        コ.追(書 + 空 + 壺 + 空 + 字(62))
+        コ.追(書 + 空 + 字(101) + 空 + 字(32))
 
-        # --- Open File ---
-        # RCX = Filename Address
-        コ.追(取 + 空 + 繰 + 空 + 壺)
-        # RDX = GENERIC_READ (0x80000000)
-        コ.追(置 + 空 + タ + 空 + 権)
-        # R8 = FILE_SHARE_READ (1)
-        コ.追(置 + 空 + 蜂 + 空 + 字(1))
-        # R9 = Security (0)
-        コ.追(置 + 空 + 苦 + 空 + 無)
-        # Stack Args using 'SETS' (mov [rsp+offset], val)
-        # [RSP+32] = OPEN_EXISTING (3)
-        コ.追(積 + 空 + 字(32) + 空 + 字(3))
-        # [RSP+40] = ATTR_NORMAL (128)
-        コ.追(積 + 空 + 字(40) + 空 + 字(128))
-        # [RSP+48] = Template (0)
-        コ.追(積 + 空 + 字(48) + 空 + 無)
-        # Call CreateFileA
-        コ.追(呼 + 空 + 開)
-        # Save Handle to RBX
+        # Prefix: "=> " (3D 3E 20)
+        コ.追(書 + 空 + 返 + 空 + 字(61))
+        コ.追(書 + 空 + 字(401) + 空 + 字(62))
+        コ.追(書 + 空 + 字(402) + 空 + 字(32))
+
+        # --- Get Handles ---
+        # StdOut -> RBX
+        コ.追(置 + 空 + 繰 + 空 + 出力)
+        コ.追(呼 + 空 + 出)
         コ.追(置 + 空 + 壱 + 空 + 蓄)
 
-        # Check if valid (Handle != -1). Skip for now.
-
-        # --- Get File Size ---
-        # RCX = Handle
-        コ.追(置 + 空 + 繰 + 空 + 壱)
-        # RDX = NULL
-        コ.追(置 + 空 + タ + 空 + 無)
-        コ.追(呼 + 空 + 寸)
-        # Save Size to R12
+        # StdIn -> R12
+        コ.追(置 + 空 + 繰 + 空 + 入力)
+        コ.追(呼 + 空 + 出)
         コ.追(置 + 空 + 弐 + 空 + 蓄)
 
-        # --- Read File ---
-        # RCX = Handle
-        コ.追(置 + 空 + 繰 + 空 + 壱)
-        # RDX = Buffer Address (500)
-        コ.追(取 + 空 + タ + 空 + 地)
-        # R8 = Size (R12)
-        コ.追(置 + 空 + 蜂 + 空 + 弐)
-        # R9 = &BytesRead (Use 100 as scratch)
-        コ.追(取 + 空 + 苦 + 空 + 壺)
-        # [RSP+32] = NULL
-        コ.追(押 + 空 + 無)
-        コ.追(呼 + 空 + 読)
+        # --- REPL Loop ---
+        コ.追(札 + 空 + 廻)
 
-        # --- Get StdOut Handle ---
-        コ.追(置 + 空 + 繰 + 空 + 陰)
-        コ.追(呼 + 空 + 出)
-        コ.追(置 + 空 + 肆 + 空 + 蓄) # Save StdOut to R13
-
-        # --- Write to StdOut ---
-        # RCX = StdOut
-        コ.追(置 + 空 + 繰 + 空 + 肆)
-        # RDX = Buffer Address (500)
-        コ.追(取 + 空 + タ + 空 + 地)
-        # R8 = Size (R12)
-        コ.追(置 + 空 + 蜂 + 空 + 弐)
-        # R9 = &BytesWritten (Use 100 as scratch)
-        コ.追(取 + 空 + 苦 + 空 + 壺)
-        # [RSP+32] = NULL
+        # 1. Print Prompt "> "
+        コ.追(置 + 空 + 繰 + 空 + 壱)   # StdOut
+        コ.追(取 + 空 + タ + 空 + 壺)   # Buffer
+        コ.追(置 + 空 + 蜂 + 空 + 字(2)) # Len 2
+        コ.追(取 + 空 + 苦 + 空 + 数)   # Scratch
         コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 記)
 
-        # --- Close Handle ---
+        # 2. Read Input (Wait for Enter)
+        # ReadFile(StdIn, Buffer, 100, &ReadCount, NULL)
+        コ.追(置 + 空 + 繰 + 空 + 弐)   # StdIn
+        コ.追(取 + 空 + タ + 空 + 入)   # Input Buffer (200)
+        コ.追(置 + 空 + 蜂 + 空 + 字(100)) # Max 100 bytes
+        コ.追(取 + 空 + 苦 + 空 + 数)   # Address to store ReadCount (300)
+        コ.追(押 + 空 + 無)
+        コ.追(呼 + 空 + 読)
+
+        # 3. Check "exit" command
+        # e (101), x (120), i (105), t (116)
+        コ.追(比 + 空 + 頭 + 空 + 字(101)) # 'e'
+        コ.追(零 + 空 + 参) # Check next if match, but simple CMP/JNZ chain
+        # Note: Compiler is simple, let's just check length or first char for now.
+        # Let's check if first char is 'q' (113) for quit to keep it simple first.
+        コ.追(比 + 空 + 頭 + 空 + 字(113)) # 'q'
+        コ.追(零 + 空 + 去)
+
+        # 4. Echo Back "=> " + Input
+        # Print Prefix
         コ.追(置 + 空 + 繰 + 空 + 壱)
-        コ.追(呼 + 空 + 閉)
+        コ.追(取 + 空 + タ + 空 + 返)
+        コ.追(置 + 空 + 蜂 + 空 + 字(3))
+        コ.追(取 + 空 + 苦 + 空 + 壺) # reuse scratch
+        コ.追(押 + 空 + 無)
+        コ.追(呼 + 空 + 記)
+
+        # Print Input Buffer
+        # Load actual bytes read from [mem_base + 300] into R8
+        コ.追(置 + 空 + 蜂 + 空 + 値)
+        
+        コ.追(置 + 空 + 繰 + 空 + 壱)   # StdOut
+        コ.追(取 + 空 + タ + 空 + 入)   # Input Buffer
+        # R8 is already set above
+        コ.追(取 + 空 + 苦 + 空 + 壺)
+        コ.追(押 + 空 + 無)
+        コ.追(呼 + 空 + 記)
+
+        # Loop
+        コ.追(飛 + 空 + 廻)
 
         # --- Exit ---
+        コ.追(札 + 空 + 参) # Dummy label for CMP fail flow (not used yet)
+        コ.追(飛 + 空 + 廻) # If not 'q', go back to echo (Simplified logic)
+
+        # Real Exit
+        コ.追(札 + 空 + 去)
         コ.追(置 + 空 + 繰 + 空 + 無)
         コ.追(呼 + 空 + 終)
 
         表(結(コ))
         EOF
 
-        python compiler_gen3.py cat_spec.py1 > cat_ir_gen.py
-        python cat_ir_gen.py > cat.ir
-        python compiler_native.py cat.ir > cat_native.asm
+        # Generate ASM
+        python compiler_gen3.py repl_spec.py1 > repl_ir_gen.py
+        python repl_ir_gen.py > repl.ir
+        python compiler_native.py repl.ir > repl_native.asm
 
-    # 30. Build & Run Cat (CMD Shell)
-    - name: 30. Build & Run Cat (CMD Shell)
+    # 30. Build & Run REPL
+    - name: 30. Build & Run REPL
       shell: cmd
       run: |
-        echo "--- Assembling Cat ---"
-        nasm -f win64 cat_native.asm -o cat_native.obj
+        echo "--- Assembling REPL ---"
+        nasm -f win64 repl_native.asm -o repl.obj
         
-        echo "--- Linking Cat ---"
-        link.exe cat_native.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:cat.exe
+        echo "--- Linking REPL ---"
+        link.exe repl.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:repl.exe
         
-        echo "--- Running Cat ---"
-        cat.exe
-      # 31. Upload All Phase C Artifacts
-    
-    - name: 31. Upload All Artifacts (Phase C Complete)
-      uses: actions/upload-artifact@v4
-      with:
-        name: py1-phase-c-complete
-        path: |
-          # Source Code
-          *.py1
-          
-          # Generated Compilers (Python & Native)
-          stage*_compiler.py
-          compiler_gen*.py
-          compiler_native.py
-          
-          # Intermediate Representations
-          *.ir
-          win_ir_gen.py
-          cat_ir_gen.py
-          
-          # Native Code & Executables
-          *.asm
-          *.obj
-          *.exe
-          
-          # Verification Hashes
-          *.sha256
+        echo "--- Running REPL (Input Test) ---"
+        echo q | repl.exe
+
 
 
 
