@@ -1283,6 +1283,7 @@ jobs:
 
         # 29. Create REPL Source (Interactive Shell)
         # 29. Create REPL Source (Strict 1-char variables)
+        # 29. Create REPL Source (Fix: Remove space in 'byte[...]')
     - name: 29. Create REPL Source
       run: |
         cat <<EOF > repl_spec.py1
@@ -1318,7 +1319,10 @@ jobs:
         @v 数 '"3"+"0"+"0"'
         @v 答 '"4"+"0"+"0"'
         @v 量 '"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"3"+"0"+"0"+"]"'
-        @v 頭 '"b"+"y"+"t"+"e"+" "+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"0"+"]"'
+        
+        # Fixed: Remove space to treat as single token
+        @v 頭 '"b"+"y"+"t"+"e"+"["+"m"+"e"+"m"+"_"+"b"+"a"+"s"+"e"+"+"+"2"+"0"+"0"+"]"'
+        
         @v 無 '"0"'
         @v 聴 '"-"+"1"+"0"'
         @v 視 '"-"+"1"+"1"'
@@ -1326,7 +1330,6 @@ jobs:
         @v 〆 '"0"'
         @v 廻 '"L"+"O"+"O"+"P"'
         @v 去 '"E"+"X"+"I"+"T"'
-        @v 仮 '"T"+"M"+"P"'
         @v コ 'codes'
         $
         コ = []
@@ -1375,6 +1378,7 @@ jobs:
         コ.追(押 + 空 + 無)
         コ.追(呼 + 空 + 記)
         # Print Input Buffer (Length from [mem_base+300])
+        # Load length (32-bit from ReadFile) into R8
         コ.追(置 + 空 + 蜂 + 空 + 量)
         コ.追(置 + 空 + 繰 + 空 + 壱)
         コ.追(取 + 空 + タ + 空 + 入)
@@ -1394,6 +1398,7 @@ jobs:
         python compiler_gen3.py repl_spec.py1 > repl_ir_gen.py
         python repl_ir_gen.py > repl.ir
         python compiler_native.py repl.ir > repl_native.asm
+
 
     # 30. Build & Run REPL
     - name: 30. Build & Run REPL
