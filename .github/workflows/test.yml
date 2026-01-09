@@ -700,6 +700,7 @@ jobs:
         @v 先 'dst'
         @v 元 'src'
         @v 出 'out'
+        @v 清 '"xor rdx, rdx"'
 
         $
 
