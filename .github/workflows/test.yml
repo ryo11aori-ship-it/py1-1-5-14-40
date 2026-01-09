@@ -1105,6 +1105,7 @@ jobs:
         # 28. Update Native Compiler (Fix: Syntax Error caused by comment)
         # 28. Update Native Compiler (Add RPUSH for real stack operations)
         # 28. Update Native Compiler (With Math & Real Stack Ops)
+        # 28. Update Native Compiler (Math Support)
     - name: 28. Update Native Compiler (Math Support)
       run: |
         # Use quoted 'EOF' to prevent backslash expansion
@@ -1148,7 +1149,7 @@ jobs:
         @v 押 '"P"+"U"+"S"+"H"'
         @v 積 '"S"+"E"+"T"+"S"'
         
-        # New Ops for Math & Real Stack
+        # New Ops
         @v 引 '"S"+"U"+"B"'
         @v 掛 '"M"+"U"+"L"'
         @v 割 '"D"+"I"+"V"'
@@ -1283,6 +1284,7 @@ jobs:
           先 = 部[1]
           出 = 幕 + 舞 + 先
 
+         # Explicit WRITE opcode
          或 技 == 書:
           先 = 部[1]
           元 = 部[2]
@@ -1319,13 +1321,11 @@ jobs:
         表(尾)
         EOF
 
-        # Compile Native Compiler script
         python stage2_compiler.py compiler_native.py1 > compiler_native.py
 
-        # 29. Create "Compiler V0" (High-Level to Native IR)
+    # 29. Create "Compiler V0" (High-Level to Native IR)
     - name: 29. Create Compiler V0
       run: |
-        # Use quoted 'EOF' to protect strings
         cat <<'EOF' > compiler_v0.py1
         # V0 Compiler: Compiles 'print(N)' to Native IR
         @v 表 'print'
@@ -1382,17 +1382,13 @@ jobs:
         @v 印 '"print_int"'
         @v 青 '"ExitProcess"'
 
-        # Library Strings (Use Kanji to avoid conflicts)
+        # Library Strings (Use Kanji, Fixed Logic with Stack Protection)
         @v イ '"LABEL print_int"'
-        # 修正: PUSHを使わずR15(不揮発レジスタ)に退避してスタックアライメントを維持
-        @v ロ '"MOV R15 RAX"'
-        # 修正: 第一引数はR12ではなくRCXを使用 (Windows x64 ABI)
-        @v ハ '"MOV RCX -11"'
+        @v ロ '"RPUSH RAX"'
+        @v ハ '"MOV R12 -11"'
         @v ニ '"CALL GetStdHandle"'
         @v ホ '"MOV RBX RAX"'
-        # 修正: R15から復帰
-        @v ヘ '"MOV RAX R15"'
-        
+        @v ヘ '"POP RAX"'
         @v ト '"MOV RCX 10"'
         @v チ '"MOV R12 0"'
         @v リ '"RPUSH 0"'
@@ -1409,7 +1405,11 @@ jobs:
         @v ネ '"CMP R12 0"'
         @v ナ '"JZ L_END"'
         @v ラ '"POP RAX"'
-        @v ム '"WRITE 500 RAX 1"'
+        @v ム '"WRITE 500 RAX 1"' # Write digit immediately
+        
+        @v 甲 '"SUB RSP 40"'      # Protect Stack (Alloc Shadow)
+        @v 乙 '"ADD RSP 40"'      # Restore Stack
+        
         @v ウ '"LEA RDX 500"'
         @v ヰ '"MOV R8 1"'
         @v ノ '"LEA R9 600"'
@@ -1429,7 +1429,7 @@ jobs:
         生 = 本.行()
         コ = []
 
-        # Init (Dummy instruction to start)
+        # Init
         コ.追(置 + 空 + 弐 + 空 + 字(0))
         
         順 = 0
@@ -1440,16 +1440,13 @@ jobs:
          # Parse: print(123)
          も 線.始(命):
           値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
-          # MOV RAX, Value (Use RAX as input logic now)
           コ.追(置 + 空 + 蓄 + 空 + 値) 
-          # CALL print_int (Use var '印')
           コ.追(呼 + 空 + 印)
          
          順 = 順 + 1
 
         # Emit Exit
         コ.追(置 + 空 + 繰 + 空 + 字(0))
-        # CALL ExitProcess (Use var '青')
         コ.追(呼 + 空 + 青)
 
         # Output Main Logic
@@ -1478,12 +1475,14 @@ jobs:
         表(ネ)
         表(ナ)
         表(ラ)
-        表(ム)
+        表(ム) # WRITE 500 RAX 1
+        表(甲) # SUB RSP 40 (Protect)
         表(ウ)
         表(ヰ)
         表(ノ)
         表(オ)
-        表(ク)
+        表(ク) # Call WriteFile
+        表(乙) # ADD RSP 40 (Restore)
         表(ヤ)
         表(マ)
         表(ケ)
@@ -1503,9 +1502,6 @@ jobs:
         echo "--- Compile High-Level to IR ---"
         python compiler_v0.py calc.py1 > calc.ir
         
-        echo "--- DEBUG: Check IR ---"
-        type calc.ir
-        
         echo "--- Compile IR to ASM ---"
         python compiler_native.py calc.ir > calc_native.asm
         
@@ -1515,6 +1511,7 @@ jobs:
         
         echo "--- Run ---"
         calc.exe
+
 
 
 
