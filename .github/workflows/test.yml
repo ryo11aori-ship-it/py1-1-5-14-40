@@ -1400,7 +1400,7 @@ jobs:
         @v ヌ '"LABEL L_DIV"'
         @v ル '"DIV RCX"'
         @v ヲ '"ADD RDX 48"'
-        @v ワ '"RPUSH RDX"'
+        @v ワ '"PUSH RDX"'
         @v カ '"ADD R12 1"'
         @v ヨ '"CMP RAX 0"'
         @v タ '"JZ L_PRT"'
