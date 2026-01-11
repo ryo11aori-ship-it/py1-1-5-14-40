@@ -1496,28 +1496,172 @@ jobs:
         # Compile Compiler V0
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
 
-    # 30. Compile and Run High-Level Source
-    - name: 30. Build & Run Calculator
-      shell: cmd
+    
+    # 31. Install ARM Toolchain (Assembler & Linker)
+    - name: 31. Install ARM Toolchain
       run: |
-        echo "--- Create Source File ---"
-        echo print(12345) > calc.py1
+        choco install gcc-arm-embedded -y
+
+    # 32. Create Pure ARM Compiler (Bare Metal)
+    - name: 32. Create Pure ARM Compiler
+      run: |
+        cat <<'EOF' > compiler_arm.py1
+        # Pure ARM Thumb-2 Compiler for RP2040 (Bare Metal)
+        @v 表 'print'
+        @v 寸 'len'
+        @v 追 'append'
+        @v 裂 'split'
+        @v 削 'strip'
+        @v 行 'splitlines'
+        @v 開 'open'
+        @v 読 'read'
+        @v 始 'startswith'
+        @v 終 'exit'
+        @v 実 'exec'
+        @v 字 'chr'
+        @v 系 'sys'
+        @v 係 'argv'
+        @v 込 '"import sys"'
+        @v も 'if'
+        @v 他 'else'
+        @v 循 'while'
+        @v 入 'in'
+        @v 或 'elif'
+
+        # Opcodes (IR)
+        @v 置 '"MOV"'
+        @v 加 '"ADD"'
+        @v 減 '"SUB"'
+        @v 呼 '"CALL"'
+        @v 帰 '"RET"'
+        @v 書 '"WRITE"' # Memory Mapped I/O Key!
+
+        # Bare Metal Header (Vector Table & Reset Handler)
+        # 0x10000000番地から配置される
+        @v 頭 '".cpu cortex-m0plus\n.thumb\n\n.section .vectors\n.word 0x20042000\n.word reset_handler\n\n.section .text\n.global reset_handler\n.thumb_func\nreset_handler:\n  ldr r0, =0x20042000\n  mov sp, r0\n  bl main\n  b .\n\n.thumb_func\nmain:\n"'
         
-        echo "--- Compile High-Level to IR ---"
-        python compiler_v0.py calc.py1 > calc.ir
+        @v 尾 '"  b ."' # Infinite loop at end
+
+        @v 改 '"\n"'
+        @v 空 '" "'
+        @v 点 '", "'
+        @v 幕 '"  "'
+        @v 井 '"#"'
+        @v 角 '"["'
+        @v 閉 '"]"'
+
+        # Register Mapping (Virtual -> Physical)
+        @v 蓄 '"r0"'
+        @v 壱 '"r1"'
+        @v 弐 '"r2"'
+        @v 参 '"r3"'
         
-        echo "--- DEBUG: Check IR ---"
-        type calc.ir
+        # Instructions
+        @v 転 '"movs "'
+        @v 足 '"adds "'
+        @v 引 '"subs "'
+        @v 枝 '"bl "'
+        @v 記 '"str "' # Store Register (Write to memory)
+        @v 読 '"ldr "' # Load Register
+
+        @v 外 'args'
+        @v 径 'path'
+        @v 本 'body'
+        @v 生 'lines'
+        @v 順 'i'
+        @v 線 'line'
+        @v 部 'parts'
+        @v 技 'op'
+        @v 先 'dst'
+        @v 元 'src'
+        @v 出 'out'
+        @v 幅 'size'
+
+        $
+        実(込)
+        外 = 系.係
+        も 寸(外) < 2:
+         系.終(1)
+
+        径 = 外[1]
+        本 = 開(径, モ, 号=権).読()
+        生 = 本.行()
+
+        表(頭)
+
+        順 = 0
+        循 順 < 寸(生):
+         線 = 生[順]
+         線 = 線.削()
+         部 = 線.裂(空)
+         技 = 部[0]
+         出 = 無
+
+         も 寸(線) == 0:
+          0
+         も 線.始(井):
+          0
+
+         # MOV R0, 1 -> movs r0, #1
+         或 技 == 置:
+          先 = 部[1]
+          元 = 部[2]
+          # Map regs
+          も 先 == "RAX":
+           先 = 蓄
+          
+          # Check immediate
+          も 元.数():
+           # Large numbers need LDR, small use MOVS. Simplified for now.
+           # If > 255, use pseudo-instruction "ldr rX, =val"
+           も 寸(元) > 2:
+             出 = 幕 + 読 + 先 + 点 + "=" + 元
+           他:
+             出 = 幕 + 転 + 先 + 点 + 井 + 元
+          他:
+             も 元 == "RAX":
+              元 = 蓄
+             出 = 幕 + 転 + 先 + 点 + 元
+
+         # WRITE Addr Reg Size -> str Reg, [Addr] (Simplified)
+         # In bare metal, we usually load address to R1, then str R0, [R1]
+         # Our IR: WRITE <Addr> <Reg> <Size>
+         # ASM Strategy:
+         # ldr r3, =<Addr>
+         # str <Reg>, [r3]
+         或 技 == 書:
+          先 = 部[1] # Address (Immediate)
+          元 = 部[2] # Value Reg (RAX)
+          幅 = 部[3] # Size (1, 4)
+          
+          も 元 == "RAX":
+           元 = 蓄
+          
+          # Emit:
+          # ldr r2, =Address
+          # str r0, [r2]
+          表(幕 + 読 + 弐 + 点 + "=" + 先)
+          出 = 幕 + 記 + 元 + 点 + 角 + 弐 + 閉
+
+         # CALL -> bl
+         或 技 == 呼:
+          先 = 部[1]
+          出 = 幕 + 枝 + 先
+
+         # RET -> pop pc (simple return)
+         或 技 == 帰:
+          出 = 幕 + "bx lr"
+
+         も 寸(出) > 0:
+          表(出)
+
+         順 = 順 + 1
+
+        表(尾)
+        EOF
         
-        echo "--- Compile IR to ASM ---"
-        python compiler_native.py calc.ir > calc_native.asm
-        
-        echo "--- Assemble & Link ---"
-        nasm -f win64 calc_native.asm -o calc.obj
-        link.exe calc.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:calc.exe
-        
-        echo "--- Run ---"
-        calc.exe
+        # Compile the Pure ARM backend
+        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py
 
 
 
