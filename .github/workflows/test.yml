@@ -1498,7 +1498,7 @@ jobs:
       run: |
         choco install gcc-arm-embedded -y
 
-        # 32. Create Pure ARM Compiler (Bare Metal) - Final Fix
+            # 32. Create Pure ARM Compiler (Bare Metal) - Simplified Logic
     - name: 32. Create Pure ARM Compiler
       run: |
         cat <<'EOF' > compiler_arm.py1
@@ -1511,13 +1511,11 @@ jobs:
         @v 行 'splitlines'
         @v 開 'open'
         @v 読 'read'
-        @v 換 'replace'
         @v 始 'startswith'
         @v 終 'exit'
         @v 実 'exec'
         @v 字 'chr'
-        # Fix: isnumeric call
-        @v 数 'str.isnumeric'
+        @v 数 'isnumeric'
 
         @v 系 'sys'
         @v 係 'argv'
@@ -1610,22 +1608,20 @@ jobs:
           元 = 部[2]
           も 先 == "RAX":
            先 = 蓄
-
-          # Check if numeric (simplified logic)
-          # Use string method directly if possible or just try/except in logic?
-          # Stage2 Compiler maps '数' to 'str.isnumeric'
-          # So '元.数()' might fail if Stage2 is dumb.
-          # Let's rely on simple string check
           
-          も 元.isnumeric():
+          # Simplified: If src is "RAX", map to r0. Else treat as immediate.
+          # (Assuming we don't move other regs for now)
+          
+          も 元 == "RAX":
+           元 = 蓄
+           出 = 幕 + 転 + 先 + 点 + 元
+          他:
+           # Immediate value logic
+           # If length > 2 (e.g. 100), assume large -> ldr r0, =100
            も 寸(元) > 2:
             出 = 幕 + 載 + 先 + 点 + 等 + 元
            他:
             出 = 幕 + 転 + 先 + 点 + 井 + 元
-          他:
-           も 元 == "RAX":
-            元 = 蓄
-           出 = 幕 + 転 + 先 + 点 + 元
 
          或 技 == 書:
           先 = 部[1]
@@ -1656,3 +1652,4 @@ jobs:
         
         echo "--- Generated Code Check ---"
         head -n 20 compiler_arm.py
+
