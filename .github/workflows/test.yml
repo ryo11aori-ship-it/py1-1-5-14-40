@@ -1498,11 +1498,9 @@ jobs:
       run: |
         choco install gcc-arm-embedded -y
 
-    # 32. Create Pure ARM Compiler (Bare Metal) - Fixed Version
-        # 32. Create Pure ARM Compiler (Bare Metal) - Robust Version
+        # 32. Create Pure ARM Compiler (Bare Metal) - Final Fix
     - name: 32. Create Pure ARM Compiler
       run: |
-        # Generate the source file
         cat <<'EOF' > compiler_arm.py1
         # Pure ARM Thumb-2 Compiler for RP2040 (Bare Metal)
         @v 表 'print'
@@ -1513,11 +1511,13 @@ jobs:
         @v 行 'splitlines'
         @v 開 'open'
         @v 読 'read'
+        @v 換 'replace'
         @v 始 'startswith'
         @v 終 'exit'
         @v 実 'exec'
         @v 字 'chr'
-        @v 数 'isnumeric'
+        # Fix: isnumeric call
+        @v 数 'str.isnumeric'
 
         @v 系 'sys'
         @v 係 'argv'
@@ -1611,7 +1611,13 @@ jobs:
           も 先 == "RAX":
            先 = 蓄
 
-          も 元.数():
+          # Check if numeric (simplified logic)
+          # Use string method directly if possible or just try/except in logic?
+          # Stage2 Compiler maps '数' to 'str.isnumeric'
+          # So '元.数()' might fail if Stage2 is dumb.
+          # Let's rely on simple string check
+          
+          も 元.isnumeric():
            も 寸(元) > 2:
             出 = 幕 + 載 + 先 + 点 + 等 + 元
            他:
@@ -1646,8 +1652,7 @@ jobs:
         EOF
 
         echo "--- Compiling ARM Backend ---"
-        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py
+        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py || (echo "Failed" && exit 1)
         
         echo "--- Generated Code Check ---"
         head -n 20 compiler_arm.py
-
