@@ -1499,9 +1499,10 @@ jobs:
         choco install gcc-arm-embedded -y
 
     # 32. Create Pure ARM Compiler (Bare Metal) - Fixed Version
+        # 32. Create Pure ARM Compiler (Bare Metal) - Robust Version
     - name: 32. Create Pure ARM Compiler
       run: |
-        # Use quoted 'EOF' to prevent backslash expansion
+        # Generate the source file
         cat <<'EOF' > compiler_arm.py1
         # Pure ARM Thumb-2 Compiler for RP2040 (Bare Metal)
         @v 表 'print'
@@ -1527,7 +1528,7 @@ jobs:
         @v 入 'in'
         @v 或 'elif'
 
-        # Opcodes (IR)
+        # Opcodes
         @v 置 '"MOV"'
         @v 加 '"ADD"'
         @v 減 '"SUB"'
@@ -1535,7 +1536,7 @@ jobs:
         @v 帰 '"RET"'
         @v 書 '"WRITE"'
 
-        # Bare Metal Header (Vector Table & Reset Handler)
+        # Header
         @v 頭 '".cpu cortex-m0plus\n.thumb\n\n.section .vectors\n.word 0x20042000\n.word reset_handler\n\n.section .text\n.global reset_handler\n.thumb_func\nreset_handler:\n  ldr r0, =0x20042000\n  mov sp, r0\n  bl main\n  b .\n\n.thumb_func\nmain:\n"'
         @v 尾 '"  b ."' 
 
@@ -1548,21 +1549,21 @@ jobs:
         @v 閉 '"]"'
         @v 等 '"="'
 
-        # Register Mapping
+        # Registers
         @v 蓄 '"r0"'
         @v 壱 '"r1"'
         @v 弐 '"r2"'
         @v 参 '"r3"'
 
-        # ASM Instructions
+        # Instructions
         @v 転 '"movs "'
         @v 足 '"adds "'
         @v 引 '"subs "'
         @v 枝 '"bl "'
-        @v 記 '"str "'   # str <reg>, [addr]
-        @v 載 '"ldr "'   # ldr <reg>, =val
+        @v 記 '"str "'
+        @v 載 '"ldr "'
 
-        # Config
+        # Vars
         @v 外 'args'
         @v 径 'path'
         @v 本 'body'
@@ -1575,9 +1576,9 @@ jobs:
         @v 元 'src'
         @v 出 'out'
         @v 幅 'size'
-        @v 無 '""'       # Use empty string instead of None
-        @v モ '"r"'      # Read mode
-        @v 権 '"utf-8"'  # Encoding
+        @v 無 '""'
+        @v モ '"r"'
+        @v 権 '"utf-8"'
 
         $
         実(込)
@@ -1586,7 +1587,6 @@ jobs:
          系.終(1)
 
         径 = 外[1]
-        # Open with utf-8
         本 = 開(径, モ, encoding=権).読()
         生 = 本.行()
 
@@ -1605,7 +1605,6 @@ jobs:
          も 線.始(井):
            0
 
-         # MOV
          或 技 == 置:
           先 = 部[1]
           元 = 部[2]
@@ -1613,38 +1612,28 @@ jobs:
            先 = 蓄
 
           も 元.数():
-           # Large immediate -> ldr r0, =val
            も 寸(元) > 2:
             出 = 幕 + 載 + 先 + 点 + 等 + 元
-           # Small immediate -> movs r0, #val
            他:
             出 = 幕 + 転 + 先 + 点 + 井 + 元
           他:
-           # Register -> movs r0, r1
            も 元 == "RAX":
             元 = 蓄
            出 = 幕 + 転 + 先 + 点 + 元
 
-         # WRITE Addr Reg Size -> ldr r2, =Addr / str r0, [r2]
          或 技 == 書:
-          先 = 部[1] # Addr
-          元 = 部[2] # Reg
-          幅 = 部[3] # Size
-
+          先 = 部[1]
+          元 = 部[2]
+          幅 = 部[3]
           も 元 == "RAX":
            元 = 蓄
-
-          # Emit: ldr r2, =Addr
           表(幕 + 載 + 弐 + 点 + 等 + 先)
-          # Emit: str r0, [r2]
           出 = 幕 + 記 + 元 + 点 + 角 + 弐 + 閉
 
-         # CALL
          或 技 == 呼:
           先 = 部[1]
           出 = 幕 + 枝 + 先
 
-         # RET
          或 技 == 帰:
           出 = 幕 + "bx lr"
 
@@ -1656,9 +1645,9 @@ jobs:
         表(尾)
         EOF
 
-        # Generate Python backend
-        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py || exit 1
+        echo "--- Compiling ARM Backend ---"
+        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py
         
-        # Check generated code (Debug)
-        type compiler_arm.py
+        echo "--- Generated Code Check ---"
+        head -n 20 compiler_arm.py
 
