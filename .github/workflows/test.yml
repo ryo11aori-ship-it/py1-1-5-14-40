@@ -1493,14 +1493,15 @@ jobs:
         表(フ)
         EOF
 
-    # 31. Install ARM Toolchain
+        # 31. Install ARM Toolchain
     - name: 31. Install ARM Toolchain
       run: |
         choco install gcc-arm-embedded -y
 
-    # 32. Create Pure ARM Compiler (Bare Metal) - Fixed
+    # 32. Create Pure ARM Compiler (Bare Metal) - Fixed Version
     - name: 32. Create Pure ARM Compiler
       run: |
+        # Use quoted 'EOF' to prevent backslash expansion
         cat <<'EOF' > compiler_arm.py1
         # Pure ARM Thumb-2 Compiler for RP2040 (Bare Metal)
         @v 表 'print'
@@ -1534,7 +1535,7 @@ jobs:
         @v 帰 '"RET"'
         @v 書 '"WRITE"'
 
-        # Bare Metal Header
+        # Bare Metal Header (Vector Table & Reset Handler)
         @v 頭 '".cpu cortex-m0plus\n.thumb\n\n.section .vectors\n.word 0x20042000\n.word reset_handler\n\n.section .text\n.global reset_handler\n.thumb_func\nreset_handler:\n  ldr r0, =0x20042000\n  mov sp, r0\n  bl main\n  b .\n\n.thumb_func\nmain:\n"'
         @v 尾 '"  b ."' 
 
@@ -1574,7 +1575,7 @@ jobs:
         @v 元 'src'
         @v 出 'out'
         @v 幅 'size'
-        @v 無 '""'       # Empty string for logic check
+        @v 無 '""'       # Use empty string instead of None
         @v モ '"r"'      # Read mode
         @v 権 '"utf-8"'  # Encoding
 
@@ -1585,7 +1586,7 @@ jobs:
          系.終(1)
 
         径 = 外[1]
-        # Open with utf-8 to avoid CP932 errors on Windows
+        # Open with utf-8
         本 = 開(径, モ, encoding=権).読()
         生 = 本.行()
 
@@ -1660,3 +1661,4 @@ jobs:
         
         # Check generated code (Debug)
         type compiler_arm.py
+
