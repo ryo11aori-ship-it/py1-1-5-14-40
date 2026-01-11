@@ -1507,6 +1507,9 @@ jobs:
       run: |
         cat <<'EOF' > compiler_arm.py1
         # Pure ARM Thumb-2 Compiler for RP2040 (Bare Metal)
+        @v モ "'r'"
+        @v 号 '"encoding"'
+        @v 権 "'utf-8'"
         @v 表 'print'
         @v 寸 'len'
         @v 追 'append'
@@ -1544,7 +1547,7 @@ jobs:
 
         @v 改 '"\n"'
         @v 空 '" "'
-        @v 点 '", "'
+        @v 点 ', '
         @v 幕 '"  "'
         @v 井 '"#"'
         @v 角 '"["'
@@ -1584,8 +1587,8 @@ jobs:
          系.終(1)
 
         径 = 外[1]
-        本 = 開(径, モ, 号=権).読()
-        生 = 本.行()
+        本 = 開(径, 'r', encoding='utf-8').read()
+        生 = 本.splitlines()
 
         表(頭)
 
@@ -1612,11 +1615,11 @@ jobs:
           
           # Check immediate
           も 元.数():
-           # Large numbers need LDR
+           # Large numbers -> use ldr pseudo-op, small -> movs #imm
            も 寸(元) > 2:
-             出 = 幕 + 読 + 先 + 点 + "=" + 元
+             出 = 幕 + 読 + 先 + ', =' + 元
            他:
-             出 = 幕 + 転 + 先 + 点 + 井 + 元
+             出 = 幕 + 転 + 先 + ', #' + 元
           他:
              も 元 == "RAX":
               元 = 蓄
@@ -1634,8 +1637,10 @@ jobs:
           # Emit:
           # ldr r2, =Address
           # str r0, [r2]
-          表(幕 + 読 + 弐 + 点 + "=" + 先)
-          出 = 幕 + 記 + 元 + 点 + 角 + 弐 + 閉
+          # load address into r2
+          表(幕 + 読 + 弐 + ', =' + 先)
+          # store reg into [r2]
+          出 = 幕 + 記 + 元 + ', [' + 弐 + ']'
 
          # CALL -> bl
          或 技 == 呼:
