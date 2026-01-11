@@ -1496,13 +1496,13 @@ jobs:
         # Compile Compiler V0
         python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
         # 31. Install ARM Toolchain (Assembler & Linker)
-- name: 31. Install ARM Toolchain
-  run: |
+    - name: 31. Install ARM Toolchain
+      run: |
     choco install gcc-arm-embedded -y
 
 # 32. Create Pure ARM Compiler (Bare Metal)
-- name: 32. Create Pure ARM Compiler
-  run: |
+    - name: 32. Create Pure ARM Compiler
+      run: |
     cat <<'EOF' > compiler_arm.py1
 # Pure ARM Thumb-2 Compiler for RP2040 (Bare Metal) — 修正版
 @v モ "'r'"
