@@ -1502,7 +1502,7 @@ jobs:
       run: |
         choco install gcc-arm-embedded -y
 
-    # 32. Create Pure ARM Compiler (Bare Metal)
+        # 32. Create Pure ARM Compiler (Bare Metal)
     - name: 32. Create Pure ARM Compiler
       run: |
         cat <<'EOF' > compiler_arm.py1
@@ -1519,6 +1519,8 @@ jobs:
         @v 終 'exit'
         @v 実 'exec'
         @v 字 'chr'
+        @v 数 'isnumeric'
+
         @v 系 'sys'
         @v 係 'argv'
         @v 込 '"import sys"'
@@ -1537,10 +1539,8 @@ jobs:
         @v 書 '"WRITE"' # Memory Mapped I/O Key!
 
         # Bare Metal Header (Vector Table & Reset Handler)
-        # 0x10000000番地から配置される
         @v 頭 '".cpu cortex-m0plus\n.thumb\n\n.section .vectors\n.word 0x20042000\n.word reset_handler\n\n.section .text\n.global reset_handler\n.thumb_func\nreset_handler:\n  ldr r0, =0x20042000\n  mov sp, r0\n  bl main\n  b .\n\n.thumb_func\nmain:\n"'
-        
-        @v 尾 '"  b ."' # Infinite loop at end
+        @v 尾 '"  b ."'
 
         @v 改 '"\n"'
         @v 空 '" "'
@@ -1550,7 +1550,7 @@ jobs:
         @v 角 '"["'
         @v 閉 '"]"'
 
-        # Register Mapping (Virtual -> Physical)
+        # Register Mapping
         @v 蓄 '"r0"'
         @v 壱 '"r1"'
         @v 弐 '"r2"'
@@ -1561,7 +1561,7 @@ jobs:
         @v 足 '"adds "'
         @v 引 '"subs "'
         @v 枝 '"bl "'
-        @v 記 '"str "' # Store Register (Write to memory)
+        @v 記 '"str "' # Store Register
         @v 読 '"ldr "' # Load Register
 
         @v 外 'args'
@@ -1575,7 +1575,7 @@ jobs:
         @v 先 'dst'
         @v 元 'src'
         @v 出 'out'
-        @v 幅 'size'
+        @v 幅 'size'  # Added definition for '幅'
 
         $
         実(込)
@@ -1612,8 +1612,7 @@ jobs:
           
           # Check immediate
           も 元.数():
-           # Large numbers need LDR, small use MOVS. Simplified for now.
-           # If > 255, use pseudo-instruction "ldr rX, =val"
+           # Large numbers need LDR
            も 寸(元) > 2:
              出 = 幕 + 読 + 先 + 点 + "=" + 元
            他:
@@ -1623,12 +1622,7 @@ jobs:
               元 = 蓄
              出 = 幕 + 転 + 先 + 点 + 元
 
-         # WRITE Addr Reg Size -> str Reg, [Addr] (Simplified)
-         # In bare metal, we usually load address to R1, then str R0, [R1]
-         # Our IR: WRITE <Addr> <Reg> <Size>
-         # ASM Strategy:
-         # ldr r3, =<Addr>
-         # str <Reg>, [r3]
+         # WRITE Addr Reg Size -> str Reg, [Addr]
          或 技 == 書:
           先 = 部[1] # Address (Immediate)
           元 = 部[2] # Value Reg (RAX)
