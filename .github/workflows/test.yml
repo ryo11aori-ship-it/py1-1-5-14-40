@@ -1493,174 +1493,170 @@ jobs:
         表(フ)
         EOF
 
-        # Compile Compiler V0
-        python stage2_compiler.py compiler_v0.py1 > compiler_v0.py
-        # 31. Install ARM Toolchain (Assembler & Linker)
+    # 31. Install ARM Toolchain
     - name: 31. Install ARM Toolchain
       run: |
-    choco install gcc-arm-embedded -y
+        choco install gcc-arm-embedded -y
 
-# 32. Create Pure ARM Compiler (Bare Metal)
+    # 32. Create Pure ARM Compiler (Bare Metal) - Fixed
     - name: 32. Create Pure ARM Compiler
       run: |
-    cat <<'EOF' > compiler_arm.py1
-# Pure ARM Thumb-2 Compiler for RP2040 (Bare Metal) — 修正版
-@v モ "'r'"
-@v 表 'print'
-@v 寸 'len'
-@v 追 'append'
-@v 裂 'split'
-@v 削 'strip'
-@v 行 'splitlines'
-@v 開 'open'
-@v 読 'read'        # ファイル読み取り用
-@v 始 'startswith'
-@v 終 'exit'
-@v 実 'exec'
-@v 字 'chr'
-@v 数 'isnumeric'
+        cat <<'EOF' > compiler_arm.py1
+        # Pure ARM Thumb-2 Compiler for RP2040 (Bare Metal)
+        @v 表 'print'
+        @v 寸 'len'
+        @v 追 'append'
+        @v 裂 'split'
+        @v 削 'strip'
+        @v 行 'splitlines'
+        @v 開 'open'
+        @v 読 'read'
+        @v 始 'startswith'
+        @v 終 'exit'
+        @v 実 'exec'
+        @v 字 'chr'
+        @v 数 'isnumeric'
 
-@v 系 'sys'
-@v 係 'argv'
-@v 込 '"import sys"'
-@v も 'if'
-@v 他 'else'
-@v 循 'while'
-@v 入 'in'
-@v 或 'elif'
+        @v 系 'sys'
+        @v 係 'argv'
+        @v 込 '"import sys"'
+        @v も 'if'
+        @v 他 'else'
+        @v 循 'while'
+        @v 入 'in'
+        @v 或 'elif'
 
-# Opcodes (IR)
-@v 置 '"MOV"'
-@v 加 '"ADD"'
-@v 減 '"SUB"'
-@v 呼 '"CALL"'
-@v 帰 '"RET"'
-@v 書 '"WRITE"' # Memory Mapped I/O Key!
+        # Opcodes (IR)
+        @v 置 '"MOV"'
+        @v 加 '"ADD"'
+        @v 減 '"SUB"'
+        @v 呼 '"CALL"'
+        @v 帰 '"RET"'
+        @v 書 '"WRITE"'
 
-# Bare Metal Header (Vector Table & Reset Handler)
-@v 頭 '".cpu cortex-m0plus\n.thumb\n\n.section .vectors\n.word 0x20042000\n.word reset_handler\n\n.section .text\n.global reset_handler\n.thumb_func\nreset_handler:\n  ldr r0, =0x20042000\n  mov sp, r0\n  bl main\n  b .\n\n.thumb_func\nmain:\n"'
-@v 尾 '"  b ."' 
+        # Bare Metal Header
+        @v 頭 '".cpu cortex-m0plus\n.thumb\n\n.section .vectors\n.word 0x20042000\n.word reset_handler\n\n.section .text\n.global reset_handler\n.thumb_func\nreset_handler:\n  ldr r0, =0x20042000\n  mov sp, r0\n  bl main\n  b .\n\n.thumb_func\nmain:\n"'
+        @v 尾 '"  b ."' 
 
-@v 改 '"\n"'
-@v 空 '" "'
-@v 点 ', '
-@v 幕 '"  "'
-@v 井 '"#"'
-@v 角 '"["'
-@v 閉 '"]"'
+        @v 改 '"\n"'
+        @v 空 '" "'
+        @v 点 '", "'
+        @v 幕 '"  "'
+        @v 井 '"#"'
+        @v 角 '"["'
+        @v 閉 '"]"'
+        @v 等 '"="'
 
-# Register Mapping
-@v 蓄 '"r0"'
-@v 壱 '"r1"'
-@v 弐 '"r2"'
-@v 参 '"r3"'
+        # Register Mapping
+        @v 蓄 '"r0"'
+        @v 壱 '"r1"'
+        @v 弐 '"r2"'
+        @v 参 '"r3"'
 
-# Instructions (ASM helpers)
-@v 転 '"movs "'
-@v 足 '"adds "'
-@v 引 '"subs "'
-@v 枝 '"bl "'
-@v 記 '"str "'   # str <reg>, [addr]
-@v 載 '"ldr "'   # ASM用 ldr (疑似命令 =imm) — ファイル読取の '読' と衝突しないよう分離
+        # ASM Instructions
+        @v 転 '"movs "'
+        @v 足 '"adds "'
+        @v 引 '"subs "'
+        @v 枝 '"bl "'
+        @v 記 '"str "'   # str <reg>, [addr]
+        @v 載 '"ldr "'   # ldr <reg>, =val
 
-# Utility / program vars
-@v 外 'args'
-@v 径 'path'
-@v 本 'body'
-@v 生 'lines'
-@v 順 'i'
-@v 線 'line'
-@v 部 'parts'
-@v 技 'op'
-@v 先 'dst'
-@v 元 'src'
-@v 出 'out'
-@v 幅 'size'
-@v 無 'None'
+        # Config
+        @v 外 'args'
+        @v 径 'path'
+        @v 本 'body'
+        @v 生 'lines'
+        @v 順 'i'
+        @v 線 'line'
+        @v 部 'parts'
+        @v 技 'op'
+        @v 先 'dst'
+        @v 元 'src'
+        @v 出 'out'
+        @v 幅 'size'
+        @v 無 '""'       # Empty string for logic check
+        @v モ '"r"'      # Read mode
+        @v 権 '"utf-8"'  # Encoding
 
-$
-実(込)
-外 = 系.係
-も 寸(外) < 2:
- 系.終(1)
+        $
+        実(込)
+        外 = 系.係
+        も 寸(外) < 2:
+         系.終(1)
 
-径 = 外[1]
-# ファイル開いて中身を読む（位置引数のみで）
-本 = 開(径, モ).読()
-生 = 本.行()
+        径 = 外[1]
+        # Open with utf-8 to avoid CP932 errors on Windows
+        本 = 開(径, モ, encoding=権).読()
+        生 = 本.行()
 
-表(頭)
+        表(頭)
 
-順 = 0
-循 順 < 寸(生):
- 線 = 生[順]
- 線 = 線.削()
- 部 = 線.裂(空)
- 技 = 部[0]
- 出 = 無
+        順 = 0
+        循 順 < 寸(生):
+         線 = 生[順]
+         線 = 線.削()
+         部 = 線.裂(空)
+         技 = 部[0]
+         出 = 無
 
- も 寸(線) == 0:
-   0
- も 線.始(井):
-   0
+         も 寸(線) == 0:
+           0
+         も 線.始(井):
+           0
 
- # MOV RAX, 1 など -> movs r0, #1 (小即値) または ldr r0, =imm (大即値)
- 或 技 == 置:
-  先 = 部[1]
-  元 = 部[2]
-  # RAX を r0 にマッピング
-  も 先 == "RAX":
-   先 = 蓄
+         # MOV
+         或 技 == 置:
+          先 = 部[1]
+          元 = 部[2]
+          も 先 == "RAX":
+           先 = 蓄
 
-  も 元.数():
-   # 簡易基準：文字列長が短ければ即値（小さな数）、長ければ疑似命令で LDR を使う
-   も 寸(元) > 2:
-    出 = 幕 + 載 + 先 + ', =' + 元
-   他:
-    出 = 幕 + 転 + 先 + ', #' + 元
-  他:
-   も 元 == "RAX":
-    元 = 蓄
-   出 = 幕 + 転 + 先 + ', ' + 元
+          も 元.数():
+           # Large immediate -> ldr r0, =val
+           も 寸(元) > 2:
+            出 = 幕 + 載 + 先 + 点 + 等 + 元
+           # Small immediate -> movs r0, #val
+           他:
+            出 = 幕 + 転 + 先 + 点 + 井 + 元
+          他:
+           # Register -> movs r0, r1
+           も 元 == "RAX":
+            元 = 蓄
+           出 = 幕 + 転 + 先 + 点 + 元
 
- # WRITE Addr Reg Size -> produce ldr r2, =Addr  /  str <reg>, [r2]
- 或 技 == 書:
-  先 = 部[1] # Address (Immediate)
-  元 = 部[2] # Value Reg (e.g. RAX)
-  幅 = 部[3] # Size (1,4) — currently unused but parsed
+         # WRITE Addr Reg Size -> ldr r2, =Addr / str r0, [r2]
+         或 技 == 書:
+          先 = 部[1] # Addr
+          元 = 部[2] # Reg
+          幅 = 部[3] # Size
 
-  も 元 == "RAX":
-   元 = 蓄
+          も 元 == "RAX":
+           元 = 蓄
 
-  # load address into r2
-  表(幕 + 載 + 弐 + ', =' + 先)
-  # store reg into [r2]
-  出 = 幕 + 記 + 元 + ', [' + 弐 + ']'
+          # Emit: ldr r2, =Addr
+          表(幕 + 載 + 弐 + 点 + 等 + 先)
+          # Emit: str r0, [r2]
+          出 = 幕 + 記 + 元 + 点 + 角 + 弐 + 閉
 
- # CALL -> bl <label>
- 或 技 == 呼:
-  先 = 部[1]
-  出 = 幕 + 枝 + 先
+         # CALL
+         或 技 == 呼:
+          先 = 部[1]
+          出 = 幕 + 枝 + 先
 
- # RET -> bx lr
- 或 技 == 帰:
-  出 = 幕 + "bx lr"
+         # RET
+         或 技 == 帰:
+          出 = 幕 + "bx lr"
 
- も 出 != 無:
-  表(出)
+         も 寸(出) > 0:
+          表(出)
 
- 順 = 順 + 1
+         順 = 順 + 1
 
-表(尾)
-EOF
+        表(尾)
+        EOF
 
-    # Generate Python backend from the .py1 spec
-    python stage2_compiler.py compiler_arm.py1 > compiler_arm.py || { echo "stage2_compiler failed"; exit 1; }
-
-    # Show the generated Python (helpful for debugging)
-    echo "=== compiler_arm.py (head) ==="
-    sed -n '1,200p' compiler_arm.py || true
-    echo "=== end ==="
-
-    # Optional: syntax-check the generated Python
-    python -m py_compile compiler_arm.py || { echo "python compile failed"; exit 1; }
+        # Generate Python backend
+        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py || exit 1
+        
+        # Check generated code (Debug)
+        type compiler_arm.py
