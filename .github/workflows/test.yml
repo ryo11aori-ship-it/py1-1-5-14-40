@@ -1498,7 +1498,7 @@ jobs:
       run: |
         choco install gcc-arm-embedded -y
 
-            # 32. Create Pure ARM Compiler (Bare Metal) - Simplified Logic
+        # 32. Create Pure ARM Compiler (Bare Metal) - Simplified Logic
     - name: 32. Create Pure ARM Compiler
       run: |
         cat <<'EOF' > compiler_arm.py1
@@ -1652,4 +1652,5 @@ jobs:
         
         echo "--- Generated Code Check ---"
         head -n 20 compiler_arm.py
+
 
