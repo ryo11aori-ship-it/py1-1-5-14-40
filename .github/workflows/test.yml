@@ -1498,7 +1498,7 @@ jobs:
       run: |
         choco install gcc-arm-embedded -y
 
-        # 32. Create Pure ARM Compiler (Bare Metal) - Simplified Logic
+            # 32. Create Pure ARM Compiler (Bare Metal) - Simplest Logic
     - name: 32. Create Pure ARM Compiler
       run: |
         cat <<'EOF' > compiler_arm.py1
@@ -1609,19 +1609,16 @@ jobs:
           も 先 == "RAX":
            先 = 蓄
           
-          # Simplified: If src is "RAX", map to r0. Else treat as immediate.
-          # (Assuming we don't move other regs for now)
-          
+          # Logic without deep nesting
           も 元 == "RAX":
            元 = 蓄
            出 = 幕 + 転 + 先 + 点 + 元
+          或 寸(元) > 2:
+           # Large Immediate
+           出 = 幕 + 載 + 先 + 点 + 等 + 元
           他:
-           # Immediate value logic
-           # If length > 2 (e.g. 100), assume large -> ldr r0, =100
-           も 寸(元) > 2:
-            出 = 幕 + 載 + 先 + 点 + 等 + 元
-           他:
-            出 = 幕 + 転 + 先 + 点 + 井 + 元
+           # Small Immediate
+           出 = 幕 + 転 + 先 + 点 + 井 + 元
 
          或 技 == 書:
           先 = 部[1]
@@ -1652,5 +1649,3 @@ jobs:
         
         echo "--- Generated Code Check ---"
         head -n 20 compiler_arm.py
-
-
