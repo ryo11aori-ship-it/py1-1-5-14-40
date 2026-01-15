@@ -1499,6 +1499,7 @@ jobs:
         choco install gcc-arm-embedded -y
 
                     # 32. Create Pure ARM Compiler (Bare Metal) - Indent-Free Logic
+        # 32. Create Pure ARM Compiler (Bare Metal) - Clean Version
     - name: 32. Create Pure ARM Compiler
       run: |
         cat <<'EOF' > compiler_arm.py1
@@ -1514,8 +1515,9 @@ jobs:
         @v 始 'startswith'
         @v 終 'exit'
         @v 実 'exec'
-        @v 字 'chr'
-        @v 数 'isnumeric'
+        
+        # REMOVED: @v 数 'isnumeric' (Causes NameError)
+        # REMOVED: @v 字 'chr' (Unused)
 
         @v 系 'sys'
         @v 係 'argv'
@@ -1525,7 +1527,6 @@ jobs:
         @v 循 'while'
         @v 入 'in'
         @v 或 'elif'
-        @v 続 'continue'
 
         # Opcodes
         @v 置 '"MOV"'
@@ -1577,7 +1578,7 @@ jobs:
         @v 幅 'size'
         @v 無 '""'
         @v モ '"r"'
-        @v 権 '"utf-8-sig"' # Handle BOM
+        @v 権 '"utf-8"'
 
         $
         実(込)
@@ -1601,68 +1602,61 @@ jobs:
 
          も 寸(線) == 0:
            順 = 順 + 1
-           続
-         も 線.始(井):
+           # Continue equivalent
+           0
+         或 線.始(井):
            順 = 順 + 1
-           続
-
-         # MOV Logic (Flat)
-         も 技 == 置:
-          先 = 部[1]
-          元 = 部[2]
-          も 先 == "RAX":
-           先 = 蓄
-          
-          # Check Immediate size
-          も 寸(元) > 2:
-           # Large Immediate
-           も 元.数():
+           0
+         他:
+           # Logic Body
+           
+           或 技 == 置:
+            先 = 部[1]
+            元 = 部[2]
+            も 先 == "RAX":
+             先 = 蓄
+            
+            # Check Immediate size
+            も 元 == "RAX":
+             元 = 蓄
+             出 = 幕 + 転 + 先 + 点 + 元
+            或 寸(元) > 2:
+             # Large Immediate
              出 = 幕 + 載 + 先 + 点 + 等 + 元
-           他:
-             # Register Move (RAX)
-             も 元 == "RAX":
-              元 = 蓄
-             出 = 幕 + 転 + 先 + 点 + 元
-          他:
-           # Small Immediate or Reg
-           も 元.数():
+            他:
+             # Small Immediate
              出 = 幕 + 転 + 先 + 点 + 井 + 元
-           他:
-             も 元 == "RAX":
-              元 = 蓄
-             出 = 幕 + 転 + 先 + 点 + 元
 
-         # WRITE Logic
-         も 技 == 書:
-          先 = 部[1]
-          元 = 部[2]
-          幅 = 部[3]
-          も 元 == "RAX":
-           元 = 蓄
-          表(幕 + 載 + 弐 + 点 + 等 + 先)
-          出 = 幕 + 記 + 元 + 点 + 角 + 弐 + 閉
+           或 技 == 書:
+            先 = 部[1]
+            元 = 部[2]
+            幅 = 部[3]
+            も 元 == "RAX":
+             元 = 蓄
+            表(幕 + 載 + 弐 + 点 + 等 + 先)
+            出 = 幕 + 記 + 元 + 点 + 角 + 弐 + 閉
 
-         # CALL Logic
-         も 技 == 呼:
-          先 = 部[1]
-          出 = 幕 + 枝 + 先
+           或 技 == 呼:
+            先 = 部[1]
+            出 = 幕 + 枝 + 先
 
-         # RET Logic
-         も 技 == 帰:
-          出 = 幕 + "bx lr"
+           或 技 == 帰:
+            出 = 幕 + "bx lr"
 
-         も 寸(出) > 0:
-          表(出)
+           も 寸(出) > 0:
+            表(出)
 
-         順 = 順 + 1
+           順 = 順 + 1
 
         表(尾)
         EOF
 
         echo "--- Compiling ARM Backend ---"
-        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py || (echo "Failed" && exit 1)
+        # Compile and capture error if any
+        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py 2> error.log || (cat error.log && exit 1)
         
         echo "--- Generated Code Check ---"
         head -n 20 compiler_arm.py
+
 
 
