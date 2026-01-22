@@ -1109,13 +1109,12 @@ jobs:
         # 28. Restore & Upgrade x64 Native Compiler (Support 64-bit Pointers)
         # 28. Upgrade Native Compiler (x64) - Simplified Strings
         # 28. Upgrade Native Compiler (x64) - Python Generation
+        # 28. Upgrade Native Compiler (x64) - Robust Generation
     - name: 28. Upgrade Native Compiler (x64)
       run: |
+        # Use Python to write the file safely (UTF-8, No BOM, No Shell Escaping issues)
         python -c "
-        import sys
-        
-        # Define the source code for the native compiler
-        source = r'''
+        code = r'''
         # Native x64 Compiler (With Pointer Support)
         @v 表 'print'
         @v 寸 'len'
@@ -1133,75 +1132,75 @@ jobs:
         
         @v 系 'sys'
         @v 係 'argv'
-        @v 込 '\"import sys\"'
+        @v 込 'import sys'
         @v も 'if'
         @v 他 'else'
         @v 循 'while'
         @v 入 'in'
         @v 或 'elif'
 
-        # Opcodes
-        @v 置 '\"MOV\"'
-        @v 取 '\"LEA\"'
-        @v 呼 '\"CALL\"'
-        @v 書 '\"WRITE\"'
-        @v 読 '\"READ\"'
-        @v 較 '\"CMP\"'
-        @v 零 '\"JZ\"'
-        @v 飛 '\"JMP\"'
-        @v 加 '\"ADD\"'
-        @v 引 '\"SUB\"'
-        @v 掛 '\"MUL\"'
-        @v 割 '\"DIV\"'
-        @v 押 '\"PUSH\"'
-        @v 抜 '\"POP\"'
-        @v 投 '\"RPUSH\"'
-        @v 積 '\"SETS\"'
+        # Opcodes (Clean strings, no backslashes needed in raw block)
+        @v 置 'MOV'
+        @v 取 'LEA'
+        @v 呼 'CALL'
+        @v 書 'WRITE'
+        @v 読 'READ'
+        @v 較 'CMP'
+        @v 零 'JZ'
+        @v 飛 'JMP'
+        @v 加 'ADD'
+        @v 引 'SUB'
+        @v 掛 'MUL'
+        @v 割 'DIV'
+        @v 押 'PUSH'
+        @v 抜 'POP'
+        @v 投 'RPUSH'
+        @v 積 'SETS'
 
         # x64 Templates
-        @v 頭 '\"default rel\\nsection .text\\n  global start\\n  extern GetStdHandle\\n  extern WriteFile\\n  extern ExitProcess\\n\\nstart:\\n  sub rsp, 40\\n\"'
-        @v 尾 '\"  add rsp, 40\\n  ret\\n\\nsection .bss\\n  mem_base resb 1048576\\n\"' 
+        @v 頭 'default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n\nstart:\n  sub rsp, 40\n'
+        @v 尾 '  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 1048576\n' 
 
-        @v 改 '\"\\n\"'
-        @v 空 '\" \"'
-        @v 点 '\",\"'
-        @v 幕 '\"  \"'
+        @v 改 '\n'
+        @v 空 ' '
+        @v 点 ','
+        @v 幕 '  '
         
         # Memory Access
-        @v 基 '\"byte [mem_base + \"'
-        @v 八 '\"qword [mem_base + \"'
-        @v 閉 '\"\"]\"'
-        @v 影 '\"qword [rsp + 32]\"'
-        @v 枠 '\"qword [rsp + \"'
+        @v 基 'byte [mem_base + '
+        @v 八 'qword [mem_base + '
+        @v 閉 ']'
+        @v 影 'qword [rsp + 32]'
+        @v 枠 'qword [rsp + '
 
         # Instructions
-        @v 転 '\"mov \"'
-        @v 汲 '\"lea \"'
-        @v 足 '\"add \"'
-        @v 減 '\"sub \"'
-        @v 倍 '\"imul \"'
-        @v 分 '\"div \"'
-        @v 戻 '\"pop \"'
-        @v 真 '\"push \"'
-        @v 比 '\"cmp \"'
-        @v 跳 '\"je \"'
-        @v 舞 '\"jmp \"'
-        @v 喚 '\"call \"'
-        @v 注 '\"; \"'
-        @v 処 '\"[mem_base + \"'
-        @v 端 '\"\"]\"'
-        @v 清 '\"xor rdx, rdx\"'
+        @v 転 'mov '
+        @v 汲 'lea '
+        @v 足 'add '
+        @v 減 'sub '
+        @v 倍 'imul '
+        @v 分 'div '
+        @v 戻 'pop '
+        @v 真 'push '
+        @v 比 'cmp '
+        @v 跳 'je '
+        @v 舞 'jmp '
+        @v 喚 'call '
+        @v 注 '; '
+        @v 処 '[mem_base + '
+        @v 端 ']'
+        @v 清 'xor rdx, rdx'
 
         # Registers
-        @v 大 '\"RAX\"'
-        @v 小 '\"al\"'
-        @v 全 '\"rax\"'
-        @v 壱 '\"RBX\"'
+        @v 大 'RAX'
+        @v 小 'al'
+        @v 全 'rax'
+        @v 壱 'RBX'
         
-        @v モ '\"r\"'
-        @v 権 '\"utf-8\"'
-        @v 無 '\"\"'
-        @v 井 '\"#\"'
+        @v モ 'r'
+        @v 権 'utf-8'
+        @v 無 ''
+        @v 井 '#'
 
         @v 外 'args'
         @v 径 'path'
@@ -1241,7 +1240,6 @@ jobs:
          或 線.始(井):
           0
          他:
-           # Logic
            
            或 技 == 置:
             先 = 部[1]
@@ -1285,31 +1283,31 @@ jobs:
             先 = 部[1]
             出 = 幕 + 舞 + 先
 
-           # WRITE
+           # WRITE Addr Reg Size
            或 技 == 書:
             先 = 部[1]
             元 = 部[2]
             幅 = 部[3]
             
             # Byte
-            も 幅 == \"1\":
+            も 幅 == '1':
              も 元 == 大:
               元 = 小
              出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
             
             # QWord
-            或 幅 == \"8\":
+            或 幅 == '8':
              も 元 == 大:
               元 = 全
              出 = 幕 + 転 + 八 + 先 + 閉 + 点 + 元
 
-           # READ
+           # READ Reg Addr Size
            或 技 == 読:
             先 = 部[1]
             元 = 部[2]
             幅 = 部[3]
             
-            も 幅 == \"8\":
+            も 幅 == '8':
              出 = 幕 + 転 + 先 + 点 + 八 + 元 + 閉
 
            # Stack
@@ -1332,9 +1330,9 @@ jobs:
             出 = 幕 + 喚 + 先
            
            # Labels
-           或 技.始(\"LABEL\"):
-            部 = 技.裂(\" \")
-            出 = 部[1] + \":\"
+           或 技.始('LABEL'):
+            部 = 技.裂(' ')
+            出 = 部[1] + ':'
 
            も 寸(出) > 0:
             表(出)
@@ -1344,14 +1342,17 @@ jobs:
         表(尾)
         '''
         
-        # Write to file with utf-8 encoding to avoid BOM/CP932 issues
+        # Add extra quotes for values if stage2 expects strings inside quotes in source
+        # But actually, stage2 just evals the value.
+        # So @v 置 'MOV' -> 置 = 'MOV' in python. This is correct.
+        # My previous version added extra quotes which caused "MOV" to become "'MOV'".
+        
         with open('compiler_native.py1', 'w', encoding='utf-8') as f:
-            f.write(source)
+            f.write(code)
         "
 
-        # Compile Native Compiler script
-        # Capture error log
-        python stage2_compiler.py compiler_native.py1 > compiler_native.py 2> error.log || (type error.log && exit 1)
+        # Compile and check error with 'cat'
+        python stage2_compiler.py compiler_native.py1 > compiler_native.py 2> error.log || (cat error.log && exit 1)
 
     # 31. Create Standard Library v0 (Memory Allocator)
     - name: 31. Create StdLib (Memory)
@@ -1359,13 +1360,12 @@ jobs:
         cat <<'EOF' > lib_memory.py1
         # Simple Bump Allocator for py1
         # Variables:
-        #   HEAP_PTR (Address 0): Stores the offset to the next free byte
-        #   HEAP_START (Address 8): Start of the heap area
+        #   [0]: HEAP_PTR (Next free byte offset)
         
         # Initialize Heap (Reset pointer to 16)
         LABEL init_heap
         MOV RAX 16
-        WRITE 0 RAX 8  # [0] = 16 (Next free is at offset 16)
+        WRITE 0 RAX 8
         RET
 
         # Malloc(Size in RAX) -> Returns Pointer in RAX
@@ -1373,7 +1373,7 @@ jobs:
         # 1. Load current heap pointer from [0] into RBX
         READ RBX 0 8
         
-        # 2. Save current RBX as the result ptr (push to stack or keep in RBX)
+        # 2. Save current RBX as result
         MOV R12 RBX
         
         # 3. Add Size (RAX) to RBX
@@ -1383,7 +1383,7 @@ jobs:
         MOV RAX RBX
         WRITE 0 RAX 8
         
-        # 5. Return old pointer (R12) in RAX
+        # 5. Return old pointer (R12)
         MOV RAX R12
         RET
         EOF
@@ -1393,41 +1393,30 @@ jobs:
       shell: cmd
       run: |
         echo "--- Create Test Source ---"
-        # Test logic:
-        # 1. Init Heap
-        # 2. Malloc(8 bytes) -> Store 12345 there
-        # 3. Malloc(8 bytes) -> Store 99999 there
-        # 4. Print 12345 from the first pointer
         cat <<EOF > test_mem.py1
         CALL init_heap
         
         # Alloc 8 bytes
         MOV RAX 8
         CALL malloc
-        # RAX now has pointer (e.g., 16). Save 12345 there.
-        # Note: Our compiler WRITE currently takes immediate Address.
-        # To write to dynamic address, we need a new opcode or a trick.
-        # For this test, let's just print the pointer values to prove they change.
         
-        # Print Pointer 1
+        # Print Pointer 1 (Should be 16)
         CALL print_int
         
         # Alloc another 8 bytes
         MOV RAX 8
         CALL malloc
         
-        # Print Pointer 2 (Should be previous + 8)
+        # Print Pointer 2 (Should be 24)
         CALL print_int
         
         CALL ExitProcess
-        
-        # Include Libraries
         EOF
         
         # Append Library
         type lib_memory.py1 >> test_mem.py1
         
-        # Add Print Logic (from previous calculator)
+        # Append Print Logic
         cat <<EOF >> test_mem.py1
         LABEL print_int
         RPUSH RAX
@@ -1469,6 +1458,7 @@ jobs:
         link.exe test_mem.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:test_mem.exe
         
         test_mem.exe
+
 
 
 
