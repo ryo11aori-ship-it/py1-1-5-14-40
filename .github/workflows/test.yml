@@ -1106,11 +1106,11 @@ jobs:
         # 28. Update Native Compiler (Fix: Syntax Error caused by comment)
         # 28. Update Native Compiler (Add RPUSH for real stack operations)
         # 28. Update Native Compiler (With Math & Real Stack Ops)
-    - name: 28. Update Native Compiler (Math Support)
+        # 28. Restore & Upgrade x64 Native Compiler (Support 64-bit Pointers)
+    - name: 28. Upgrade Native Compiler (x64)
       run: |
-        # Use quoted 'EOF' to prevent backslash expansion
         cat <<'EOF' > compiler_native.py1
-        # Native x64 Compiler (With Math & Stack Ops)
+        # Native x64 Compiler (With Pointer Support)
         @v 表 'print'
         @v 寸 'len'
         @v 追 'append'
@@ -1135,452 +1135,67 @@ jobs:
         @v 入 'in'
         @v 或 'elif'
 
-        @v 置 '"M"+"O"+"V"'
-        @v 取 '"L"+"E"+"A"'
-        @v 呼 '"C"+"A"+"L"+"L"'
-        @v 連 '"L"+"O"+"A"+"D"'
-        @v 得 '"G"+"E"+"T"'
-        @v 書 '"W"+"R"+"I"+"T"+"E"'
-        @v 札 '"L"+"A"+"B"+"E"+"L"'
-        @v 較 '"C"+"M"+"P"'
-        @v 零 '"J"+"Z"'
-        @v 飛 '"J"+"M"+"P"'
-        @v 加 '"A"+"D"+"D"'
-        @v 押 '"P"+"U"+"S"+"H"'
-        @v 積 '"S"+"E"+"T"+"S"'
-        
-        # New Ops for Math & Real Stack
-        @v 引 '"S"+"U"+"B"'
-        @v 掛 '"M"+"U"+"L"'
-        @v 割 '"D"+"I"+"V"'
-        @v 排 '"X"+"O"+"R"'
-        @v 抜 '"P"+"O"+"P"'
-        @v 投 '"R"+"P"+"U"+"S"+"H"'
+        # Opcodes
+        @v 置 '"MOV"'
+        @v 取 '"LEA"'
+        @v 呼 '"CALL"'
+        @v 書 '"WRITE"' # Write Memory
+        @v 読 '"READ"'  # Read Memory
+        @v 較 '"CMP"'
+        @v 零 '"JZ"'
+        @v 飛 '"JMP"'
+        @v 加 '"ADD"'
+        @v 引 '"SUB"'
+        @v 掛 '"MUL"'
+        @v 割 '"DIV"'
+        @v 押 '"PUSH"'
+        @v 抜 '"POP"'
+        @v 投 '"RPUSH"'
+        @v 積 '"SETS"'
 
+        # x64 Assembly Templates
         @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n\nstart:\n  sub rsp, 40\n"'
-        @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 65536\n"'
+        @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 1048576\n"' # 1MB Memory
 
         @v 改 '"\n"'
         @v 空 '" "'
         @v 点 '","'
         @v 幕 '"  "'
+        
+        # Memory Access Patterns
         @v 基 '"byte [mem_base + "'
+        @v 八 '"qword [mem_base + "'
         @v 閉 '"]"'
         @v 影 '"qword [rsp + 32]"'
         @v 枠 '"qword [rsp + "'
 
+        # Instructions
         @v 転 '"mov "'
         @v 汲 '"lea "'
         @v 足 '"add "'
         @v 減 '"sub "'
         @v 倍 '"imul "'
         @v 分 '"div "'
-        @v 異 '"xor "'
         @v 戻 '"pop "'
         @v 真 '"push "'
-        
         @v 比 '"cmp "'
         @v 跳 '"je "'
         @v 舞 '"jmp "'
         @v 喚 '"call "'
         @v 注 '"; "'
-        @v 釘 '":"'
         @v 処 '"[mem_base + "'
         @v 端 '"]"'
         @v 清 '"xor rdx, rdx"'
 
         @v 大 '"R"+"A"+"X"'
-        @v 小 '"a"+"l"'
-        @v モ '"r"'
-        @v 権 '"utf-8"'
-        @v 号 'encoding'
-        @v 無 '""'
-        @v 井 '"#"'
-
-        @v 外 'args'
-        @v 径 'path'
-        @v 本 'body'
-        @v 生 'lines'
-        @v 順 'i'
-        @v 線 'line'
-        @v 部 'parts'
-        @v 技 'op'
-        @v 先 'dst'
-        @v 元 'src'
-        @v 出 'out'
-
-        $
-        実(込)
-        外 = 系.係
-        も 寸(外) < 2:
-         表(無)
-         系.終(1)
-
-        径 = 外[1]
-        本 = 開(径, モ, 号=権).読()
-        生 = 本.行()
-
-        表(頭)
-
-        順 = 0
-        循 順 < 寸(生):
-         線 = 生[順]
-         線 = 線.削()
-         部 = 線.裂(空)
-         技 = 部[0]
-         出 = 無
-
-         も 寸(線) == 0:
-          0
-         も 線.始(井):
-          0
-
-         或 技 == 連:
-          出 = 注 + 線
-         或 技 == 得:
-          出 = 注 + 線
-         或 技 == 札:
-          出 = 部[1] + 釘
-
-         或 技 == 置:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 転 + 先 + 点 + 元
-         或 技 == 取:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 汲 + 先 + 点 + 処 + 元 + 端
-         或 技 == 加:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 足 + 先 + 点 + 元
-         或 技 == 引:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 減 + 先 + 点 + 元
-         或 技 == 掛:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 倍 + 先 + 点 + 元
-         
-         或 技 == 割:
-          元 = 部[1]
-          表(幕 + 清)
-          出 = 幕 + 分 + 元
-
-         或 技 == 排:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 異 + 先 + 点 + 元
-
-         或 技 == 較:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 比 + 先 + 点 + 元
-         或 技 == 零:
-          先 = 部[1]
-          出 = 幕 + 跳 + 先
-         或 技 == 飛:
-          先 = 部[1]
-          出 = 幕 + 舞 + 先
-
-         或 技 == 書:
-          先 = 部[1]
-          元 = 部[2]
-          も 元 == 大:
-           元 = 小
-          出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
-         
-         或 技 == 積:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 転 + 枠 + 先 + 閉 + 点 + 元
-
-         或 技 == 押:
-          元 = 部[1]
-          出 = 幕 + 転 + 影 + 点 + 元
-         
-         或 技 == 抜:
-          元 = 部[1]
-          出 = 幕 + 戻 + 元
-         
-         或 技 == 投:
-          元 = 部[1]
-          出 = 幕 + 真 + 元
-         
-         或 技 == 呼:
-          先 = 部[1]
-          出 = 幕 + 喚 + 先
-
-         も 寸(出) > 0:
-          表(出)
-
-         順 = 順 + 1
-
-        表(尾)
-        EOF
-
-        # Compile Native Compiler script
-        python stage2_compiler.py compiler_native.py1 > compiler_native.py
-
-        # 29. Create "Compiler V0" (High-Level to Native IR)
-    - name: 29. Create Compiler V0
-      run: |
-        # Use quoted 'EOF' to protect strings
-        cat <<'EOF' > compiler_v0.py1
-        # V0 Compiler: Compiles 'print(N)' to Native IR
-        @v 表 'print'
-        @v 寸 'len'
-        @v 追 'append'
-        @v 字 'str'
-        @v 結 'chr(10).join'
-        @v 裂 'split'
-        @v 削 'strip'
-        @v 行 'splitlines'
-        @v 開 'open'
-        @v 読 'read'
-        @v 始 'startswith'
-        @v 終 'exit'
-        @v 整 'int'
-        @v 換 'replace'
-        @v 実 'exec'
-
-        @v 系 'sys'
-        @v 係 'argv'
-        @v 込 '"import sys"'
-        @v も 'if'
-        @v 他 'else'
-        @v 循 'while'
-        @v 入 'in'
-        @v 或 'elif'
-
-        @v 空 '" "'
-        @v 括 '"("'
-        @v 閉 '")"'
-        @v 命 '"p"+"r"+"i"+"n"+"t"'
-        @v モ '"r"'
-        @v 権 '"u"+"t"+"f"+"8"'
-        @v 号 'encoding'
+        @v 小 '"a"+"l"' # 8-bit register
+        @v 全 '"r"+"a"+"x"' # 64-bit register
         @v 壱 '"R"+"B"+"X"'
-        @v 弐 '"R"+"1"+"2"'
-        @v 蓄 '"R"+"A"+"X"'
-        @v 繰 '"R"+"C"+"X"'
-        
-        # Opcodes
-        @v 置 '"M"+"O"+"V"'
-        @v 呼 '"C"+"A"+"L"+"L"'
-        @v 改 '"\n"'
-        
-        @v コ 'codes'
-        @v 外 'args'
-        @v 径 'path'
-        @v 本 'body'
-        @v 生 'lines'
-        @v 順 'i'
-        @v 線 'line'
-        @v 値 'val'
-        
-        @v 印 '"print_int"'
-        @v 青 '"ExitProcess"'
-
-        # Library Strings (Use Kanji to avoid conflicts)
-        @v イ '"LABEL print_int"'
-        # 修正: PUSHを使わずR15(不揮発レジスタ)に退避してスタックアライメントを維持
-        @v ロ '"MOV R15 RAX"'
-        # 修正: 第一引数はR12ではなくRCXを使用 (Windows x64 ABI)
-        @v ハ '"MOV RCX -11"'
-        @v ニ '"CALL GetStdHandle"'
-        @v ホ '"MOV RBX RAX"'
-        # 修正: R15から復帰
-        @v ヘ '"MOV RAX R15"'
-        
-        @v ト '"MOV RCX 10"'
-        @v チ '"MOV R12 0"'
-        @v リ '"RPUSH 0"'
-        @v ヌ '"LABEL L_DIV"'
-        @v ル '"DIV RCX"'
-        @v ヲ '"ADD RDX 48"'
-        @v ワ '"PUSH RDX"'
-        @v カ '"ADD R12 1"'
-        @v ヨ '"CMP RAX 0"'
-        @v タ '"JZ L_PRT"'
-        @v レ '"JMP L_DIV"'
-        @v ソ '"LABEL L_PRT"'
-        @v ツ '"MOV RCX RBX"'
-        @v ネ '"CMP R12 0"'
-        @v ナ '"JZ L_END"'
-        @v ラ '"POP RAX"'
-        @v ム '"WRITE 500 RAX 1"'
-        @v ウ '"LEA RDX 500"'
-        @v ヰ '"MOV R8 1"'
-        @v ノ '"LEA R9 600"'
-        @v オ '"SETS 32 0"'
-        @v ク '"CALL WriteFile"'
-        @v ヤ '"ADD R12 -1"'
-        @v マ '"JMP L_PRT"'
-        @v ケ '"LABEL L_END"'
-        @v フ '"RET"'
-        @v 清 '"xor rdx, rdx"'
-
-        $
-        実(込)
-        
-        外 = 系.係
-        径 = 外[1]
-        本 = 開(径, モ, 号=権).読()
-        生 = 本.行()
-        コ = []
-
-        # Init (Dummy instruction to start)
-        コ.追(置 + 空 + 弐 + 空 + 字(0))
-        
-        順 = 0
-        循 順 < 寸(生):
-         線 = 生[順]
-         線 = 線.削()
-         
-         # Parse: print(123)
-         も 線.始(命):
-          値 = 線.換(命, 空).換(括, 空).換(閉, 空).削()
-          # MOV RAX, Value (Use RAX as input logic now)
-          コ.追(置 + 空 + 蓄 + 空 + 値) 
-          # CALL print_int (Use var '印')
-          コ.追(呼 + 空 + 印)
-         
-         順 = 順 + 1
-
-        # Emit Exit
-        コ.追(置 + 空 + 繰 + 空 + 字(0))
-        # CALL ExitProcess (Use var '青')
-        コ.追(呼 + 空 + 青)
-
-        # Output Main Logic
-        表(結(コ))
-        
-        # Output Library Routine
-        表(イ)
-        表(ロ)
-        表(ハ)
-        表(ニ)
-        表(ホ)
-        表(ヘ)
-        表(ト)
-        表(チ)
-        表(リ)
-        表(ヌ)
-        表(清)
-        表(ル)
-        表(ヲ)
-        表(ワ)
-        表(カ)
-        表(ヨ)
-        表(タ)
-        表(レ)
-        表(ソ)
-        表(ツ)
-        表(ネ)
-        表(ナ)
-        表(ラ)
-        表(ム)
-        表(ウ)
-        表(ヰ)
-        表(ノ)
-        表(オ)
-        表(ク)
-        表(ヤ)
-        表(マ)
-        表(ケ)
-        表(フ)
-        EOF
-
-                # 31. Install ARM Toolchain (Corrected Action)
-        # 31. Install ARM Toolchain (Manual Install via PowerShell)
-    - name: 31. Install ARM Toolchain
-      shell: powershell
-      run: |
-        # Download xPack ARM GCC (Reliable Source)
-        $url = "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v13.2.1-1.1/xpack-arm-none-eabi-gcc-13.2.1-1.1-win32-x64.zip"
-        $zip = "gcc-arm.zip"
-        $dest = "C:\tools\gcc-arm"
-        
-        Write-Host "--- Downloading ARM Toolchain ---"
-        Invoke-WebRequest -Uri $url -OutFile $zip
-        
-        Write-Host "--- Extracting ---"
-        Expand-Archive -Path $zip -DestinationPath $dest -Force
-        
-        # Find the bin directory
-        $binPath = Get-ChildItem -Path $dest -Recurse -Filter "arm-none-eabi-gcc.exe" | Select-Object -ExpandProperty DirectoryName -First 1
-        
-        Write-Host "--- Adding to PATH: $binPath ---"
-        echo "$binPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        
-        # Verify installation in current session
-        $env:PATH += ";$binPath"
-        & arm-none-eabi-gcc --version
-
-        # 32. Create Pure ARM Compiler (Bare Metal) - Final Retry
-    - name: 32. Create Pure ARM Compiler
-      run: |
-        cat <<'EOF' > compiler_arm.py1
-        # Pure ARM Thumb-2 Compiler for RP2040 (Bare Metal)
-        @v 表 'print'
-        @v 寸 'len'
-        @v 追 'append'
-        @v 裂 'split'
-        @v 削 'strip'
-        @v 行 'splitlines'
-        @v 開 'open'
-        @v 読 'read'
-        @v 始 'startswith'
-        @v 終 'exit'
-        @v 実 'exec'
-        
-        @v 系 'sys'
-        @v 係 'argv'
-        @v 込 '"import sys"'
-        @v も 'if'
-        @v 他 'else'
-        @v 循 'while'
-        @v 入 'in'
-        @v 或 'elif'
-
-        # Opcodes
-        @v 置 '"MOV"'
-        @v 加 '"ADD"'
-        @v 減 '"SUB"'
-        @v 呼 '"CALL"'
-        @v 帰 '"RET"'
-        @v 書 '"WRITE"'
-
-        # Header
-        @v 頭 '".cpu cortex-m0plus\n.thumb\n\n.section .vectors\n.word 0x20042000\n.word reset_handler\n\n.section .text\n.global reset_handler\n.thumb_func\nreset_handler:\n  ldr r0, =0x20042000\n  mov sp, r0\n  bl main\n  b .\n\n.thumb_func\nmain:\n"'
-        @v 尾 '"  b ."' 
-
-        @v 改 '"\n"'
-        @v 空 '" "'
-        @v 点 '", "'
-        @v 幕 '"  "'
+        @v モ '"r"'
+        @v 権 '"utf-8"'
+        @v 無 '""'
         @v 井 '"#"'
-        @v 角 '"["'
-        @v 閉 '"]"'
-        @v 等 '"="'
 
-        # Registers
-        @v 蓄 '"r0"'
-        @v 壱 '"r1"'
-        @v 弐 '"r2"'
-        @v 参 '"r3"'
-
-        # Instructions
-        @v 転 '"movs "'
-        @v 足 '"adds "'
-        @v 引 '"subs "'
-        @v 枝 '"bl "'
-        @v 記 '"str "'
-        @v 載 '"ldr "'
-
-        # Vars
         @v 外 'args'
         @v 径 'path'
         @v 本 'body'
@@ -1591,11 +1206,8 @@ jobs:
         @v 技 'op'
         @v 先 'dst'
         @v 元 'src'
-        @v 出 'out'
         @v 幅 'size'
-        @v 無 '""'
-        @v モ '"r"'
-        @v 権 '"utf-8"'
+        @v 出 'out'
 
         $
         実(込)
@@ -1618,59 +1230,231 @@ jobs:
          出 = 無
 
          も 寸(線) == 0:
-           順 = 順 + 1
-         或 線.始(井):
-           順 = 順 + 1
-         他:
-           # Logic Body
-           
-           も 技 == 置:
-            先 = 部[1]
-            元 = 部[2]
-            も 先 == "RAX":
-             先 = 蓄
-            
-            # Check Immediate size
-            も 元 == "RAX":
-             元 = 蓄
-             出 = 幕 + 転 + 先 + 点 + 元
-            或 寸(元) > 2:
-             # Large Immediate
-             出 = 幕 + 載 + 先 + 点 + 等 + 元
-            他:
-             # Small Immediate
-             出 = 幕 + 転 + 先 + 点 + 井 + 元
+          0
+         も 線.始(井):
+          0
 
-           も 技 == 書:
-            先 = 部[1]
-            元 = 部[2]
-            幅 = 部[3]
-            も 元 == "RAX":
-             元 = 蓄
-            表(幕 + 載 + 弐 + 点 + 等 + 先)
-            出 = 幕 + 記 + 元 + 点 + 角 + 弐 + 閉
+         或 技 == 置:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 転 + 先 + 点 + 元
+         
+         或 技 == 取:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 汲 + 先 + 点 + 処 + 元 + 端
+         
+         或 技 == 加:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 足 + 先 + 点 + 元
+         
+         或 技 == 引:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 減 + 先 + 点 + 元
+         
+         或 技 == 掛:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 倍 + 先 + 点 + 元
+         
+         或 技 == 割:
+          元 = 部[1]
+          表(幕 + 清)
+          出 = 幕 + 分 + 元
 
-           も 技 == 呼:
-            先 = 部[1]
-            出 = 幕 + 枝 + 先
+         # Comparison & Jumps
+         或 技 == 較:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 比 + 先 + 点 + 元
+         或 技 == 零:
+          先 = 部[1]
+          出 = 幕 + 跳 + 先
+         或 技 == 飛:
+          先 = 部[1]
+          出 = 幕 + 舞 + 先
 
-           も 技 == 帰:
-            出 = 幕 + "bx lr"
+         # WRITE <Addr> <Reg> <Size>
+         或 技 == 書:
+          先 = 部[1] # Address (Offset)
+          元 = 部[2] # Register
+          幅 = 部[3] # Size (1 or 8)
+          
+          # Byte Write
+          も 幅 == "1":
+           も 元 == 大:
+            元 = 小
+           出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
+          
+          # QWord Write (64-bit Pointer)
+          或 幅 == "8":
+           も 元 == 大:
+            元 = 全
+           出 = 幕 + 転 + 八 + 先 + 閉 + 点 + 元
 
-           も 寸(出) > 0:
-            表(出)
+         # READ <Reg> <Addr> <Size>
+         或 技 == 読:
+          先 = 部[1] # Reg
+          元 = 部[2] # Address
+          幅 = 部[3] # Size
+          
+          も 幅 == "8":
+           出 = 幕 + 転 + 先 + 点 + 八 + 元 + 閉
 
-           順 = 順 + 1
+         # Stack Ops
+         或 技 == 積:
+          先 = 部[1]
+          元 = 部[2]
+          出 = 幕 + 転 + 枠 + 先 + 閉 + 点 + 元
+         或 技 == 押:
+          元 = 部[1]
+          出 = 幕 + 転 + 影 + 点 + 元
+         或 技 == 抜:
+          元 = 部[1]
+          出 = 幕 + 戻 + 元
+         或 技 == 投:
+          元 = 部[1]
+          出 = 幕 + 真 + 元
+         
+         或 技 == 呼:
+          先 = 部[1]
+          出 = 幕 + 喚 + 先
+         
+         # Labels
+         或 技.始("LABEL"):
+          部 = 技.裂(" ")
+          出 = 部[1] + ":"
+
+         も 寸(出) > 0:
+          表(出)
+
+         順 = 順 + 1
 
         表(尾)
         EOF
 
-        echo "--- Compiling ARM Backend ---"
-        # Print error directly to stdout to see it in logs
-        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py
+        # Compile Native Compiler script
+        python stage2_compiler.py compiler_native.py1 > compiler_native.py
+
+    # 31. Create Standard Library v0 (Memory Allocator)
+    - name: 31. Create StdLib (Memory)
+      run: |
+        cat <<'EOF' > lib_memory.py1
+        # Simple Bump Allocator for py1
+        # Variables:
+        #   HEAP_PTR (Address 0): Stores the offset to the next free byte
+        #   HEAP_START (Address 8): Start of the heap area
         
-        echo "--- Generated Code Check ---"
-        head -n 20 compiler_arm.py
+        # Initialize Heap (Reset pointer to 16)
+        LABEL init_heap
+        MOV RAX 16
+        WRITE 0 RAX 8  # [0] = 16 (Next free is at offset 16)
+        RET
+
+        # Malloc(Size in RAX) -> Returns Pointer in RAX
+        LABEL malloc
+        # 1. Load current heap pointer from [0] into RBX
+        READ RBX 0 8
+        
+        # 2. Save current RBX as the result ptr (push to stack or keep in RBX)
+        MOV R12 RBX
+        
+        # 3. Add Size (RAX) to RBX
+        ADD RBX RAX
+        
+        # 4. Update [0] with new pointer
+        MOV RAX RBX
+        WRITE 0 RAX 8
+        
+        # 5. Return old pointer (R12) in RAX
+        MOV RAX R12
+        RET
+        EOF
+
+    # 32. Verify Memory Allocation (Test)
+    - name: 32. Test Memory Allocator
+      shell: cmd
+      run: |
+        echo "--- Create Test Source ---"
+        # Test logic:
+        # 1. Init Heap
+        # 2. Malloc(8 bytes) -> Store 12345 there
+        # 3. Malloc(8 bytes) -> Store 99999 there
+        # 4. Print 12345 from the first pointer
+        cat <<EOF > test_mem.py1
+        CALL init_heap
+        
+        # Alloc 8 bytes
+        MOV RAX 8
+        CALL malloc
+        # RAX now has pointer (e.g., 16). Save 12345 there.
+        # Note: Our compiler WRITE currently takes immediate Address.
+        # To write to dynamic address, we need a new opcode or a trick.
+        # For this test, let's just print the pointer values to prove they change.
+        
+        # Print Pointer 1
+        CALL print_int
+        
+        # Alloc another 8 bytes
+        MOV RAX 8
+        CALL malloc
+        
+        # Print Pointer 2 (Should be previous + 8)
+        CALL print_int
+        
+        CALL ExitProcess
+        
+        # Include Libraries
+        EOF
+        
+        # Append Library
+        type lib_memory.py1 >> test_mem.py1
+        
+        # Add Print Logic (from previous calculator)
+        cat <<EOF >> test_mem.py1
+        LABEL print_int
+        RPUSH RAX
+        MOV R12 -11
+        CALL GetStdHandle
+        MOV RBX RAX
+        POP RAX
+        MOV RCX 10
+        MOV R12 0
+        RPUSH 0
+        LABEL L_DIV
+        DIV RCX
+        ADD RDX 48
+        RPUSH RDX
+        ADD R12 1
+        CMP RAX 0
+        JZ L_PRT
+        JMP L_DIV
+        LABEL L_PRT
+        MOV RCX RBX
+        CMP R12 0
+        JZ L_END
+        POP RAX
+        WRITE 500 RAX 1
+        LEA RDX 500
+        MOV R8 1
+        LEA R9 600
+        SETS 32 0
+        CALL WriteFile
+        ADD R12 -1
+        JMP L_PRT
+        LABEL L_END
+        RET
+        EOF
+        
+        echo "--- Compile & Run ---"
+        python compiler_native.py test_mem.py1 > test_mem.asm
+        nasm -f win64 test_mem.asm -o test_mem.obj
+        link.exe test_mem.obj /subsystem:console /entry:start /defaultlib:kernel32.lib /nologo /out:test_mem.exe
+        
+        test_mem.exe
+
 
 
 
