@@ -1493,10 +1493,12 @@ jobs:
         表(フ)
         EOF
 
-        # 31. Install ARM Toolchain
+            # 31. Install ARM Toolchain (Using reliable Action)
     - name: 31. Install ARM Toolchain
-      run: |
-        choco install gcc-arm-embedded -y
+      uses: geometry-factory/install-arm-none-eabi-gcc@v1
+      with:
+        version: '10-2020-q4' # Stable version for Pico
+
 
                     # 32. Create Pure ARM Compiler (Bare Metal) - Indent-Free Logic
         # 32. Create Pure ARM Compiler (Bare Metal) - Clean Version
