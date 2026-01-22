@@ -1519,7 +1519,7 @@ jobs:
         $env:PATH += ";$binPath"
         & arm-none-eabi-gcc --version
 
-    # 32. Create Pure ARM Compiler (Bare Metal) - Final Stable
+        # 32. Create Pure ARM Compiler (Bare Metal) - Final Retry
     - name: 32. Create Pure ARM Compiler
       run: |
         cat <<'EOF' > compiler_arm.py1
@@ -1619,14 +1619,12 @@ jobs:
 
          も 寸(線) == 0:
            順 = 順 + 1
-           0
          或 線.始(井):
            順 = 順 + 1
-           0
          他:
            # Logic Body
            
-           或 技 == 置:
+           も 技 == 置:
             先 = 部[1]
             元 = 部[2]
             も 先 == "RAX":
@@ -1643,7 +1641,7 @@ jobs:
              # Small Immediate
              出 = 幕 + 転 + 先 + 点 + 井 + 元
 
-           或 技 == 書:
+           も 技 == 書:
             先 = 部[1]
             元 = 部[2]
             幅 = 部[3]
@@ -1652,11 +1650,11 @@ jobs:
             表(幕 + 載 + 弐 + 点 + 等 + 先)
             出 = 幕 + 記 + 元 + 点 + 角 + 弐 + 閉
 
-           或 技 == 呼:
+           も 技 == 呼:
             先 = 部[1]
             出 = 幕 + 枝 + 先
 
-           或 技 == 帰:
+           も 技 == 帰:
             出 = 幕 + "bx lr"
 
            も 寸(出) > 0:
@@ -1668,10 +1666,12 @@ jobs:
         EOF
 
         echo "--- Compiling ARM Backend ---"
-        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py 2> error.log || (cat error.log && exit 1)
+        # Print error directly to stdout to see it in logs
+        python stage2_compiler.py compiler_arm.py1 > compiler_arm.py
         
         echo "--- Generated Code Check ---"
         head -n 20 compiler_arm.py
+
 
 
 
