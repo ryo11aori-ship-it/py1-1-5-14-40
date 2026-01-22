@@ -1494,12 +1494,32 @@ jobs:
         EOF
 
                 # 31. Install ARM Toolchain (Corrected Action)
+        # 31. Install ARM Toolchain (Manual Install via PowerShell)
     - name: 31. Install ARM Toolchain
-      uses: minijaws/setup-arm-none-eabi-gcc@v1
-      with:
-        version: '12.2.1'
+      shell: powershell
+      run: |
+        # Download xPack ARM GCC (Reliable Source)
+        $url = "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v13.2.1-1.1/xpack-arm-none-eabi-gcc-13.2.1-1.1-win32-x64.zip"
+        $zip = "gcc-arm.zip"
+        $dest = "C:\tools\gcc-arm"
+        
+        Write-Host "--- Downloading ARM Toolchain ---"
+        Invoke-WebRequest -Uri $url -OutFile $zip
+        
+        Write-Host "--- Extracting ---"
+        Expand-Archive -Path $zip -DestinationPath $dest -Force
+        
+        # Find the bin directory
+        $binPath = Get-ChildItem -Path $dest -Recurse -Filter "arm-none-eabi-gcc.exe" | Select-Object -ExpandProperty DirectoryName -First 1
+        
+        Write-Host "--- Adding to PATH: $binPath ---"
+        echo "$binPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        
+        # Verify installation in current session
+        $env:PATH += ";$binPath"
+        & arm-none-eabi-gcc --version
 
-    # 32. Create Pure ARM Compiler (Bare Metal) - Clean Version
+    # 32. Create Pure ARM Compiler (Bare Metal) - Final Stable
     - name: 32. Create Pure ARM Compiler
       run: |
         cat <<'EOF' > compiler_arm.py1
@@ -1652,6 +1672,7 @@ jobs:
         
         echo "--- Generated Code Check ---"
         head -n 20 compiler_arm.py
+
 
 
 
