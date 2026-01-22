@@ -1107,6 +1107,7 @@ jobs:
         # 28. Update Native Compiler (Add RPUSH for real stack operations)
         # 28. Update Native Compiler (With Math & Real Stack Ops)
         # 28. Restore & Upgrade x64 Native Compiler (Support 64-bit Pointers)
+        # 28. Upgrade Native Compiler (x64) - Simplified Strings
     - name: 28. Upgrade Native Compiler (x64)
       run: |
         cat <<'EOF' > compiler_native.py1
@@ -1124,8 +1125,9 @@ jobs:
         @v 終 'exit'
         @v 実 'exec'
         @v 字 'chr'
-        @v 数 'isnumeric'
-
+        
+        # REMOVED: isnumeric (Avoid potential NameError if unsupported)
+        
         @v 系 'sys'
         @v 係 'argv'
         @v 込 '"import sys"'
@@ -1139,8 +1141,8 @@ jobs:
         @v 置 '"MOV"'
         @v 取 '"LEA"'
         @v 呼 '"CALL"'
-        @v 書 '"WRITE"' # Write Memory
-        @v 読 '"READ"'  # Read Memory
+        @v 書 '"WRITE"'
+        @v 読 '"READ"'
         @v 較 '"CMP"'
         @v 零 '"JZ"'
         @v 飛 '"JMP"'
@@ -1153,16 +1155,16 @@ jobs:
         @v 投 '"RPUSH"'
         @v 積 '"SETS"'
 
-        # x64 Assembly Templates
+        # x64 Assembly Templates (Fixed Strings)
         @v 頭 '"default rel\nsection .text\n  global start\n  extern GetStdHandle\n  extern WriteFile\n  extern ExitProcess\n\nstart:\n  sub rsp, 40\n"'
-        @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 1048576\n"' # 1MB Memory
+        @v 尾 '"  add rsp, 40\n  ret\n\nsection .bss\n  mem_base resb 1048576\n"' 
 
         @v 改 '"\n"'
         @v 空 '" "'
         @v 点 '","'
         @v 幕 '"  "'
         
-        # Memory Access Patterns
+        # Memory Access (Fixed Strings)
         @v 基 '"byte [mem_base + "'
         @v 八 '"qword [mem_base + "'
         @v 閉 '"]"'
@@ -1187,10 +1189,12 @@ jobs:
         @v 端 '"]"'
         @v 清 '"xor rdx, rdx"'
 
-        @v 大 '"R"+"A"+"X"'
-        @v 小 '"a"+"l"' # 8-bit register
-        @v 全 '"r"+"a"+"x"' # 64-bit register
-        @v 壱 '"R"+"B"+"X"'
+        # Registers (No concatenation)
+        @v 大 '"RAX"'
+        @v 小 '"al"'
+        @v 全 '"rax"'
+        @v 壱 '"RBX"'
+        
         @v モ '"r"'
         @v 権 '"utf-8"'
         @v 無 '""'
@@ -1231,112 +1235,115 @@ jobs:
 
          も 寸(線) == 0:
           0
-         も 線.始(井):
+         或 線.始(井):
           0
+         他:
+           # Logic
+           
+           或 技 == 置:
+            先 = 部[1]
+            元 = 部[2]
+            出 = 幕 + 転 + 先 + 点 + 元
+           
+           或 技 == 取:
+            先 = 部[1]
+            元 = 部[2]
+            出 = 幕 + 汲 + 先 + 点 + 処 + 元 + 端
+           
+           或 技 == 加:
+            先 = 部[1]
+            元 = 部[2]
+            出 = 幕 + 足 + 先 + 点 + 元
+           
+           或 技 == 引:
+            先 = 部[1]
+            元 = 部[2]
+            出 = 幕 + 減 + 先 + 点 + 元
+           
+           或 技 == 掛:
+            先 = 部[1]
+            元 = 部[2]
+            出 = 幕 + 倍 + 先 + 点 + 元
+           
+           或 技 == 割:
+            元 = 部[1]
+            表(幕 + 清)
+            出 = 幕 + 分 + 元
 
-         或 技 == 置:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 転 + 先 + 点 + 元
-         
-         或 技 == 取:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 汲 + 先 + 点 + 処 + 元 + 端
-         
-         或 技 == 加:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 足 + 先 + 点 + 元
-         
-         或 技 == 引:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 減 + 先 + 点 + 元
-         
-         或 技 == 掛:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 倍 + 先 + 点 + 元
-         
-         或 技 == 割:
-          元 = 部[1]
-          表(幕 + 清)
-          出 = 幕 + 分 + 元
+           # Comparison & Jumps
+           或 技 == 較:
+            先 = 部[1]
+            元 = 部[2]
+            出 = 幕 + 比 + 先 + 点 + 元
+           或 技 == 零:
+            先 = 部[1]
+            出 = 幕 + 跳 + 先
+           或 技 == 飛:
+            先 = 部[1]
+            出 = 幕 + 舞 + 先
 
-         # Comparison & Jumps
-         或 技 == 較:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 比 + 先 + 点 + 元
-         或 技 == 零:
-          先 = 部[1]
-          出 = 幕 + 跳 + 先
-         或 技 == 飛:
-          先 = 部[1]
-          出 = 幕 + 舞 + 先
+           # WRITE <Addr> <Reg> <Size>
+           或 技 == 書:
+            先 = 部[1]
+            元 = 部[2]
+            幅 = 部[3]
+            
+            # Byte Write
+            も 幅 == "1":
+             も 元 == 大:
+              元 = 小
+             出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
+            
+            # QWord Write
+            或 幅 == "8":
+             も 元 == 大:
+              元 = 全
+             出 = 幕 + 転 + 八 + 先 + 閉 + 点 + 元
 
-         # WRITE <Addr> <Reg> <Size>
-         或 技 == 書:
-          先 = 部[1] # Address (Offset)
-          元 = 部[2] # Register
-          幅 = 部[3] # Size (1 or 8)
-          
-          # Byte Write
-          も 幅 == "1":
-           も 元 == 大:
-            元 = 小
-           出 = 幕 + 転 + 基 + 先 + 閉 + 点 + 元
-          
-          # QWord Write (64-bit Pointer)
-          或 幅 == "8":
-           も 元 == 大:
-            元 = 全
-           出 = 幕 + 転 + 八 + 先 + 閉 + 点 + 元
+           # READ <Reg> <Addr> <Size>
+           或 技 == 読:
+            先 = 部[1]
+            元 = 部[2]
+            幅 = 部[3]
+            
+            も 幅 == "8":
+             出 = 幕 + 転 + 先 + 点 + 八 + 元 + 閉
 
-         # READ <Reg> <Addr> <Size>
-         或 技 == 読:
-          先 = 部[1] # Reg
-          元 = 部[2] # Address
-          幅 = 部[3] # Size
-          
-          も 幅 == "8":
-           出 = 幕 + 転 + 先 + 点 + 八 + 元 + 閉
+           # Stack Ops
+           或 技 == 積:
+            先 = 部[1]
+            元 = 部[2]
+            出 = 幕 + 転 + 枠 + 先 + 閉 + 点 + 元
+           或 技 == 押:
+            元 = 部[1]
+            出 = 幕 + 転 + 影 + 点 + 元
+           或 技 == 抜:
+            元 = 部[1]
+            出 = 幕 + 戻 + 元
+           或 技 == 投:
+            元 = 部[1]
+            出 = 幕 + 真 + 元
+           
+           或 技 == 呼:
+            先 = 部[1]
+            出 = 幕 + 喚 + 先
+           
+           # Labels (Using simple string method instead of startswith if needed, but startswith is fine)
+           或 技.始("LABEL"):
+            部 = 技.裂(" ")
+            出 = 部[1] + ":"
 
-         # Stack Ops
-         或 技 == 積:
-          先 = 部[1]
-          元 = 部[2]
-          出 = 幕 + 転 + 枠 + 先 + 閉 + 点 + 元
-         或 技 == 押:
-          元 = 部[1]
-          出 = 幕 + 転 + 影 + 点 + 元
-         或 技 == 抜:
-          元 = 部[1]
-          出 = 幕 + 戻 + 元
-         或 技 == 投:
-          元 = 部[1]
-          出 = 幕 + 真 + 元
-         
-         或 技 == 呼:
-          先 = 部[1]
-          出 = 幕 + 喚 + 先
-         
-         # Labels
-         或 技.始("LABEL"):
-          部 = 技.裂(" ")
-          出 = 部[1] + ":"
+           も 寸(出) > 0:
+            表(出)
 
-         も 寸(出) > 0:
-          表(出)
-
-         順 = 順 + 1
+           順 = 順 + 1
 
         表(尾)
         EOF
 
         # Compile Native Compiler script
-        python stage2_compiler.py compiler_native.py1 > compiler_native.py
+        # Add error logging
+        python stage2_compiler.py compiler_native.py1 > compiler_native.py 2> error_native.log || (cat error_native.log && exit 1)
 
     # 31. Create Standard Library v0 (Memory Allocator)
     - name: 31. Create StdLib (Memory)
